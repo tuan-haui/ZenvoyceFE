@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Customer Management - InvoFlow Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-high": "#e5e8f1",
+                      "status-warning": "#FAAD14",
+                      "tertiary-container": "#b95a00",
+                      "surface-container-highest": "#dfe2ec",
+                      "surface-bright": "#f9f9ff",
+                      "surface-card": "#FFFFFF",
+                      "surface-tint": "#005fae",
+                      "status-info": "#1890FF",
+                      "on-secondary": "#ffffff",
+                      "on-surface": "#181c22",
+                      "on-primary-container": "#fefcff",
+                      "on-tertiary-fixed": "#311300",
+                      "tertiary": "#934600",
+                      "secondary-fixed-dim": "#6de039",
+                      "tertiary-fixed": "#ffdbc7",
+                      "error-container": "#ffdad6",
+                      "on-primary": "#ffffff",
+                      "inverse-on-surface": "#eef0fa",
+                      "status-error": "#FF4D4F",
+                      "tertiary-fixed-dim": "#ffb688",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-container": "#287100",
+                      "background": "#f9f9ff",
+                      "primary": "#005daa",
+                      "error": "#ba1a1a",
+                      "surface": "#f9f9ff",
+                      "text-heading": "#262626",
+                      "on-error-container": "#93000a",
+                      "on-background": "#181c22",
+                      "surface-background": "#F0F2F5",
+                      "inverse-primary": "#a5c8ff",
+                      "primary-container": "#0075d5",
+                      "text-secondary": "#8C8C8C",
+                      "on-tertiary-fixed-variant": "#733600",
+                      "on-primary-fixed-variant": "#004785",
+                      "border-base": "#D9D9D9",
+                      "secondary-container": "#85fa51",
+                      "secondary-fixed": "#88fd54",
+                      "text-body": "#595959",
+                      "on-secondary-fixed-variant": "#1a5200",
+                      "surface-dim": "#d7dae3",
+                      "secondary": "#266d00",
+                      "surface-container": "#ebeef7",
+                      "surface-container-low": "#f1f3fd",
+                      "on-surface-variant": "#404753",
+                      "on-secondary-fixed": "#062100",
+                      "status-success": "#52C41A",
+                      "primary-fixed-dim": "#a5c8ff",
+                      "outline": "#707785",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-variant": "#dfe2ec",
+                      "inverse-surface": "#2d3138",
+                      "outline-variant": "#c0c7d6",
+                      "on-error": "#ffffff",
+                      "primary-fixed": "#d4e3ff",
+                      "on-tertiary-container": "#fffbff",
+                      "on-primary-fixed": "#001c3a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "stack-md": "24px",
+                      "stack-lg": "32px",
+                      "base": "8px",
+                      "stack-sm": "12px",
+                      "gutter": "16px",
+                      "container-padding": "24px"
+              },
+              "fontFamily": {
+                      "h3": [
+                              "Inter"
+                      ],
+                      "mono-num": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "h2": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "h1": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "h3": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "mono-num": [
+                              "14px",
+                              {
+                                      "lineHeight": "22px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "h2": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "22px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "h1": [
+                              "30px",
+                              {
+                                      "lineHeight": "38px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-surface-background text-on-surface font-body-md min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="bg-white dark:bg-slate-950 text-blue-600 dark:text-blue-400 font-inter text-sm font-medium fixed left-0 top-0 h-full flex flex-col py-4 z-50 border-slate-200 dark:border-slate-800 docked h-screen border-r w-64 hidden md:flex">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-lg">receipt_long</span>
+</div>
+<div>
+<h1 class="text-xl font-black text-blue-600 dark:text-blue-400 leading-none">InvoFlow</h1>
+<span class="text-[10px] text-slate-500 uppercase tracking-wider">Management Portal</span>
+</div>
+</div>
+<div class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">business</span>
+                Company
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-r-2 border-blue-600 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">groups</span>
+                Customers
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">list_alt</span>
+                Catalog
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">dashboard_customize</span>
+                Templates
+            </a>
+</div>
+<div class="px-4 mt-auto space-y-1 border-t border-slate-200 dark:border-slate-800 pt-4">
+<a class="flex items-center gap-3 px-3 py-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">contact_support</span>
+                Support
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">logout</span>
+                Sign Out
+            </a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col md:ml-64 w-full min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-white dark:bg-slate-950 text-blue-600 dark:text-blue-400 font-inter text-sm antialiased flex justify-between items-center h-16 px-6 w-full sticky top-0 z-40 border-slate-200 dark:border-slate-800 docked full-width border-b md:hidden">
+<div class="flex items-center gap-3">
+<span class="text-lg font-bold tracking-tight text-blue-600 dark:text-blue-400">InvoFlow Admin</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 transition-colors duration-200 ease-in-out p-1 rounded-full"><span class="material-symbols-outlined">notifications</span></button>
+<button class="text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 transition-colors duration-200 ease-in-out p-1 rounded-full"><span class="material-symbols-outlined">help_outline</span></button>
+<button class="text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 transition-colors duration-200 ease-in-out p-1 rounded-full"><span class="material-symbols-outlined">settings</span></button>
+<img alt="Administrator profile picture" class="w-8 h-8 rounded-full border border-slate-200" data-alt="Small round avatar image with initials or profile photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHMsX5c1ylLIarlFG7zhNd3vjPwn64g8KKJ9lNDW_18hA3mJLW2yG6E5UvYzVy1vbrYA-A5eFd8CJ8EwddiAqbLVQOkEQgrm7fY5EkxuvoHjkXwgYZmfM_GEg5UjANrB9jolYx0LlfbpMU1GGy-jDrY_4sCWAFy5uRPPQBc23Jp9iBM4CvVzDrJZIrzNSLVlGr1tyVZ6zaw7wot3i_Jeg9xsXiQSbgxJA8MFWZUsG32r8RDB5kgZIQzUeo_GBFVEleMOPXSj997rtU"/>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 p-container-padding">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-stack-md">
+<div>
+<h2 class="font-h2 text-h2 text-text-heading">Customer Management</h2>
+<p class="font-body-md text-body-md text-text-secondary mt-1">Manage client details, tax information, and contact records.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-surface-card border border-border-base text-text-body font-label-sm text-label-sm px-4 py-2 rounded flex items-center gap-2 hover:border-primary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">upload_file</span>
+                        Import from Excel
+                    </button>
+<button class="bg-primary text-on-primary font-label-sm text-label-sm px-4 py-2 rounded flex items-center gap-2 hover:bg-primary-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        Add Customer
+                    </button>
+</div>
+</div>
+<!-- Top Action / Filter Bar -->
+<div class="bg-surface-card p-4 rounded-t border border-border-base border-b-0 flex flex-col md:flex-row gap-4 items-center justify-between">
+<div class="relative w-full md:w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-[20px]">search</span>
+<input class="w-full pl-10 pr-4 py-2 border border-border-base rounded bg-surface-card focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-body-md font-body-md transition-colors placeholder:text-text-secondary" placeholder="Search by name, tax ID, or email..." type="text"/>
+</div>
+<div class="flex items-center gap-2 w-full md:w-auto">
+<button class="bg-surface-background border border-border-base text-text-body p-2 rounded hover:bg-surface-dim transition-colors flex items-center justify-center" title="Filter">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+</button>
+<button class="bg-surface-background border border-border-base text-text-body p-2 rounded hover:bg-surface-dim transition-colors flex items-center justify-center" title="Sort">
+<span class="material-symbols-outlined text-[20px]">sort</span>
+</button>
+</div>
+</div>
+<!-- Data Grid -->
+<div class="bg-surface-card border border-border-base rounded-b overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[800px]">
+<thead>
+<tr class="bg-surface-background border-b border-border-base">
+<th class="py-3 px-4 font-label-sm text-label-sm text-text-heading font-semibold w-12">
+<input class="rounded border-border-base text-primary focus:ring-primary" type="checkbox"/>
+</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-text-heading font-semibold">Customer Name</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-text-heading font-semibold">Tax ID</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-text-heading font-semibold">Email</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-text-heading font-semibold">Phone</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-text-heading font-semibold">Status</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-text-heading font-semibold text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-text-body divide-y divide-border-base">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-3 px-4">
+<input class="rounded border-border-base text-primary focus:ring-primary" type="checkbox"/>
+</td>
+<td class="py-3 px-4">
+<div class="font-medium text-text-heading">Acme Corporation</div>
+<div class="text-xs text-text-secondary truncate max-w-[200px]">123 Innovation Drive, Tech City</div>
+</td>
+<td class="py-3 px-4 font-mono-num text-mono-num">0101234567</td>
+<td class="py-3 px-4 text-primary hover:underline cursor-pointer">billing@acmecorp.com</td>
+<td class="py-3 px-4">+84 24 3825 1111</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-[#F6FFED] text-status-success border border-[#B7EB8F]">Active</span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-text-secondary hover:text-primary transition-colors p-1" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="text-text-secondary hover:text-status-error transition-colors p-1" title="Delete">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="bg-surface-bright hover:bg-surface-container-lowest transition-colors group">
+<td class="py-3 px-4">
+<input class="rounded border-border-base text-primary focus:ring-primary" type="checkbox"/>
+</td>
+<td class="py-3 px-4">
+<div class="font-medium text-text-heading">Globex Inc.</div>
+<div class="text-xs text-text-secondary truncate max-w-[200px]">456 Global Way, Metropolis</div>
+</td>
+<td class="py-3 px-4 font-mono-num text-mono-num">0109876543</td>
+<td class="py-3 px-4 text-primary hover:underline cursor-pointer">finance@globex.net</td>
+<td class="py-3 px-4">+84 28 3822 2222</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-[#F6FFED] text-status-success border border-[#B7EB8F]">Active</span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-text-secondary hover:text-primary transition-colors p-1" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="text-text-secondary hover:text-status-error transition-colors p-1" title="Delete">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-3 px-4">
+<input class="rounded border-border-base text-primary focus:ring-primary" type="checkbox"/>
+</td>
+<td class="py-3 px-4">
+<div class="font-medium text-text-heading">Initech Solutions</div>
+<div class="text-xs text-text-secondary truncate max-w-[200px]">789 Software Blvd, Silicon Valley</div>
+</td>
+<td class="py-3 px-4 font-mono-num text-mono-num">0105554444</td>
+<td class="py-3 px-4 text-primary hover:underline cursor-pointer">accounts@initech.co</td>
+<td class="py-3 px-4">+84 236 381 3333</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-[#FFFBE6] text-status-warning border border-[#FFE58F]">Pending</span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-text-secondary hover:text-primary transition-colors p-1" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="text-text-secondary hover:text-status-error transition-colors p-1" title="Delete">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="bg-surface-bright hover:bg-surface-container-lowest transition-colors group">
+<td class="py-3 px-4">
+<input class="rounded border-border-base text-primary focus:ring-primary" type="checkbox"/>
+</td>
+<td class="py-3 px-4">
+<div class="font-medium text-text-heading">Massive Dynamic</div>
+<div class="text-xs text-text-secondary truncate max-w-[200px]">101 Future Rd, Neo Tokyo</div>
+</td>
+<td class="py-3 px-4 font-mono-num text-mono-num">0102223333</td>
+<td class="py-3 px-4 text-primary hover:underline cursor-pointer">ap@massivedynamic.jp</td>
+<td class="py-3 px-4">+84 24 3934 4444</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-[#FFF1F0] text-status-error border border-[#FFA39E]">Inactive</span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-text-secondary hover:text-primary transition-colors p-1" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="text-text-secondary hover:text-status-error transition-colors p-1" title="Delete">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Pagination -->
+<div class="border-t border-border-base p-4 flex items-center justify-between bg-surface-card">
+<div class="text-sm text-text-secondary">
+                        Showing 1 to 4 of 42 entries
+                    </div>
+<div class="flex items-center gap-1">
+<button class="px-3 py-1 border border-border-base rounded text-text-secondary hover:text-primary hover:border-primary disabled:opacity-50 disabled:cursor-not-allowed" disabled="">Prev</button>
+<button class="px-3 py-1 border border-primary rounded bg-primary text-on-primary">1</button>
+<button class="px-3 py-1 border border-border-base rounded text-text-body hover:text-primary hover:border-primary transition-colors">2</button>
+<button class="px-3 py-1 border border-border-base rounded text-text-body hover:text-primary hover:border-primary transition-colors">3</button>
+<span class="px-2 text-text-secondary">...</span>
+<button class="px-3 py-1 border border-border-base rounded text-text-body hover:text-primary hover:border-primary transition-colors">Next</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>InvoFlow Admin - Invoice Template Setup</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#e5e8f1",
+                        "status-warning": "#FAAD14",
+                        "tertiary-container": "#b95a00",
+                        "surface-container-highest": "#dfe2ec",
+                        "surface-bright": "#f9f9ff",
+                        "surface-card": "#FFFFFF",
+                        "surface-tint": "#005fae",
+                        "status-info": "#1890FF",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#181c22",
+                        "on-primary-container": "#fefcff",
+                        "on-tertiary-fixed": "#311300",
+                        "tertiary": "#934600",
+                        "secondary-fixed-dim": "#6de039",
+                        "tertiary-fixed": "#ffdbc7",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#eef0fa",
+                        "status-error": "#FF4D4F",
+                        "tertiary-fixed-dim": "#ffb688",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#287100",
+                        "background": "#f9f9ff",
+                        "primary": "#005daa",
+                        "error": "#ba1a1a",
+                        "surface": "#f9f9ff",
+                        "text-heading": "#262626",
+                        "on-error-container": "#93000a",
+                        "on-background": "#181c22",
+                        "surface-background": "#F0F2F5",
+                        "inverse-primary": "#a5c8ff",
+                        "primary-container": "#0075d5",
+                        "text-secondary": "#8C8C8C",
+                        "on-tertiary-fixed-variant": "#733600",
+                        "on-primary-fixed-variant": "#004785",
+                        "border-base": "#D9D9D9",
+                        "secondary-container": "#85fa51",
+                        "secondary-fixed": "#88fd54",
+                        "text-body": "#595959",
+                        "on-secondary-fixed-variant": "#1a5200",
+                        "surface-dim": "#d7dae3",
+                        "secondary": "#266d00",
+                        "surface-container": "#ebeef7",
+                        "surface-container-low": "#f1f3fd",
+                        "on-surface-variant": "#404753",
+                        "on-secondary-fixed": "#062100",
+                        "status-success": "#52C41A",
+                        "primary-fixed-dim": "#a5c8ff",
+                        "outline": "#707785",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#dfe2ec",
+                        "inverse-surface": "#2d3138",
+                        "outline-variant": "#c0c7d6",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#d4e3ff",
+                        "on-tertiary-container": "#fffbff",
+                        "on-primary-fixed": "#001c3a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-md": "24px",
+                        "stack-lg": "32px",
+                        "base": "8px",
+                        "stack-sm": "12px",
+                        "gutter": "16px",
+                        "container-padding": "24px"
+                    },
+                    "fontFamily": {
+                        "h3": ["Inter"],
+                        "mono-num": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h2": ["Inter"],
+                        "body-md": ["Inter"],
+                        "h1": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h3": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "mono-num": ["14px", { "lineHeight": "22px", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "h2": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "h1": ["30px", { "lineHeight": "38px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface-background text-text-body font-body-md min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="bg-white dark:bg-slate-950 font-inter text-sm font-medium docked h-screen border-r w-64 border-slate-200 dark:border-slate-800 transition-all duration-200 ease-in-out fixed left-0 top-0 flex flex-col py-4 z-50">
+<div class="px-6 mb-8 flex flex-col gap-2">
+<h1 class="text-xl font-black text-blue-600 dark:text-blue-400">InvoFlow</h1>
+<span class="text-slate-500 font-label-sm text-label-sm">Management Portal</span>
+</div>
+<div class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600" href="#">
+<span class="material-symbols-outlined" data-icon="business">business</span>
+                Company
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+                Customers
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600" href="#">
+<span class="material-symbols-outlined" data-icon="list_alt">list_alt</span>
+                Catalog
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-r-2 border-blue-600" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard_customize">dashboard_customize</span>
+                Templates
+            </a>
+</div>
+<div class="px-4 mt-auto space-y-1 border-t border-slate-200 dark:border-slate-800 pt-4">
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600" href="#">
+<span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+                Support
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Sign Out
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 ml-64 flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-white dark:bg-slate-950 font-inter text-sm antialiased docked full-width top-0 border-b border-slate-200 dark:border-slate-800 transition-colors duration-200 ease-in-out flex justify-between items-center h-16 px-6 w-full sticky z-40">
+<div class="flex items-center">
+<h2 class="text-lg font-bold tracking-tight text-blue-600 dark:text-blue-400">InvoFlow Admin</h2>
+</div>
+<div class="flex-1 max-w-md mx-8">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 border border-border-base rounded-DEFAULT bg-surface-container-lowest focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-text-body font-body-md transition-colors" placeholder="Search invoices, customers..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<button class="text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-surface-variant overflow-hidden border border-border-base ml-2">
+<img alt="Administrator profile picture" class="w-full h-full object-cover" data-alt="professional headshot of administrator in business casual attire" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCamW6OOVofRbri9gWCe2dKd4d86D9sZJL_zkwS-_RjVh-iu09SxdQ9l_HLJsGl3LhwetM2l_IShmQ27jT9rz4Gy2-poUEVBFVYNmY6OWjL5T9gIHo84r8ElcbrZ5iWGLJM7epQ4x2Xky_ikMv4e6Ks-Ep9_SR2sqAUvOc_h9y2Epzs8SyYTGvrgxyGp4OlVtSmRhmCVOyujxdd82Rtp-TlR1sfKWOR_CuKSz5d9iq-UcrYwQIO39vxjx1EifZokau9htZr8Mlfpnkc"/>
+</div>
+</div>
+</header>
+<!-- Page Content: Split View Layout -->
+<main class="flex-1 flex overflow-hidden">
+<!-- Left Panel: Configuration -->
+<div class="w-2/5 min-w-[400px] border-r border-border-base bg-surface-container-lowest overflow-y-auto flex flex-col">
+<!-- Header -->
+<div class="p-container-padding border-b border-border-base flex justify-between items-center bg-white sticky top-0 z-10">
+<div>
+<h1 class="font-h2 text-h2 text-text-heading">Invoice Template Setup</h1>
+<p class="font-body-md text-body-md text-text-secondary mt-1">Configure your official invoice appearance.</p>
+</div>
+<button class="bg-primary hover:bg-primary-container text-on-primary font-body-md text-body-md px-4 py-2 rounded-DEFAULT transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="save">save</span>
+                        Save Draft
+                    </button>
+</div>
+<!-- Config Sections -->
+<div class="p-container-padding space-y-stack-lg">
+<!-- Base Template -->
+<section class="space-y-stack-sm">
+<h3 class="font-h3 text-h3 text-text-heading border-b border-border-base pb-2">Base Template</h3>
+<div class="grid grid-cols-2 gap-gutter">
+<label class="relative cursor-pointer group">
+<input checked="" class="peer sr-only" name="template_style" type="radio" value="classic"/>
+<div class="border border-border-base rounded-DEFAULT p-4 hover:border-primary peer-checked:border-primary peer-checked:bg-surface-container-low transition-all">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-sm text-label-sm text-text-heading font-semibold">Classic Professional</span>
+<span class="material-symbols-outlined text-primary opacity-0 peer-checked:opacity-100" data-icon="check_circle" data-weight="fill">check_circle</span>
+</div>
+<div class="h-16 bg-surface-variant rounded-sm border border-border-base/50 flex flex-col gap-1 p-2">
+<div class="h-2 w-1/3 bg-slate-300 rounded-sm"></div>
+<div class="h-2 w-full bg-slate-200 rounded-sm mt-auto"></div>
+</div>
+</div>
+</label>
+<label class="relative cursor-pointer group">
+<input class="peer sr-only" name="template_style" type="radio" value="modern"/>
+<div class="border border-border-base rounded-DEFAULT p-4 hover:border-primary peer-checked:border-primary peer-checked:bg-surface-container-low transition-all">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-sm text-label-sm text-text-heading font-semibold">Modern Minimal</span>
+<span class="material-symbols-outlined text-primary opacity-0 peer-checked:opacity-100" data-icon="check_circle" data-weight="fill">check_circle</span>
+</div>
+<div class="h-16 bg-surface-variant rounded-sm border border-border-base/50 flex flex-col gap-1 p-2 items-end">
+<div class="h-2 w-1/4 bg-slate-300 rounded-sm"></div>
+<div class="h-2 w-full bg-slate-200 rounded-sm mt-auto"></div>
+</div>
+</div>
+</label>
+</div>
+</section>
+<!-- Branding: Logo -->
+<section class="space-y-stack-sm">
+<h3 class="font-h3 text-h3 text-text-heading border-b border-border-base pb-2">Branding</h3>
+<div class="space-y-4">
+<div>
+<label class="block font-label-sm text-label-sm text-text-heading mb-2">Company Logo</label>
+<div class="border-2 border-dashed border-border-base rounded-lg p-6 flex flex-col items-center justify-center bg-surface-container-lowest hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="h-12 w-12 rounded-full bg-surface-container-high flex items-center justify-center mb-3 group-hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-outline group-hover:text-primary" data-icon="cloud_upload">cloud_upload</span>
+</div>
+<p class="font-body-md text-body-md text-text-heading"><span class="text-primary font-medium">Click to upload</span> or drag and drop</p>
+<p class="font-label-sm text-label-sm text-text-secondary mt-1">SVG, PNG, JPG (max. 2MB)</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex-1">
+<label class="block font-label-sm text-label-sm text-text-heading mb-2">Logo Alignment</label>
+<div class="flex border border-border-base rounded-DEFAULT overflow-hidden">
+<button class="flex-1 py-2 bg-surface-container-low text-primary border-r border-border-base hover:bg-surface-container-high transition-colors flex justify-center">
+<span class="material-symbols-outlined" data-icon="format_align_left">format_align_left</span>
+</button>
+<button class="flex-1 py-2 bg-white text-text-secondary border-r border-border-base hover:bg-surface-container-high transition-colors flex justify-center">
+<span class="material-symbols-outlined" data-icon="format_align_center">format_align_center</span>
+</button>
+<button class="flex-1 py-2 bg-white text-text-secondary hover:bg-surface-container-high transition-colors flex justify-center">
+<span class="material-symbols-outlined" data-icon="format_align_right">format_align_right</span>
+</button>
+</div>
+</div>
+<div class="flex-1">
+<label class="block font-label-sm text-label-sm text-text-heading mb-2">Logo Size</label>
+<select class="w-full border border-border-base rounded-DEFAULT px-3 py-2 bg-white text-text-body font-body-md focus:outline-none focus:border-primary">
+<option>Medium (150px)</option>
+<option>Small (100px)</option>
+<option>Large (200px)</option>
+</select>
+</div>
+</div>
+</div>
+</section>
+<!-- Theme Colors -->
+<section class="space-y-stack-sm">
+<h3 class="font-h3 text-h3 text-text-heading border-b border-border-base pb-2">Theme Color</h3>
+<p class="font-label-sm text-label-sm text-text-secondary">Used for headers, borders, and total amounts.</p>
+<div class="flex gap-3 mt-2">
+<button class="h-8 w-8 rounded-full bg-primary ring-2 ring-offset-2 ring-primary border border-white focus:outline-none"></button>
+<button class="h-8 w-8 rounded-full bg-slate-800 border border-border-base hover:scale-110 transition-transform focus:outline-none"></button>
+<button class="h-8 w-8 rounded-full bg-emerald-600 border border-border-base hover:scale-110 transition-transform focus:outline-none"></button>
+<button class="h-8 w-8 rounded-full bg-rose-600 border border-border-base hover:scale-110 transition-transform focus:outline-none"></button>
+<div class="h-8 w-8 rounded-full border-2 border-dashed border-border-base flex items-center justify-center cursor-pointer hover:border-primary transition-colors">
+<span class="material-symbols-outlined text-[16px] text-text-secondary" data-icon="add">add</span>
+</div>
+</div>
+</section>
+<!-- Document Settings -->
+<section class="space-y-stack-sm">
+<h3 class="font-h3 text-h3 text-text-heading border-b border-border-base pb-2">Document Settings</h3>
+<div class="space-y-4">
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="relative">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-surface-dim rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+</div>
+<span class="font-body-md text-body-md text-text-heading">Show Watermark (Draft Status)</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="relative">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-surface-dim rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+</div>
+<span class="font-body-md text-body-md text-text-heading">Include Payment QR Code</span>
+</label>
+<div class="pt-2">
+<label class="block font-label-sm text-label-sm text-text-heading mb-2">Default Footer Note</label>
+<textarea class="w-full border border-border-base rounded-DEFAULT p-3 bg-white text-text-body font-body-md focus:outline-none focus:border-primary resize-none h-24" placeholder="Enter terms, conditions, or thank you notes...">Thank you for your business. Payment is due within 30 days.</textarea>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Right Panel: Live PDF Preview -->
+<div class="flex-1 bg-surface-background p-container-padding flex flex-col overflow-hidden relative">
+<!-- Preview Toolbar -->
+<div class="flex justify-between items-center mb-4">
+<span class="font-label-sm text-label-sm text-text-secondary uppercase tracking-wider font-semibold">Live Preview</span>
+<div class="flex gap-2">
+<button class="bg-white border border-border-base text-text-body hover:text-primary hover:border-primary px-3 py-1.5 rounded-DEFAULT font-label-sm flex items-center gap-1 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[16px]" data-icon="zoom_in">zoom_in</span>
+</button>
+<button class="bg-white border border-border-base text-text-body hover:text-primary hover:border-primary px-3 py-1.5 rounded-DEFAULT font-label-sm flex items-center gap-1 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[16px]" data-icon="zoom_out">zoom_out</span>
+</button>
+<button class="bg-white border border-border-base text-text-body hover:text-primary hover:border-primary px-3 py-1.5 rounded-DEFAULT font-label-sm flex items-center gap-1 transition-colors shadow-sm ml-2">
+<span class="material-symbols-outlined text-[16px]" data-icon="download">download</span>
+                            Test PDF
+                        </button>
+</div>
+</div>
+<!-- PDF Canvas Container -->
+<div class="flex-1 overflow-auto flex justify-center pb-8 shadow-[inset_0_0_20px_rgba(0,0,0,0.02)]">
+<!-- The "Paper" -->
+<div class="bg-white w-[210mm] min-h-[297mm] shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-border-base p-[20mm] relative transition-all duration-300 transform origin-top mx-auto mt-4 ring-1 ring-black/5 flex flex-col">
+<!-- Watermark -->
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden opacity-5">
+<span class="text-9xl font-black text-slate-900 -rotate-45 tracking-widest uppercase">DRAFT</span>
+</div>
+<!-- Invoice Header -->
+<div class="flex justify-between items-start mb-12 relative z-10 border-b-4 border-primary pb-8">
+<div class="w-40 h-16 bg-surface-container-high border border-border-base border-dashed flex items-center justify-center text-text-secondary font-label-sm rounded-sm">
+                                [ Logo Placeholder ]
+                            </div>
+<div class="text-right">
+<h1 class="text-4xl font-light text-text-heading tracking-tight uppercase mb-2">Invoice</h1>
+<p class="font-mono-num text-text-heading font-semibold text-lg">INV-2023-001</p>
+<p class="font-body-md text-text-secondary">Date: <span class="text-text-heading">Oct 24, 2023</span></p>
+<p class="font-body-md text-text-secondary">Due: <span class="text-text-heading">Nov 23, 2023</span></p>
+</div>
+</div>
+<!-- Bill To / From -->
+<div class="grid grid-cols-2 gap-12 mb-12 relative z-10">
+<div>
+<h4 class="font-label-sm text-text-secondary uppercase tracking-wider mb-2 border-b border-border-base pb-1">Billed To</h4>
+<p class="font-h3 text-h3 text-text-heading mb-1">Acme Corporation</p>
+<p class="font-body-md text-text-body leading-relaxed">
+                                    Attn: Accounts Payable<br/>
+                                    123 Business Avenue, Suite 400<br/>
+                                    Metropolis, NY 10001<br/>
+                                    Tax ID: XX-XXXXXXX
+                                </p>
+</div>
+<div>
+<h4 class="font-label-sm text-text-secondary uppercase tracking-wider mb-2 border-b border-border-base pb-1">From</h4>
+<p class="font-h3 text-h3 text-text-heading mb-1">InvoFlow Solutions Inc.</p>
+<p class="font-body-md text-text-body leading-relaxed">
+                                    789 Tech Boulevard<br/>
+                                    Silicon Valley, CA 94025<br/>
+                                    billing@invoflow.com<br/>
+                                    +1 (555) 019-2837
+                                </p>
+</div>
+</div>
+<!-- Line Items Table -->
+<div class="mb-8 relative z-10">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-y border-border-base">
+<th class="py-3 px-4 font-label-sm text-text-secondary uppercase w-1/2">Description</th>
+<th class="py-3 px-4 font-label-sm text-text-secondary uppercase text-right">Qty</th>
+<th class="py-3 px-4 font-label-sm text-text-secondary uppercase text-right">Rate</th>
+<th class="py-3 px-4 font-label-sm text-text-secondary uppercase text-right">Amount</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-border-base/50">
+<td class="py-4 px-4">
+<p class="font-body-md text-text-heading font-medium">Enterprise Software License</p>
+<p class="font-label-sm text-text-secondary mt-1">Annual subscription - Tier 3</p>
+</td>
+<td class="py-4 px-4 font-mono-num text-right">1</td>
+<td class="py-4 px-4 font-mono-num text-right">$5,000.00</td>
+<td class="py-4 px-4 font-mono-num text-text-heading text-right">$5,000.00</td>
+</tr>
+<tr class="border-b border-border-base/50 bg-surface-container-lowest">
+<td class="py-4 px-4">
+<p class="font-body-md text-text-heading font-medium">Implementation Services</p>
+<p class="font-label-sm text-text-secondary mt-1">Data migration and user training</p>
+</td>
+<td class="py-4 px-4 font-mono-num text-right">40</td>
+<td class="py-4 px-4 font-mono-num text-right">$150.00</td>
+<td class="py-4 px-4 font-mono-num text-text-heading text-right">$6,000.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Totals Section -->
+<div class="flex justify-end relative z-10 mb-16">
+<div class="w-1/2 border-t border-border-base pt-4">
+<div class="flex justify-between py-1">
+<span class="font-body-md text-text-secondary">Subtotal</span>
+<span class="font-mono-num text-text-heading">$11,000.00</span>
+</div>
+<div class="flex justify-between py-1">
+<span class="font-body-md text-text-secondary">Tax (10%)</span>
+<span class="font-mono-num text-text-heading">$1,100.00</span>
+</div>
+<div class="flex justify-between py-3 mt-2 border-y-2 border-border-base bg-surface-container-low px-4 -mx-4">
+<span class="font-h3 text-h3 text-text-heading">Total Due</span>
+<span class="font-h3 text-h3 text-primary font-mono-num">$12,100.00</span>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<div class="mt-auto relative z-10 flex justify-between items-end border-t border-border-base pt-6">
+<div class="w-2/3">
+<h4 class="font-label-sm text-text-heading uppercase mb-1">Notes / Terms</h4>
+<p class="font-label-sm text-text-secondary leading-relaxed max-w-md">
+                                    Thank you for your business. Payment is due within 30 days. Please make checks payable to InvoFlow Solutions Inc. Late payments may be subject to a 1.5% monthly fee.
+                                </p>
+</div>
+<div class="w-24 h-24 bg-surface-container border border-border-base border-dashed flex flex-col items-center justify-center p-2 rounded-sm text-center">
+<span class="material-symbols-outlined text-outline mb-1" data-icon="qr_code_2">qr_code_2</span>
+<span class="text-[8px] text-text-secondary">Scan to Pay</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

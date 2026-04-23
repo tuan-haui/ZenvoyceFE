@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Zenvoyce - User Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "inverse-surface": "#2d3138",
+                      "on-error": "#ffffff",
+                      "outline-variant": "#c0c7d6",
+                      "on-primary": "#ffffff",
+                      "tertiary-fixed-dim": "#ffb688",
+                      "status-warning": "#FAAD14",
+                      "on-surface-variant": "#404753",
+                      "on-error-container": "#93000a",
+                      "surface-container": "#ebeef7",
+                      "on-tertiary-fixed-variant": "#733600",
+                      "on-surface": "#181c22",
+                      "surface-container-highest": "#dfe2ec",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-fixed": "#311300",
+                      "on-tertiary": "#ffffff",
+                      "primary-fixed": "#d4e3ff",
+                      "status-success": "#52C41A",
+                      "on-secondary-fixed-variant": "#1a5200",
+                      "status-error": "#FF4D4F",
+                      "tertiary-container": "#b95a00",
+                      "surface-container-lowest": "#ffffff",
+                      "text-heading": "#262626",
+                      "on-primary-fixed-variant": "#004785",
+                      "text-secondary": "#8C8C8C",
+                      "surface-container-high": "#e5e8f1",
+                      "secondary-container": "#85fa51",
+                      "surface-tint": "#005fae",
+                      "error": "#ba1a1a",
+                      "outline": "#707785",
+                      "background": "#f9f9ff",
+                      "surface-bright": "#f9f9ff",
+                      "primary-fixed-dim": "#a5c8ff",
+                      "on-secondary-fixed": "#062100",
+                      "tertiary-fixed": "#ffdbc7",
+                      "on-tertiary-container": "#fffbff",
+                      "on-secondary-container": "#287100",
+                      "text-body": "#595959",
+                      "primary": "#005daa",
+                      "status-info": "#1890FF",
+                      "primary-container": "#0075d5",
+                      "border-base": "#D9D9D9",
+                      "surface-variant": "#dfe2ec",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed": "#88fd54",
+                      "on-background": "#181c22",
+                      "surface-background": "#F0F2F5",
+                      "surface-container-low": "#f1f3fd",
+                      "surface": "#f9f9ff",
+                      "secondary-fixed-dim": "#6de039",
+                      "inverse-on-surface": "#eef0fa",
+                      "surface-card": "#FFFFFF",
+                      "tertiary": "#934600",
+                      "surface-dim": "#d7dae3",
+                      "on-primary-fixed": "#001c3a",
+                      "on-primary-container": "#fefcff",
+                      "inverse-primary": "#a5c8ff",
+                      "secondary": "#266d00"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "stack-md": "24px",
+                      "stack-lg": "32px",
+                      "base": "8px",
+                      "stack-sm": "12px",
+                      "gutter": "16px",
+                      "container-padding": "24px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "mono-num": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "h3": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "h1": [
+                              "Inter"
+                      ],
+                      "h2": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "mono-num": [
+                              "14px",
+                              {
+                                      "lineHeight": "22px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "h3": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "22px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "h1": [
+                              "30px",
+                              {
+                                      "lineHeight": "38px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "h2": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-surface-background text-on-surface font-body-md min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="hidden md:flex bg-white dark:bg-slate-900 font-['Inter'] text-sm font-medium border-r border-slate-200 dark:border-slate-800 flat no shadows fixed left-0 top-0 h-screen flex-col py-4 w-64 z-40 transition-all duration-150 ease-linear">
+<div class="px-6 pb-6 border-b border-border-base">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center text-on-primary font-bold">Z</div>
+<div>
+<h1 class="text-lg font-black text-blue-600 dark:text-blue-400 leading-tight">Zenvoyce</h1>
+<span class="text-xs text-text-secondary">Admin Dashboard</span>
+</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto py-4">
+<ul class="space-y-1 px-3">
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150 ease-linear" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+                        Dashboard
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150 ease-linear" href="#">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+                        Invoices
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150 ease-linear" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+                        Customers
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-r-4 border-blue-600 transition-colors duration-150 ease-linear" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">manage_accounts</span>
+                        User Management
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150 ease-linear" href="#">
+<span class="material-symbols-outlined text-[20px]">security</span>
+                        Permissions
+                    </a>
+</li>
+</ul>
+</div>
+<div class="pt-4 border-t border-border-base px-3">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150 ease-linear" href="#">
+<span class="material-symbols-outlined text-[20px]">contact_support</span>
+                        Support
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150 ease-linear" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+                        Logout
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col md:ml-64 min-w-0">
+<!-- TopAppBar -->
+<header class="bg-white dark:bg-slate-900 font-['Inter'] text-sm antialiased docked full-width top-0 border-b border-b border-slate-200 dark:border-slate-800 flat no shadows flex justify-between items-center h-16 w-full px-6 sticky top-0 z-50 transition-colors duration-200 ease-in-out md:hidden">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 p-2 rounded-full">menu</span>
+<span class="text-xl font-bold tracking-tight text-blue-600 dark:text-blue-400">Zenvoyce</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 ease-in-out">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded-full text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 ease-in-out">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<button class="p-2 rounded-full text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 ease-in-out">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden ml-2 border border-border-base">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="Professional headshot of a business woman on a solid grey background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJBzD5p394UGQxrw0klDdI2bBRLc3HvbG2YtpqOjFL_tuD1OUlQzxh1HGMRh4_5pcvQUeBXxwSTHD75gOQXXhZrJFjH0TbhYxXfnnkjimTDtrdKMwo8Db3d3xIZchbuCtOY2_UFQjyLBKW098tCc_HmJbWYwRKM9g6QcpIK-Dpopczfprf4wg3txWiOi06ic2-dZZ2aw9_AHffVzxZ0yqtIlvtSIu5hOK22JH2DkVjD2pfJDCw70U_l_U0uYX63xRyv4y-QptrgaEg"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<main class="flex-1 p-container-padding max-w-7xl mx-auto w-full">
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-stack-md">
+<div>
+<h2 class="font-h2 text-text-heading">User Management</h2>
+<p class="font-body-md text-text-secondary mt-1">Manage system access, roles, and user accounts.</p>
+</div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded font-body-md font-medium hover:bg-primary-container transition-colors flex items-center gap-2 w-fit">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Add User
+                </button>
+</div>
+<!-- Content Card -->
+<div class="bg-surface-card rounded-lg border border-border-base shadow-sm">
+<!-- Filter Section -->
+<div class="p-4 border-b border-border-base bg-white rounded-t-lg flex flex-col md:flex-row gap-4 items-center justify-between">
+<div class="relative w-full md:w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-[20px]">search</span>
+<input class="w-full pl-10 pr-3 py-1.5 border border-border-base rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors font-body-md text-text-heading bg-white" placeholder="Search by name or email..." type="text"/>
+</div>
+<div class="flex w-full md:w-auto gap-3">
+<select class="w-full md:w-auto px-3 py-1.5 border border-border-base rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors font-body-md text-text-heading bg-white cursor-pointer">
+<option value="">Role: All</option>
+<option value="admin">Admin</option>
+<option value="accountant">Accountant</option>
+<option value="staff">Staff</option>
+</select>
+<select class="w-full md:w-auto px-3 py-1.5 border border-border-base rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors font-body-md text-text-heading bg-white cursor-pointer">
+<option value="">Status: All</option>
+<option value="active">Active</option>
+<option value="locked">Locked</option>
+</select>
+</div>
+</div>
+<!-- Data Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-[#fafafa] border-b border-border-base">
+<th class="py-3 px-4 font-label-sm text-text-heading font-semibold whitespace-nowrap">Name</th>
+<th class="py-3 px-4 font-label-sm text-text-heading font-semibold whitespace-nowrap">Username</th>
+<th class="py-3 px-4 font-label-sm text-text-heading font-semibold whitespace-nowrap">Email</th>
+<th class="py-3 px-4 font-label-sm text-text-heading font-semibold whitespace-nowrap">Role</th>
+<th class="py-3 px-4 font-label-sm text-text-heading font-semibold whitespace-nowrap">Company</th>
+<th class="py-3 px-4 font-label-sm text-text-heading font-semibold whitespace-nowrap">Status</th>
+<th class="py-3 px-4 font-label-sm text-text-heading font-semibold text-right whitespace-nowrap">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-text-heading divide-y divide-border-base">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50 transition-colors group">
+<td class="py-3 px-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-variant flex-shrink-0">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="Professional headshot of a young woman with glasses on light background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHcbAbADaqTctnP91y7D6EWAtVGPRikDBpm4_34Efiw6F7MdbPfZC28fLbzqcXnPJ0B9RpkTbyLRju1iEZlwXF_1Hwydo1UT127I9wUX4T8Gvs4oksJzIW_JzFeXJj1UzSksUpyIBBusPZacelnQKTF513gqTt-7cd-CBoNC7f7tD26KnT6h9IMWv2sUNQNIIHgCpYh_WT64LOgUv8_Va49yDiMUj5e_FfKjpaGgBeRRUlBKl0khDogybMw5JwNBXCryD2epy9GKoK"/>
+</div>
+<span class="font-medium">Sarah Jenkins</span>
+</div>
+</td>
+<td class="py-3 px-4 text-text-secondary">sjenkins</td>
+<td class="py-3 px-4 text-text-secondary">sarah.j@acmecorp.com</td>
+<td class="py-3 px-4">Admin</td>
+<td class="py-3 px-4">Acme Corp</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-[#f6ffed] text-[#389e0d] border border-[#b7eb8f]">Active</span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-text-secondary hover:text-primary rounded hover:bg-surface-variant transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 text-text-secondary hover:text-status-warning rounded hover:bg-surface-variant transition-colors" title="Lock Account">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+</button>
+<button class="p-1.5 text-text-secondary hover:text-primary rounded hover:bg-surface-variant transition-colors" title="Reset Password">
+<span class="material-symbols-outlined text-[18px]">key</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50 transition-colors group">
+<td class="py-3 px-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-fixed text-primary flex items-center justify-center font-semibold text-xs flex-shrink-0">
+                                            MR
+                                        </div>
+<span class="font-medium">Michael Ross</span>
+</div>
+</td>
+<td class="py-3 px-4 text-text-secondary">mross</td>
+<td class="py-3 px-4 text-text-secondary">m.ross@pearsonhardman.com</td>
+<td class="py-3 px-4">Accountant</td>
+<td class="py-3 px-4">Pearson Hardman</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-[#f6ffed] text-[#389e0d] border border-[#b7eb8f]">Active</span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-text-secondary hover:text-primary rounded hover:bg-surface-variant transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 text-text-secondary hover:text-status-warning rounded hover:bg-surface-variant transition-colors" title="Lock Account">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+</button>
+<button class="p-1.5 text-text-secondary hover:text-primary rounded hover:bg-surface-variant transition-colors" title="Reset Password">
+<span class="material-symbols-outlined text-[18px]">key</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50 transition-colors group">
+<td class="py-3 px-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-variant flex-shrink-0">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="Professional headshot of a middle aged man with beard on grey background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6Y2kpd6ZIx5tixKMYTCg1w_DqBnRaA0UQim5IMKGIZYYFfn0TBd1PSbwB-aiIcq-hQDJwbOg6zXBHmjm_KAeip5x-OB4522Q-nojq61r0UKU_vGpIaMfSayV3vDmoyLqBfu-Edmi3eUVFzA1ePkpZcTIFgyPzZlN4p3sL-QV4B7lY4-RF5EF8OZ3opI980ORdxqRPFXhvnhGFn94GM7L6BtoSn2oXrjuvXpBqMhwDpiQ9BNdcuveZ8IeYdgi-6V3RK_osgbzcuUoP"/>
+</div>
+<span class="font-medium">David Chen</span>
+</div>
+</td>
+<td class="py-3 px-4 text-text-secondary">dchen</td>
+<td class="py-3 px-4 text-text-secondary">david.c@techcorp.io</td>
+<td class="py-3 px-4">Staff</td>
+<td class="py-3 px-4">Tech Corp</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-[#fff1f0] text-[#cf1322] border border-[#ffa39e]">Locked</span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-text-secondary hover:text-primary rounded hover:bg-surface-variant transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 text-text-secondary hover:text-status-success rounded hover:bg-surface-variant transition-colors" title="Unlock Account">
+<span class="material-symbols-outlined text-[18px]">lock_open</span>
+</button>
+<button class="p-1.5 text-text-secondary hover:text-primary rounded hover:bg-surface-variant transition-colors" title="Reset Password">
+<span class="material-symbols-outlined text-[18px]">key</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50 transition-colors group">
+<td class="py-3 px-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center font-semibold text-xs flex-shrink-0">
+                                            EL
+                                        </div>
+<span class="font-medium">Emily Larson</span>
+</div>
+</td>
+<td class="py-3 px-4 text-text-secondary">elarson</td>
+<td class="py-3 px-4 text-text-secondary">emily.l@designstudio.com</td>
+<td class="py-3 px-4">Accountant</td>
+<td class="py-3 px-4">Design Studio</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-[#f6ffed] text-[#389e0d] border border-[#b7eb8f]">Active</span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-text-secondary hover:text-primary rounded hover:bg-surface-variant transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 text-text-secondary hover:text-status-warning rounded hover:bg-surface-variant transition-colors" title="Lock Account">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+</button>
+<button class="p-1.5 text-text-secondary hover:text-primary rounded hover:bg-surface-variant transition-colors" title="Reset Password">
+<span class="material-symbols-outlined text-[18px]">key</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="p-4 border-t border-border-base bg-white rounded-b-lg flex items-center justify-between text-sm">
+<span class="text-text-secondary">Showing 1 to 4 of 24 entries</span>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 flex items-center justify-center rounded border border-border-base text-text-secondary hover:border-primary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-primary bg-primary text-on-primary transition-colors">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-border-base text-text-heading hover:border-primary hover:text-primary transition-colors">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-border-base text-text-heading hover:border-primary hover:text-primary transition-colors">3</button>
+<span class="px-1 text-text-secondary">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-border-base text-text-heading hover:border-primary hover:text-primary transition-colors">6</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-border-base text-text-secondary hover:border-primary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

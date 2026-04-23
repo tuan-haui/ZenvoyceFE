@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>User Management - Add User</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary": "#ffffff",
+                        "status-info": "#1890FF",
+                        "surface-background": "#F0F2F5",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#ebeef7",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#004785",
+                        "on-secondary-fixed": "#062100",
+                        "surface-tint": "#005fae",
+                        "primary-container": "#0075d5",
+                        "tertiary-fixed-dim": "#ffb688",
+                        "on-surface": "#181c22",
+                        "inverse-primary": "#a5c8ff",
+                        "text-secondary": "#8C8C8C",
+                        "on-surface-variant": "#404753",
+                        "on-tertiary-fixed": "#311300",
+                        "primary-fixed": "#d4e3ff",
+                        "primary": "#005daa",
+                        "on-secondary-fixed-variant": "#1a5200",
+                        "outline-variant": "#c0c7d6",
+                        "surface-container-highest": "#dfe2ec",
+                        "error-container": "#ffdad6",
+                        "surface-card": "#FFFFFF",
+                        "on-tertiary-container": "#fffbff",
+                        "status-warning": "#FAAD14",
+                        "tertiary": "#934600",
+                        "primary-fixed-dim": "#a5c8ff",
+                        "text-heading": "#262626",
+                        "tertiary-fixed": "#ffdbc7",
+                        "secondary-container": "#85fa51",
+                        "surface-container-low": "#f1f3fd",
+                        "outline": "#707785",
+                        "surface-dim": "#d7dae3",
+                        "secondary-fixed-dim": "#6de039",
+                        "surface": "#f9f9ff",
+                        "text-body": "#595959",
+                        "on-secondary-container": "#287100",
+                        "on-error": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-variant": "#dfe2ec",
+                        "surface-bright": "#f9f9ff",
+                        "status-error": "#FF4D4F",
+                        "secondary": "#266d00",
+                        "inverse-surface": "#2d3138",
+                        "on-background": "#181c22",
+                        "inverse-on-surface": "#eef0fa",
+                        "surface-container-high": "#e5e8f1",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#88fd54",
+                        "on-primary-fixed": "#001c3a",
+                        "on-primary-container": "#fefcff",
+                        "tertiary-container": "#b95a00",
+                        "background": "#f9f9ff",
+                        "error": "#ba1a1a",
+                        "border-base": "#D9D9D9",
+                        "status-success": "#52C41A",
+                        "on-tertiary-fixed-variant": "#733600"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        "stack-lg": "32px",
+                        "container-padding": "24px",
+                        "base": "8px",
+                        "gutter": "16px",
+                        "stack-sm": "12px",
+                        "stack-md": "24px"
+                    },
+                    fontFamily: {
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h3": ["Inter"],
+                        "h2": ["Inter"],
+                        "mono-num": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "h1": ["Inter"]
+                    },
+                    fontSize: {
+                        "body-md": ["14px", { lineHeight: "22px", fontWeight: "400" }],
+                        "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "h3": ["20px", { lineHeight: "28px", fontWeight: "600" }],
+                        "h2": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+                        "mono-num": ["14px", { lineHeight: "22px", fontWeight: "500" }],
+                        "label-sm": ["12px", { lineHeight: "20px", letterSpacing: "0.02em", fontWeight: "500" }],
+                        "h1": ["30px", { lineHeight: "38px", fontWeight: "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Custom scrollbar for drawer */
+        .drawer-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .drawer-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .drawer-scroll::-webkit-scrollbar-thumb {
+            background-color: #D9D9D9;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-surface-background text-on-surface flex h-screen overflow-hidden antialiased">
+<!-- Side NavBar -->
+<nav class="bg-white dark:bg-slate-900 flex flex-col h-screen py-4 gap-2 docked left-0 border-r w-64 border-slate-200 dark:border-slate-800 flat no shadows z-10 hidden md:flex shrink-0">
+<!-- Header Info -->
+<div class="px-6 pb-6 mb-2 border-b border-border-base flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center overflow-hidden shrink-0">
+<span class="material-symbols-outlined text-outline">account_circle</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-semibold text-text-heading">Admin Panel</span>
+<span class="font-label-sm text-label-sm text-text-secondary">Corporate Modernism</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto px-3">
+<!-- Navigation Items -->
+<!-- Dashboard -->
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-DEFAULT text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 ease-in-out font-['Inter'] text-[14px] font-medium mb-1 group" href="#">
+<span class="material-symbols-outlined text-[20px] opacity-70 group-hover:opacity-100">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- User Management (ACTIVE) -->
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-DEFAULT text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-r-2 border-blue-600 transition-all duration-200 ease-in-out font-['Inter'] text-[14px] font-medium mb-1" href="#">
+<span class="material-symbols-outlined text-[20px] icon-fill">group</span>
+<span>User Management</span>
+</a>
+<!-- Customer List -->
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-DEFAULT text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 ease-in-out font-['Inter'] text-[14px] font-medium mb-1 group" href="#">
+<span class="material-symbols-outlined text-[20px] opacity-70 group-hover:opacity-100">person</span>
+<span>Customer List</span>
+</a>
+<!-- Invoices -->
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-DEFAULT text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 ease-in-out font-['Inter'] text-[14px] font-medium mb-1 group" href="#">
+<span class="material-symbols-outlined text-[20px] opacity-70 group-hover:opacity-100">description</span>
+<span>Invoices</span>
+</a>
+<!-- Settings -->
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-DEFAULT text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 ease-in-out font-['Inter'] text-[14px] font-medium mb-1 group" href="#">
+<span class="material-symbols-outlined text-[20px] opacity-70 group-hover:opacity-100">settings</span>
+<span>Settings</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col min-w-0 relative">
+<!-- TopNavBar -->
+<header class="bg-white dark:bg-slate-900 flex justify-between items-center px-6 h-16 w-full docked full-width top-0 border-b border-slate-200 dark:border-slate-800 flat no shadows z-10">
+<!-- Brand / Search -->
+<div class="flex items-center gap-6">
+<span class="text-xl font-bold text-blue-600 dark:text-blue-400 tracking-tight">System Admin</span>
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-[20px]">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface-container-low border border-border-base rounded-DEFAULT font-body-md text-body-md w-64 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" placeholder="Search..." type="text"/>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors cursor-pointer active:opacity-70 hover:bg-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors cursor-pointer active:opacity-70 hover:bg-surface-variant">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors cursor-pointer active:opacity-70 hover:bg-surface-variant ml-2 border border-border-base bg-surface-bright">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Page Content (Background - Dimmed logically by overlay later) -->
+<main class="flex-1 p-container-padding overflow-y-auto">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-stack-md">
+<div>
+<h1 class="font-h2 text-h2 text-text-heading mb-1">User Management</h1>
+<p class="font-body-md text-body-md text-text-secondary">Manage system access and user roles.</p>
+</div>
+<!-- Simulating the clicked state that opens the drawer -->
+<button class="bg-primary text-on-primary font-body-md text-body-md font-medium px-4 py-2 rounded-DEFAULT shadow-sm opacity-80 pointer-events-none flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                    Thêm người dùng
+                </button>
+</div>
+<!-- Data Table Card -->
+<div class="bg-surface-card rounded-lg border border-border-base flex flex-col h-[600px] overflow-hidden">
+<!-- Toolbar -->
+<div class="p-4 border-b border-border-base flex justify-between items-center bg-surface-container-lowest">
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-3 py-1.5 border border-border-base rounded-DEFAULT font-body-md text-body-md text-text-heading bg-white hover:bg-surface-background">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                            Filters
+                        </button>
+<div class="h-8 w-px bg-border-base mx-1"></div>
+<span class="font-body-md text-body-md text-text-secondary self-center">Showing 24 users</span>
+</div>
+<button class="text-text-secondary hover:text-text-heading p-1">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<!-- Table -->
+<div class="flex-1 overflow-auto">
+<table class="w-full text-left border-collapse">
+<thead class="sticky top-0 bg-surface-variant z-0 shadow-sm">
+<tr>
+<th class="p-4 border-b border-border-base font-label-sm text-label-sm font-semibold text-text-heading w-12 text-center">
+<input class="rounded-sm border-outline text-primary focus:ring-primary h-4 w-4" type="checkbox"/>
+</th>
+<th class="p-4 border-b border-border-base font-label-sm text-label-sm font-semibold text-text-heading">User Details</th>
+<th class="p-4 border-b border-border-base font-label-sm text-label-sm font-semibold text-text-heading">Role</th>
+<th class="p-4 border-b border-border-base font-label-sm text-label-sm font-semibold text-text-heading">Company</th>
+<th class="p-4 border-b border-border-base font-label-sm text-label-sm font-semibold text-text-heading">Status</th>
+<th class="p-4 border-b border-border-base font-label-sm text-label-sm font-semibold text-text-heading text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="bg-white">
+<!-- Row 1 -->
+<tr class="border-b border-border-base hover:bg-surface-container-low transition-colors group">
+<td class="p-4 text-center">
+<input class="rounded-sm border-outline text-primary focus:ring-primary h-4 w-4" type="checkbox"/>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-body-md font-bold text-xs">NT</div>
+<div>
+<div class="font-body-md text-body-md font-medium text-text-heading">Nguyễn Văn A</div>
+<div class="font-label-sm text-label-sm text-text-secondary">nguyenvana@example.com</div>
+</div>
+</div>
+</td>
+<td class="p-4 font-body-md text-body-md text-text-body">Admin</td>
+<td class="p-4 font-body-md text-body-md text-text-body">Tech Corp VN</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[12px] font-medium bg-green-50 text-status-success border border-green-200">
+<span class="w-1.5 h-1.5 rounded-full bg-status-success mr-1.5"></span>
+                                        Active
+                                    </span>
+</td>
+<td class="p-4 text-right">
+<button class="text-text-secondary hover:text-primary p-1"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-border-base bg-surface-bright hover:bg-surface-container-low transition-colors group">
+<td class="p-4 text-center">
+<input class="rounded-sm border-outline text-primary focus:ring-primary h-4 w-4" type="checkbox"/>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-body-md font-bold text-xs">TT</div>
+<div>
+<div class="font-body-md text-body-md font-medium text-text-heading">Trần Thị B</div>
+<div class="font-label-sm text-label-sm text-text-secondary">tranthib@example.com</div>
+</div>
+</div>
+</td>
+<td class="p-4 font-body-md text-body-md text-text-body">Kế toán trưởng</td>
+<td class="p-4 font-body-md text-body-md text-text-body">Global Trade Co.</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[12px] font-medium bg-green-50 text-status-success border border-green-200">
+<span class="w-1.5 h-1.5 rounded-full bg-status-success mr-1.5"></span>
+                                        Active
+                                    </span>
+</td>
+<td class="p-4 text-right">
+<button class="text-text-secondary hover:text-primary p-1"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+<!-- OVERLAY AND DRAWER COMPONENT -->
+<!-- Backdrop Overlay (Dimming effect) -->
+<div class="fixed inset-0 bg-on-surface opacity-40 z-40 transition-opacity duration-300 pointer-events-auto"></div>
+<!-- Right Side Drawer -->
+<aside class="fixed top-0 right-0 h-full w-[440px] max-w-full bg-surface-container-lowest shadow-[-8px_0_24px_rgba(0,0,0,0.08)] z-50 flex flex-col transform transition-transform duration-300 ease-in-out translate-x-0">
+<!-- Drawer Header -->
+<div class="flex items-center justify-between px-6 py-4 border-b border-border-base shrink-0 bg-surface-container-lowest">
+<h2 class="font-h3 text-h3 text-text-heading m-0">Thêm người dùng mới</h2>
+<button class="text-text-secondary hover:text-text-heading hover:bg-surface-variant p-1.5 rounded-DEFAULT transition-colors">
+<span class="material-symbols-outlined text-[20px] block">close</span>
+</button>
+</div>
+<!-- Drawer Body (Form) -->
+<div class="flex-1 overflow-y-auto drawer-scroll px-6 py-6 bg-surface-container-lowest">
+<form class="flex flex-col gap-5">
+<!-- Họ tên (Full Name) -->
+<div class="flex flex-col gap-1.5">
+<label class="font-body-md text-body-md font-medium text-text-heading after:content-['*'] after:ml-1 after:text-status-error">
+                            Họ tên
+                        </label>
+<input class="w-full px-3 py-2 border border-border-base rounded-DEFAULT font-body-md text-body-md text-on-surface bg-white placeholder-text-secondary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" placeholder="Nhập họ và tên" type="text"/>
+</div>
+<!-- Email -->
+<div class="flex flex-col gap-1.5">
+<label class="font-body-md text-body-md font-medium text-text-heading after:content-['*'] after:ml-1 after:text-status-error">
+                            Email
+                        </label>
+<input class="w-full px-3 py-2 border border-border-base rounded-DEFAULT font-body-md text-body-md text-on-surface bg-white placeholder-text-secondary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" placeholder="example@company.com" type="email"/>
+</div>
+<!-- Số điện thoại (Phone Number) -->
+<div class="flex flex-col gap-1.5">
+<label class="font-body-md text-body-md font-medium text-text-heading">
+                            Số điện thoại
+                        </label>
+<input class="w-full px-3 py-2 border border-border-base rounded-DEFAULT font-body-md text-body-md text-on-surface bg-white placeholder-text-secondary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" placeholder="Nhập số điện thoại" type="tel"/>
+</div>
+<div class="h-px w-full bg-border-base my-2"></div>
+<!-- Tên đăng nhập (Username) -->
+<div class="flex flex-col gap-1.5">
+<label class="font-body-md text-body-md font-medium text-text-heading after:content-['*'] after:ml-1 after:text-status-error">
+                            Tên đăng nhập
+                        </label>
+<input class="w-full px-3 py-2 border border-border-base rounded-DEFAULT font-body-md text-body-md text-on-surface bg-white placeholder-text-secondary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" placeholder="Nhập tên đăng nhập" type="text"/>
+</div>
+<!-- Mật khẩu (Password) -->
+<div class="flex flex-col gap-1.5 relative">
+<label class="font-body-md text-body-md font-medium text-text-heading after:content-['*'] after:ml-1 after:text-status-error">
+                            Mật khẩu
+                        </label>
+<div class="relative w-full">
+<input class="w-full pl-3 pr-10 py-2 border border-border-base rounded-DEFAULT font-body-md text-body-md text-on-surface bg-white placeholder-text-secondary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" placeholder="Nhập mật khẩu" type="password"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-heading flex items-center justify-center" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility_off</span>
+</button>
+</div>
+</div>
+<div class="h-px w-full bg-border-base my-2"></div>
+<!-- Vai trò (Role) -->
+<div class="flex flex-col gap-1.5">
+<label class="font-body-md text-body-md font-medium text-text-heading after:content-['*'] after:ml-1 after:text-status-error">
+                            Vai trò
+                        </label>
+<div class="relative">
+<select class="w-full pl-3 pr-10 py-2 border border-border-base rounded-DEFAULT font-body-md text-body-md text-on-surface bg-white appearance-none focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors cursor-pointer">
+<option class="text-text-secondary" disabled="" selected="" value="">Chọn vai trò</option>
+<option value="admin">Admin</option>
+<option value="ketoantruong">Kế toán trưởng</option>
+<option value="ketoan">Kế toán</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none text-[20px]">expand_more</span>
+</div>
+</div>
+<!-- Công ty quản lý (Company) -->
+<div class="flex flex-col gap-1.5">
+<label class="font-body-md text-body-md font-medium text-text-heading">
+                            Công ty quản lý
+                        </label>
+<div class="relative">
+<select class="w-full pl-3 pr-10 py-2 border border-border-base rounded-DEFAULT font-body-md text-body-md text-on-surface bg-white appearance-none focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors cursor-pointer">
+<option class="text-text-secondary" disabled="" selected="" value="">Chọn công ty</option>
+<option value="c1">Tech Corp VN</option>
+<option value="c2">Global Trade Co.</option>
+<option value="c3">Asia Logistics</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none text-[20px]">expand_more</span>
+</div>
+</div>
+</form>
+</div>
+<!-- Drawer Footer (Actions) -->
+<div class="px-6 py-4 border-t border-border-base bg-surface-container-lowest flex justify-end gap-3 shrink-0">
+<button class="px-4 py-2 border border-border-base rounded-DEFAULT font-body-md text-body-md font-medium text-text-heading bg-white hover:border-primary hover:text-primary transition-colors cursor-pointer">
+                    Hủy
+                </button>
+<button class="px-4 py-2 border border-transparent rounded-DEFAULT font-body-md text-body-md font-medium text-on-primary bg-primary hover:bg-surface-tint shadow-sm transition-colors cursor-pointer">
+                    Lưu
+                </button>
+</div>
+</aside>
+</div>
+</body></html>

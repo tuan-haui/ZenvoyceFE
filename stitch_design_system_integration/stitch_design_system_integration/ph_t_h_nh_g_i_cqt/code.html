@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Phát hành (Gửi CQT) - Zenvoyce</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-tertiary-fixed-variant": "#733600",
+                        "status-success": "#52C41A",
+                        "border-base": "#D9D9D9",
+                        "error": "#ba1a1a",
+                        "background": "#f9f9ff",
+                        "tertiary-container": "#b95a00",
+                        "secondary-fixed": "#88fd54",
+                        "on-primary-fixed": "#001c3a",
+                        "on-primary-container": "#fefcff",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#e5e8f1",
+                        "inverse-on-surface": "#eef0fa",
+                        "status-error": "#FF4D4F",
+                        "secondary": "#266d00",
+                        "inverse-surface": "#2d3138",
+                        "on-background": "#181c22",
+                        "surface-variant": "#dfe2ec",
+                        "surface-bright": "#f9f9ff",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#287100",
+                        "text-body": "#595959",
+                        "surface": "#f9f9ff",
+                        "secondary-fixed-dim": "#6de039",
+                        "surface-dim": "#d7dae3",
+                        "surface-container-low": "#f1f3fd",
+                        "outline": "#707785",
+                        "secondary-container": "#85fa51",
+                        "text-heading": "#262626",
+                        "tertiary-fixed": "#ffdbc7",
+                        "tertiary": "#934600",
+                        "primary-fixed-dim": "#a5c8ff",
+                        "surface-card": "#FFFFFF",
+                        "on-tertiary-container": "#fffbff",
+                        "status-warning": "#FAAD14",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#dfe2ec",
+                        "outline-variant": "#c0c7d6",
+                        "on-secondary-fixed-variant": "#1a5200",
+                        "primary": "#005daa",
+                        "primary-fixed": "#d4e3ff",
+                        "on-tertiary-fixed": "#311300",
+                        "on-surface-variant": "#404753",
+                        "on-surface": "#181c22",
+                        "inverse-primary": "#a5c8ff",
+                        "text-secondary": "#8C8C8C",
+                        "surface-tint": "#005fae",
+                        "primary-container": "#0075d5",
+                        "tertiary-fixed-dim": "#ffb688",
+                        "on-secondary-fixed": "#062100",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#004785",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#ebeef7",
+                        "surface-background": "#F0F2F5",
+                        "on-secondary": "#ffffff",
+                        "status-info": "#1890FF"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        "stack-md": "24px",
+                        "stack-sm": "12px",
+                        "stack-lg": "32px",
+                        "container-padding": "24px",
+                        "base": "8px",
+                        "gutter": "16px"
+                    },
+                    fontFamily: {
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h2": ["Inter"],
+                        "h3": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "h1": ["Inter"],
+                        "mono-num": ["Inter"]
+                    },
+                    fontSize: {
+                        "body-md": ["14px", { lineHeight: "22px", fontWeight: "400" }],
+                        "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "h2": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+                        "h3": ["20px", { lineHeight: "28px", fontWeight: "600" }],
+                        "label-sm": ["12px", { lineHeight: "20px", letterSpacing: "0.02em", fontWeight: "500" }],
+                        "h1": ["30px", { lineHeight: "38px", fontWeight: "600" }],
+                        "mono-num": ["14px", { lineHeight: "22px", fontWeight: "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface-background text-on-surface font-body-md text-body-md antialiased overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 bottom-0 w-64 flex flex-col py-6 z-50 bg-surface-container-lowest border-r border-border-base">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center text-on-primary font-bold text-lg">Z</div>
+<div>
+<h1 class="font-h3 text-h3 font-black text-primary tracking-tight">Zenvoyce</h1>
+<p class="font-label-sm text-label-sm text-text-secondary">Admin Dashboard</p>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto px-4 space-y-1">
+<!-- Dashboard (Inactive) -->
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface hover:bg-surface-container transition-all duration-200 ease-in-out group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">dashboard</span>
+<span class="font-body-md text-body-md font-medium">Dashboard</span>
+</a>
+<!-- Invoices (Active for this context) -->
+<a class="flex items-center gap-3 px-4 py-3 rounded text-primary bg-primary-fixed border-r-4 border-primary transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+<span class="font-body-md text-body-md font-medium">Invoices</span>
+</a>
+<!-- Customers (Inactive) -->
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface hover:bg-surface-container transition-all duration-200 ease-in-out group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">group</span>
+<span class="font-body-md text-body-md font-medium">Customers</span>
+</a>
+<!-- User Management (Inactive) -->
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface hover:bg-surface-container transition-all duration-200 ease-in-out group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">manage_accounts</span>
+<span class="font-body-md text-body-md font-medium">User Management</span>
+</a>
+<!-- Permissions (Inactive) -->
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface hover:bg-surface-container transition-all duration-200 ease-in-out group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">security</span>
+<span class="font-body-md text-body-md font-medium">Permissions</span>
+</a>
+</div>
+<div class="px-6 mt-auto">
+<button class="w-full py-2 px-4 border border-border-base rounded text-on-surface hover:bg-surface-container font-body-md text-body-md font-medium transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">support_agent</span>
+                    Support Center
+                </button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col ml-64 h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 left-64 h-16 flex items-center justify-between px-6 z-40 bg-surface-container-lowest border-b border-border-base">
+<!-- Search on left -->
+<div class="flex-1 flex items-center">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface rounded border border-border-base text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-md text-body-md transition-colors" placeholder="Search invoices..." type="text"/>
+</div>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 border-r border-border-base pr-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-outline hover:bg-surface-container hover:text-primary transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-outline hover:bg-surface-container hover:text-primary transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-outline hover:bg-surface-container hover:text-primary transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+<button class="px-4 py-2 bg-primary text-on-primary rounded font-body-md text-body-md font-medium hover:bg-primary-container transition-colors cursor-pointer active:opacity-80 flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        Create Invoice
+                    </button>
+</div>
+</header>
+<!-- Page Canvas -->
+<main class="flex-1 overflow-y-auto mt-16 p-stack-md">
+<!-- Breadcrumbs & Header -->
+<div class="mb-stack-md">
+<nav class="flex items-center gap-2 text-text-secondary font-body-md text-body-md mb-2">
+<a class="hover:text-primary transition-colors" href="#">Invoices</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-on-surface">Phát hành (Gửi CQT)</span>
+</nav>
+<div class="flex items-center justify-between">
+<h2 class="font-h2 text-h2 text-text-heading">Phát hành hóa đơn điện tử</h2>
+<button class="px-4 py-2 bg-primary text-on-primary rounded font-body-md text-body-md font-medium hover:bg-primary-container transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">send</span>
+                            Phát hành / Gửi TCT
+                        </button>
+</div>
+</div>
+<!-- Action Bar (Filters) -->
+<div class="bg-surface-card border border-border-base rounded-t p-4 flex flex-wrap items-center gap-4">
+<div class="flex-1 min-w-[200px]">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+<input class="w-full pl-9 pr-3 py-1.5 rounded border border-border-base focus:border-primary focus:ring-1 focus:ring-primary font-body-md text-body-md" placeholder="Tìm theo số HĐ, tên KH..." type="text"/>
+</div>
+</div>
+<div class="w-64">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">calendar_today</span>
+<input class="w-full pl-9 pr-3 py-1.5 rounded border border-border-base bg-surface-container-lowest cursor-pointer font-body-md text-body-md" placeholder="Tháng này (01/10 - 31/10)" readonly="" type="text"/>
+</div>
+</div>
+<div class="w-48 relative">
+<select class="w-full pl-3 pr-8 py-1.5 rounded border border-border-base bg-surface-container-lowest appearance-none focus:border-primary focus:ring-1 focus:ring-primary font-body-md text-body-md">
+<option>Tất cả trạng thái CQT</option>
+<option>Chưa gửi</option>
+<option>Chờ cấp mã</option>
+<option>Bị từ chối</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-outline text-[18px] pointer-events-none">expand_more</span>
+</div>
+<button class="px-3 py-1.5 border border-border-base rounded text-on-surface hover:bg-surface-container font-body-md text-body-md flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        Bộ lọc
+                    </button>
+</div>
+<!-- Data Table -->
+<div class="bg-surface-card border-x border-b border-border-base rounded-b overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-border-base">
+<th class="py-3 px-4 w-12 text-center">
+<input class="rounded border-outline text-primary focus:ring-primary cursor-pointer w-4 h-4" type="checkbox"/>
+</th>
+<th class="py-3 px-4 font-body-md text-body-md font-semibold text-text-heading whitespace-nowrap">Số HĐ</th>
+<th class="py-3 px-4 font-body-md text-body-md font-semibold text-text-heading whitespace-nowrap">Ngày lập</th>
+<th class="py-3 px-4 font-body-md text-body-md font-semibold text-text-heading">Khách hàng</th>
+<th class="py-3 px-4 font-body-md text-body-md font-semibold text-text-heading text-right whitespace-nowrap">Tổng tiền (VND)</th>
+<th class="py-3 px-4 font-body-md text-body-md font-semibold text-text-heading whitespace-nowrap">Trạng thái CQT</th>
+<th class="py-3 px-4 font-body-md text-body-md font-semibold text-text-heading whitespace-nowrap">Mã CQT</th>
+<th class="py-3 px-4 font-body-md text-body-md font-semibold text-text-heading text-right">Thao tác</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-base">
+<!-- Row 1: Ready to send -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-3 px-4 text-center">
+<input class="rounded border-outline text-primary focus:ring-primary cursor-pointer w-4 h-4" type="checkbox"/>
+</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-primary font-medium cursor-pointer hover:underline">HD-2310-001</td>
+<td class="py-3 px-4 font-body-md text-body-md text-on-surface">24/10/2023</td>
+<td class="py-3 px-4 font-body-md text-body-md text-on-surface truncate max-w-[200px]">Công ty CP Công Nghệ ABC</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-on-surface text-right">24,500,000</td>
+<td class="py-3 px-4">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-outline-variant bg-surface text-text-secondary font-label-sm text-label-sm">
+<div class="w-1.5 h-1.5 rounded-full bg-outline"></div>
+                                            Chưa gửi
+                                        </div>
+</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-text-secondary">-</td>
+<td class="py-3 px-4 text-right whitespace-nowrap">
+<button class="p-1.5 text-outline hover:text-primary rounded transition-colors" title="Xem PDF">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+</button>
+<button class="p-1.5 text-outline hover:text-primary rounded transition-colors" title="Gửi Email">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Pending -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-3 px-4 text-center">
+<input class="rounded border-outline text-primary focus:ring-primary cursor-pointer w-4 h-4" disabled="" type="checkbox"/>
+</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-primary font-medium cursor-pointer hover:underline">HD-2310-002</td>
+<td class="py-3 px-4 font-body-md text-body-md text-on-surface">24/10/2023</td>
+<td class="py-3 px-4 font-body-md text-body-md text-on-surface truncate max-w-[200px]">TNHH Thương Mại Toàn Cầu</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-on-surface text-right">8,250,000</td>
+<td class="py-3 px-4">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-status-info/30 bg-status-info/5 text-status-info font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">hourglass_empty</span>
+                                            Chờ cấp mã
+                                        </div>
+</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-text-secondary">-</td>
+<td class="py-3 px-4 text-right whitespace-nowrap">
+<button class="p-1.5 text-outline hover:text-primary rounded transition-colors" title="Xem PDF">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+</button>
+<button class="p-1.5 text-outline hover:text-primary rounded transition-colors" title="Gửi Email">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Success -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-3 px-4 text-center">
+<input class="rounded border-outline text-primary focus:ring-primary cursor-pointer w-4 h-4" disabled="" type="checkbox"/>
+</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-primary font-medium cursor-pointer hover:underline">HD-2310-003</td>
+<td class="py-3 px-4 font-body-md text-body-md text-on-surface">23/10/2023</td>
+<td class="py-3 px-4 font-body-md text-body-md text-on-surface truncate max-w-[200px]">Doanh nghiệp Tư nhân Minh Phát</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-on-surface text-right">112,000,000</td>
+<td class="py-3 px-4">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-status-success/30 bg-status-success/5 text-status-success font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                            Đã cấp
+                                        </div>
+</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-on-surface">CQT-98213</td>
+<td class="py-3 px-4 text-right whitespace-nowrap">
+<button class="p-1.5 text-outline hover:text-primary rounded transition-colors" title="Xem PDF">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+</button>
+<button class="p-1.5 text-outline hover:text-primary rounded transition-colors" title="Gửi Email">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Error -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-3 px-4 text-center">
+<input class="rounded border-outline text-primary focus:ring-primary cursor-pointer w-4 h-4" type="checkbox"/>
+</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-primary font-medium cursor-pointer hover:underline">HD-2310-004</td>
+<td class="py-3 px-4 font-body-md text-body-md text-on-surface">23/10/2023</td>
+<td class="py-3 px-4 font-body-md text-body-md text-on-surface truncate max-w-[200px]">Công ty TNHH Dịch Vụ XYZ</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-on-surface text-right">5,400,000</td>
+<td class="py-3 px-4">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-status-error/30 bg-status-error/5 text-status-error font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">error</span>
+                                            Bị từ chối
+                                        </div>
+</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-text-secondary">-</td>
+<td class="py-3 px-4 text-right whitespace-nowrap">
+<button class="p-1.5 text-outline hover:text-primary rounded transition-colors" title="Xem chi tiết lỗi">
+<span class="material-symbols-outlined text-[20px]">info</span>
+</button>
+<button class="p-1.5 text-outline hover:text-primary rounded transition-colors" title="Chỉnh sửa">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Ready to send -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-3 px-4 text-center">
+<input class="rounded border-outline text-primary focus:ring-primary cursor-pointer w-4 h-4" type="checkbox"/>
+</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-primary font-medium cursor-pointer hover:underline">HD-2310-005</td>
+<td class="py-3 px-4 font-body-md text-body-md text-on-surface">22/10/2023</td>
+<td class="py-3 px-4 font-body-md text-body-md text-on-surface truncate max-w-[200px]">Siêu thị Điện máy Xanh</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-on-surface text-right">45,900,000</td>
+<td class="py-3 px-4">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-outline-variant bg-surface text-text-secondary font-label-sm text-label-sm">
+<div class="w-1.5 h-1.5 rounded-full bg-outline"></div>
+                                            Chưa gửi
+                                        </div>
+</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-text-secondary">-</td>
+<td class="py-3 px-4 text-right whitespace-nowrap">
+<button class="p-1.5 text-outline hover:text-primary rounded transition-colors" title="Xem PDF">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+</button>
+<button class="p-1.5 text-outline hover:text-primary rounded transition-colors" title="Gửi Email">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="px-4 py-3 border-t border-border-base bg-surface-card flex items-center justify-between">
+<span class="text-text-secondary font-body-md text-body-md">Đang hiển thị 1-5 trên tổng số 124 hóa đơn</span>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 flex items-center justify-center rounded border border-border-base text-outline hover:border-primary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-on-primary font-mono-num text-mono-num">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-border-base text-on-surface hover:border-primary hover:text-primary transition-colors font-mono-num text-mono-num">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-border-base text-on-surface hover:border-primary hover:text-primary transition-colors font-mono-num text-mono-num">3</button>
+<span class="w-8 h-8 flex items-center justify-center text-outline">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-border-base text-outline hover:border-primary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

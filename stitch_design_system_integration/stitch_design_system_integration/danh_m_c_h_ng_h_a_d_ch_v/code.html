@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>InvoFlow Admin - Goods / Services Catalog</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#e5e8f1",
+                        "status-warning": "#FAAD14",
+                        "tertiary-container": "#b95a00",
+                        "surface-container-highest": "#dfe2ec",
+                        "surface-bright": "#f9f9ff",
+                        "surface-card": "#FFFFFF",
+                        "surface-tint": "#005fae",
+                        "status-info": "#1890FF",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#181c22",
+                        "on-primary-container": "#fefcff",
+                        "on-tertiary-fixed": "#311300",
+                        "tertiary": "#934600",
+                        "secondary-fixed-dim": "#6de039",
+                        "tertiary-fixed": "#ffdbc7",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#eef0fa",
+                        "status-error": "#FF4D4F",
+                        "tertiary-fixed-dim": "#ffb688",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#287100",
+                        "background": "#f9f9ff",
+                        "primary": "#005daa",
+                        "error": "#ba1a1a",
+                        "surface": "#f9f9ff",
+                        "text-heading": "#262626",
+                        "on-error-container": "#93000a",
+                        "on-background": "#181c22",
+                        "surface-background": "#F0F2F5",
+                        "inverse-primary": "#a5c8ff",
+                        "primary-container": "#0075d5",
+                        "text-secondary": "#8C8C8C",
+                        "on-tertiary-fixed-variant": "#733600",
+                        "on-primary-fixed-variant": "#004785",
+                        "border-base": "#D9D9D9",
+                        "secondary-container": "#85fa51",
+                        "secondary-fixed": "#88fd54",
+                        "text-body": "#595959",
+                        "on-secondary-fixed-variant": "#1a5200",
+                        "surface-dim": "#d7dae3",
+                        "secondary": "#266d00",
+                        "surface-container": "#ebeef7",
+                        "surface-container-low": "#f1f3fd",
+                        "on-surface-variant": "#404753",
+                        "on-secondary-fixed": "#062100",
+                        "status-success": "#52C41A",
+                        "primary-fixed-dim": "#a5c8ff",
+                        "outline": "#707785",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#dfe2ec",
+                        "inverse-surface": "#2d3138",
+                        "outline-variant": "#c0c7d6",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#d4e3ff",
+                        "on-tertiary-container": "#fffbff",
+                        "on-primary-fixed": "#001c3a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-md": "24px",
+                        "stack-lg": "32px",
+                        "base": "8px",
+                        "stack-sm": "12px",
+                        "gutter": "16px",
+                        "container-padding": "24px"
+                    },
+                    "fontFamily": {
+                        "h3": ["Inter"],
+                        "mono-num": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h2": ["Inter"],
+                        "body-md": ["Inter"],
+                        "h1": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h3": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "mono-num": ["14px", { "lineHeight": "22px", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "h2": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "h1": ["30px", { "lineHeight": "38px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface-background font-body-md text-text-body antialiased flex">
+<!-- SideNavBar -->
+<nav class="bg-white dark:bg-slate-950 font-inter text-sm font-medium docked h-screen border-r w-64 border-slate-200 dark:border-slate-800 flat no shadows fixed left-0 top-0 flex flex-col py-4 z-50 transition-all duration-200 ease-in-out">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary flex items-center justify-center text-on-primary font-bold">IF</div>
+<div>
+<div class="text-xl font-black text-blue-600 dark:text-blue-400">InvoFlow</div>
+<div class="text-label-sm font-label-sm text-text-secondary">Management Portal</div>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-1 px-3">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="business">business</span>
+                Company
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+                Customers
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-r-2 border-blue-600 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="list_alt">list_alt</span>
+                Catalog
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard_customize">dashboard_customize</span>
+                Templates
+            </a>
+</div>
+<div class="flex flex-col gap-1 px-3 mt-auto border-t border-slate-200 dark:border-slate-800 pt-4">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+                Support
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Sign Out
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-64 flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-white dark:bg-slate-950 font-inter text-sm antialiased docked full-width top-0 border-b border-slate-200 dark:border-slate-800 flat no shadows flex justify-between items-center h-16 px-6 w-full sticky top-0 z-40 transition-colors duration-200 ease-in-out">
+<div class="flex items-center gap-4">
+<div class="text-lg font-bold tracking-tight text-blue-600 dark:text-blue-400 hidden md:block">InvoFlow Admin</div>
+<div class="relative hidden sm:block w-64 ml-4">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-sm">search</span>
+<input class="w-full pl-9 pr-3 py-1.5 bg-surface-background border-border-base rounded text-body-md font-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" placeholder="Search..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 transition-colors duration-200 ease-in-out relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-status-error rounded-full"></span>
+</button>
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 transition-colors duration-200 ease-in-out">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 transition-colors duration-200 ease-in-out">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="ml-2 w-8 h-8 rounded-full bg-primary-fixed overflow-hidden border border-border-base flex items-center justify-center text-primary font-bold">
+<span class="material-symbols-outlined">person</span>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-container-padding flex-1 flex flex-col gap-stack-md">
+<!-- Page Header -->
+<div class="flex justify-between items-end">
+<div>
+<h1 class="font-h2 text-h2 text-text-heading">Goods / Services Catalog</h1>
+<p class="font-body-md text-body-md text-text-secondary mt-1">Manage your catalog items, pricing, and tax rates.</p>
+</div>
+<div class="flex gap-gutter">
+<button class="px-4 py-2 bg-surface-card border border-border-base rounded text-text-heading font-body-md hover:border-primary hover:text-primary transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">upload_file</span>
+                        Bulk Import
+                    </button>
+<button class="px-4 py-2 bg-primary text-on-primary rounded font-body-md hover:bg-primary-container transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span>
+                        Add Item
+                    </button>
+</div>
+</div>
+<!-- Main Data Container -->
+<div class="bg-surface-card border border-border-base rounded-lg flex flex-col flex-1 shadow-sm">
+<!-- Toolbar -->
+<div class="p-4 border-b border-border-base flex justify-between items-center bg-surface-bright rounded-t-lg">
+<div class="flex gap-3">
+<div class="relative w-72">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-sm">search</span>
+<input class="w-full pl-9 pr-3 py-1.5 bg-white border-border-base rounded text-body-md font-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" placeholder="Search items by code or name..." type="text"/>
+</div>
+<select class="px-3 py-1.5 bg-white border border-border-base rounded text-body-md font-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none text-text-heading">
+<option value="">All Categories</option>
+<option value="goods">Goods</option>
+<option value="services">Services</option>
+</select>
+<select class="px-3 py-1.5 bg-white border border-border-base rounded text-body-md font-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none text-text-heading">
+<option value="">All Status</option>
+<option value="active">Active</option>
+<option value="disabled">Disabled</option>
+</select>
+</div>
+<div class="flex gap-2">
+<button class="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-primary transition-colors border border-transparent hover:border-border-base rounded">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-primary transition-colors border border-transparent hover:border-border-base rounded">
+<span class="material-symbols-outlined text-sm">download</span>
+</button>
+</div>
+</div>
+<!-- Data Table -->
+<div class="flex-1 overflow-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-background text-text-secondary font-label-sm text-label-sm sticky top-0 z-10 border-b border-border-base">
+<tr>
+<th class="py-3 px-4 font-medium w-12"><input class="rounded border-border-base text-primary focus:ring-primary" type="checkbox"/></th>
+<th class="py-3 px-4 font-medium w-32 cursor-pointer hover:bg-surface-dim transition-colors group">
+<div class="flex items-center gap-1">Item Code <span class="material-symbols-outlined text-[12px] opacity-0 group-hover:opacity-100">arrow_downward</span></div>
+</th>
+<th class="py-3 px-4 font-medium cursor-pointer hover:bg-surface-dim transition-colors group">
+<div class="flex items-center gap-1">Name <span class="material-symbols-outlined text-[12px] opacity-0 group-hover:opacity-100">arrow_downward</span></div>
+</th>
+<th class="py-3 px-4 font-medium w-24">Unit</th>
+<th class="py-3 px-4 font-medium w-32 text-right">Unit Price</th>
+<th class="py-3 px-4 font-medium w-24 text-right">Tax Rate</th>
+<th class="py-3 px-4 font-medium w-24 text-center">Status</th>
+<th class="py-3 px-4 font-medium w-24 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-text-heading divide-y divide-border-base">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-bright transition-colors group">
+<td class="py-3 px-4"><input class="rounded border-border-base text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="py-3 px-4 font-mono-num text-mono-num">ITM-001</td>
+<td class="py-3 px-4 font-medium">Software Development Services</td>
+<td class="py-3 px-4 text-text-secondary">Hour</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-right">150.00</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-right text-text-secondary">10%</td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-status-success/10 text-status-success border border-status-success/20">Active</span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button>
+<button class="text-text-secondary hover:text-status-warning transition-colors"><span class="material-symbols-outlined text-sm">block</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-bright transition-colors group">
+<td class="py-3 px-4"><input class="rounded border-border-base text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="py-3 px-4 font-mono-num text-mono-num">ITM-002</td>
+<td class="py-3 px-4 font-medium">Annual Cloud Hosting Subscription</td>
+<td class="py-3 px-4 text-text-secondary">Year</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-right">1,200.00</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-right text-text-secondary">10%</td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-status-success/10 text-status-success border border-status-success/20">Active</span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button>
+<button class="text-text-secondary hover:text-status-warning transition-colors"><span class="material-symbols-outlined text-sm">block</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-bright transition-colors group">
+<td class="py-3 px-4"><input class="rounded border-border-base text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="py-3 px-4 font-mono-num text-mono-num">ITM-003</td>
+<td class="py-3 px-4 font-medium text-text-secondary">Legacy Hardware Support</td>
+<td class="py-3 px-4 text-text-secondary">Month</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-right text-text-secondary">500.00</td>
+<td class="py-3 px-4 font-mono-num text-mono-num text-right text-text-secondary">8%</td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-surface-dim text-text-secondary border border-border-base">Disabled</span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button>
+<button class="text-text-secondary hover:text-status-success transition-colors"><span class="material-symbols-outlined text-sm">check_circle</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="p-4 border-t border-border-base flex justify-between items-center bg-white rounded-b-lg text-text-secondary font-body-md text-body-md">
+<div>Showing 1 to 3 of 45 entries</div>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 flex items-center justify-center border border-border-base rounded hover:border-primary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center border border-primary bg-primary text-on-primary rounded font-medium">1</button>
+<button class="w-8 h-8 flex items-center justify-center border border-border-base rounded hover:border-primary hover:text-primary transition-colors">2</button>
+<button class="w-8 h-8 flex items-center justify-center border border-border-base rounded hover:border-primary hover:text-primary transition-colors">3</button>
+<span class="px-1">...</span>
+<button class="w-8 h-8 flex items-center justify-center border border-border-base rounded hover:border-primary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

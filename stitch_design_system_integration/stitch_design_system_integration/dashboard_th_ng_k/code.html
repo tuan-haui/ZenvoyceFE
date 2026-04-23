@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Zenvoyce - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Zebra striping for table as per style guide */
+        .zebra-table tbody tr:nth-child(even) {
+            background-color: #f9f9ff; /* bg-surface */
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-on-surface": "#eef0fa",
+                        "background": "#f9f9ff",
+                        "surface": "#f9f9ff",
+                        "on-secondary-fixed": "#062100",
+                        "status-success": "#52C41A",
+                        "surface-card": "#FFFFFF",
+                        "text-heading": "#262626",
+                        "primary-fixed": "#d4e3ff",
+                        "status-info": "#1890FF",
+                        "status-error": "#FF4D4F",
+                        "on-secondary-container": "#287100",
+                        "on-secondary-fixed-variant": "#1a5200",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#004785",
+                        "surface-tint": "#005fae",
+                        "surface-background": "#F0F2F5",
+                        "primary-fixed-dim": "#a5c8ff",
+                        "surface-container-high": "#e5e8f1",
+                        "status-warning": "#FAAD14",
+                        "secondary-fixed": "#88fd54",
+                        "on-primary-fixed": "#001c3a",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#c0c7d6",
+                        "secondary-fixed-dim": "#6de039",
+                        "on-surface-variant": "#404753",
+                        "primary": "#005daa",
+                        "on-surface": "#181c22",
+                        "inverse-surface": "#2d3138",
+                        "tertiary": "#934600",
+                        "tertiary-container": "#b95a00",
+                        "surface-variant": "#dfe2ec",
+                        "surface-container": "#ebeef7",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#dfe2ec",
+                        "primary-container": "#0075d5",
+                        "tertiary-fixed": "#ffdbc7",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed": "#311300",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#d7dae3",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#fffbff",
+                        "text-body": "#595959",
+                        "on-primary-container": "#fefcff",
+                        "surface-bright": "#f9f9ff",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#733600",
+                        "on-background": "#181c22",
+                        "inverse-primary": "#a5c8ff",
+                        "secondary-container": "#85fa51",
+                        "secondary": "#266d00",
+                        "surface-container-low": "#f1f3fd",
+                        "outline": "#707785",
+                        "error-container": "#ffdad6",
+                        "text-secondary": "#8C8C8C",
+                        "border-base": "#D9D9D9",
+                        "tertiary-fixed-dim": "#ffb688"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "stack-md": "24px",
+                        "gutter": "16px",
+                        "container-padding": "24px",
+                        "stack-lg": "32px",
+                        "stack-sm": "12px"
+                    },
+                    "fontFamily": {
+                        "h3": ["Inter"],
+                        "h1": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h2": ["Inter"],
+                        "mono-num": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h3": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "h1": ["30px", { "lineHeight": "38px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "h2": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "mono-num": ["14px", { "lineHeight": "22px", "fontWeight": "500" }],
+                        "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md antialiased overflow-hidden flex h-screen">
+<!-- SideNavBar (Shared Component) -->
+<aside class="bg-white border-r border-gray-200 h-screen w-64 fixed left-0 top-0 flex flex-col py-4 z-50">
+<div class="px-6 mb-8 flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+<span class="text-lg font-black text-gray-900 tracking-tight">Zenvoyce</span>
+</div>
+<span class="text-xs font-label-sm text-text-secondary uppercase tracking-widest pl-8">Admin Console</span>
+</div>
+<nav class="flex-1 flex flex-col gap-1 px-4 font-sans text-sm leading-relaxed overflow-y-auto">
+<!-- Active Tab -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-blue-600 bg-blue-50 font-semibold border-r-4 border-blue-600 hover:bg-gray-50 transition-all duration-200 active:scale-[0.98] transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+                Dashboard
+            </a>
+<!-- Inactive Tabs -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 active:scale-[0.98] transition-transform" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+                Invoices
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 active:scale-[0.98] transition-transform" href="#">
+<span class="material-symbols-outlined">groups</span>
+                Customers
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 active:scale-[0.98] transition-transform" href="#">
+<span class="material-symbols-outlined">manage_accounts</span>
+                User Management
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 active:scale-[0.98] transition-transform" href="#">
+<span class="material-symbols-outlined">history_edu</span>
+                Audit Trail
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 active:scale-[0.98] transition-transform" href="#">
+<span class="material-symbols-outlined">settings_applications</span>
+                System Config
+            </a>
+</nav>
+<div class="mt-auto px-4 flex flex-col gap-1 border-t border-border-base pt-4">
+<a class="flex items-center gap-3 px-3 py-2 rounded text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 active:scale-[0.98] transition-transform font-sans text-sm leading-relaxed" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+                Documentation
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-gray-500 hover:text-error hover:bg-error-container/20 transition-all duration-200 active:scale-[0.98] transition-transform font-sans text-sm leading-relaxed" href="#">
+<span class="material-symbols-outlined">logout</span>
+                Logout
+            </a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 ml-64 flex flex-col h-screen">
+<!-- TopNavBar (Shared Component) -->
+<header class="bg-white border-b border-gray-200 flex justify-between items-center h-16 px-6 w-full sticky top-0 z-40">
+<!-- Search Bar (on_left as per JSON) -->
+<div class="flex items-center bg-surface-container rounded px-3 py-2 w-80 border border-transparent focus-within:bg-surface-card focus-within:border-primary focus-within:shadow-sm transition-all duration-200">
+<span class="material-symbols-outlined text-outline mr-2 text-[20px]">search</span>
+<input class="bg-transparent border-none outline-none w-full font-sans text-sm font-normal text-on-surface placeholder:text-outline focus:ring-0 p-0" placeholder="Search invoices, customers..." type="text"/>
+</div>
+<!-- Trailing Icons Actions -->
+<div class="flex items-center gap-4">
+<button class="text-gray-500 hover:text-blue-500 transition-colors duration-200 active:opacity-70 transition-opacity p-1.5 rounded-full hover:bg-surface-container-highest">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-gray-500 hover:text-blue-500 transition-colors duration-200 active:opacity-70 transition-opacity p-1.5 rounded-full hover:bg-surface-container-highest">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<button class="text-gray-500 hover:text-blue-500 transition-colors duration-200 active:opacity-70 transition-opacity p-1.5 rounded-full hover:bg-surface-container-highest">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full ml-2 border border-border-base overflow-hidden bg-surface-container shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all">
+<img alt="Administrator Profile" class="w-full h-full object-cover" data-alt="professional headshot of an administrator in a corporate setting with good lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDB9wJE-exdhhjmEz2XWD2jm1wyoBC485t4bqQNPY2zhL37ohwWdASzLeGk9JaHw1win7uYP849dvlmSgmxvUsX-i3aKVRhGg0K42T6su_jI37q3cStUr-AUJm-MVWgaXoLk2s7Zr67EDpCf16H7bTMM9D6HbFlgXID7Js_a4YnVr11UzBxywjLkBMQRPg3LqrAwZ9hPpaVVkSiaVWYcvaCTDyuoqom5lClkxBXW09xGgeNPoOjhw-Or-enHWJpDKZRRr0Cg9-jXmRo"/>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 overflow-y-auto p-stack-md bg-surface-background">
+<div class="max-w-7xl mx-auto flex flex-col gap-stack-md">
+<!-- Page Header -->
+<div class="flex items-end justify-between">
+<div>
+<h2 class="font-h2 text-h2 text-text-heading">Dashboard Overview</h2>
+<p class="font-body-md text-body-md text-text-secondary mt-1">Financial summary and recent administrative activity.</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-card border border-border-base rounded text-on-surface hover:bg-surface-container transition-colors font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                            Last 30 Days
+                            <span class="material-symbols-outlined text-[18px]">arrow_drop_down</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded hover:bg-primary-container transition-colors font-label-sm text-label-sm shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                            New Invoice
+                        </button>
+</div>
+</div>
+<!-- KPI Status Cards (Bento Grid Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Total Invoices -->
+<div class="bg-surface-card border border-border-base rounded-lg p-container-padding flex flex-col relative overflow-hidden group hover:border-primary/30 transition-colors">
+<div class="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<span class="font-label-sm text-label-sm text-text-secondary uppercase tracking-wider">Total Revenue</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+</div>
+<div class="relative z-10">
+<h3 class="font-h1 text-h1 text-text-heading font-mono-num tracking-tight">$1.24M</h3>
+<div class="flex items-center gap-1 mt-2 text-status-success font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span>+12.5% vs last month</span>
+</div>
+</div>
+</div>
+<!-- Paid -->
+<div class="bg-surface-card border border-border-base rounded-lg p-container-padding flex flex-col relative overflow-hidden group hover:border-status-success/30 transition-colors">
+<div class="absolute top-0 right-0 w-24 h-24 bg-status-success/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<span class="font-label-sm text-label-sm text-text-secondary uppercase tracking-wider">Invoices Paid</span>
+<span class="material-symbols-outlined text-status-success" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="relative z-10">
+<h3 class="font-h1 text-h1 text-text-heading font-mono-num tracking-tight">842</h3>
+<div class="flex items-center gap-1 mt-2 text-text-secondary font-label-sm text-label-sm">
+<span>85% collection rate</span>
+</div>
+</div>
+</div>
+<!-- Pending -->
+<div class="bg-surface-card border border-border-base rounded-lg p-container-padding flex flex-col relative overflow-hidden group hover:border-status-warning/30 transition-colors">
+<div class="absolute top-0 right-0 w-24 h-24 bg-status-warning/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<span class="font-label-sm text-label-sm text-text-secondary uppercase tracking-wider">Pending Review</span>
+<span class="material-symbols-outlined text-status-warning" style="font-variation-settings: 'FILL' 1;">schedule</span>
+</div>
+<div class="relative z-10">
+<h3 class="font-h1 text-h1 text-text-heading font-mono-num tracking-tight">124</h3>
+<div class="flex items-center gap-1 mt-2 text-text-secondary font-label-sm text-label-sm">
+<span>Awaiting approval</span>
+</div>
+</div>
+</div>
+<!-- Overdue -->
+<div class="bg-surface-card border border-border-base rounded-lg p-container-padding flex flex-col relative overflow-hidden group hover:border-status-error/30 transition-colors">
+<div class="absolute top-0 right-0 w-24 h-24 bg-status-error/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<span class="font-label-sm text-label-sm text-text-secondary uppercase tracking-wider">Overdue</span>
+<span class="material-symbols-outlined text-status-error" style="font-variation-settings: 'FILL' 1;">error</span>
+</div>
+<div class="relative z-10">
+<h3 class="font-h1 text-h1 text-status-error font-mono-num tracking-tight">$45.2k</h3>
+<div class="flex items-center gap-1 mt-2 text-status-error font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">warning</span>
+<span>Requires attention</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Charts & Complex Data Area -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Monthly Trends Chart (CSS visualization) -->
+<div class="lg:col-span-2 bg-surface-card border border-border-base rounded-lg p-container-padding flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-h3 text-h3 text-text-heading">Revenue Trends</h3>
+<button class="text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<!-- Pseudo-chart using flex and gradients for modern structural look -->
+<div class="flex-1 flex items-end gap-2 h-64 pt-4 border-b border-border-base relative">
+<!-- Y-axis labels -->
+<div class="absolute left-0 top-0 h-full flex flex-col justify-between text-[10px] text-text-secondary font-mono-num pb-6 -ml-2">
+<span>150k</span>
+<span>100k</span>
+<span>50k</span>
+<span>0</span>
+</div>
+<!-- Bars -->
+<div class="flex-1 flex items-end gap-1 sm:gap-3 ml-8 h-full pb-1">
+<div class="flex-1 bg-surface-container rounded-t-sm h-[30%] relative group cursor-pointer hover:bg-primary-fixed-dim transition-all"><span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-text-secondary font-mono-num">Jan</span></div>
+<div class="flex-1 bg-surface-container rounded-t-sm h-[45%] relative group cursor-pointer hover:bg-primary-fixed-dim transition-all"><span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-text-secondary font-mono-num">Feb</span></div>
+<div class="flex-1 bg-surface-container rounded-t-sm h-[40%] relative group cursor-pointer hover:bg-primary-fixed-dim transition-all"><span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-text-secondary font-mono-num">Mar</span></div>
+<div class="flex-1 bg-surface-container rounded-t-sm h-[60%] relative group cursor-pointer hover:bg-primary-fixed-dim transition-all"><span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-text-secondary font-mono-num">Apr</span></div>
+<div class="flex-1 bg-surface-container rounded-t-sm h-[55%] relative group cursor-pointer hover:bg-primary-fixed-dim transition-all"><span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-text-secondary font-mono-num">May</span></div>
+<div class="flex-1 bg-primary/80 rounded-t-sm h-[85%] relative group cursor-pointer hover:bg-primary transition-all shadow-[0_0_10px_rgba(0,93,170,0.2)]"><span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-text-heading font-mono-num font-semibold">Jun</span></div>
+</div>
+</div>
+</div>
+<!-- Quick Actions / System Health -->
+<div class="bg-surface-card border border-border-base rounded-lg p-container-padding flex flex-col">
+<h3 class="font-h3 text-h3 text-text-heading mb-6">System Health</h3>
+<div class="flex flex-col gap-4">
+<!-- Metric 1 -->
+<div class="flex items-center gap-4 p-3 rounded border border-border-base bg-surface">
+<div class="w-10 h-10 rounded-full bg-status-success/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-status-success">api</span>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-label-sm text-label-sm text-text-heading truncate">API Uptime</h4>
+<p class="font-body-md text-body-md text-text-secondary text-[12px]">Last 30 days</p>
+</div>
+<span class="font-mono-num text-mono-num text-status-success font-semibold">99.9%</span>
+</div>
+<!-- Metric 2 -->
+<div class="flex items-center gap-4 p-3 rounded border border-border-base bg-surface">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary">sync</span>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-label-sm text-label-sm text-text-heading truncate">Sync Status</h4>
+<p class="font-body-md text-body-md text-text-secondary text-[12px]">ERP Integration</p>
+</div>
+<span class="font-label-sm text-label-sm text-text-secondary">2m ago</span>
+</div>
+<!-- Metric 3 -->
+<div class="flex items-center gap-4 p-3 rounded border border-border-base bg-surface">
+<div class="w-10 h-10 rounded-full bg-status-warning/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-status-warning">storage</span>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-label-sm text-label-sm text-text-heading truncate">Storage Usage</h4>
+<div class="w-full bg-surface-variant h-1.5 rounded-full mt-1.5">
+<div class="bg-status-warning h-1.5 rounded-full w-[78%]"></div>
+</div>
+</div>
+<span class="font-mono-num text-mono-num text-text-heading">78%</span>
+</div>
+</div>
+<button class="mt-auto w-full py-2 text-center text-primary font-label-sm text-label-sm hover:underline hover:text-primary-container transition-colors">
+                            View Full Diagnostics
+                        </button>
+</div>
+</div>
+<!-- Recent Activity Table -->
+<div class="bg-surface-card border border-border-base rounded-lg flex flex-col overflow-hidden">
+<div class="p-container-padding border-b border-border-base flex justify-between items-center bg-white">
+<h3 class="font-h3 text-h3 text-text-heading">Recent Invoices</h3>
+<button class="flex items-center gap-1 text-primary hover:text-primary-container transition-colors font-label-sm text-label-sm">
+                            View All <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse zebra-table">
+<thead>
+<tr class="bg-surface border-b border-border-base">
+<th class="px-6 py-3 font-label-sm text-label-sm text-text-secondary font-medium uppercase tracking-wider">Invoice ID</th>
+<th class="px-6 py-3 font-label-sm text-label-sm text-text-secondary font-medium uppercase tracking-wider">Client</th>
+<th class="px-6 py-3 font-label-sm text-label-sm text-text-secondary font-medium uppercase tracking-wider">Date</th>
+<th class="px-6 py-3 font-label-sm text-label-sm text-text-secondary font-medium uppercase tracking-wider">Amount</th>
+<th class="px-6 py-3 font-label-sm text-label-sm text-text-secondary font-medium uppercase tracking-wider">Status</th>
+<th class="px-6 py-3 font-label-sm text-label-sm text-text-secondary font-medium uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface">
+<tr class="border-b border-border-base hover:bg-surface-container/50 transition-colors group">
+<td class="px-6 py-4 font-mono-num font-medium text-primary cursor-pointer hover:underline">INV-2023-089</td>
+<td class="px-6 py-4">Acme Corp International</td>
+<td class="px-6 py-4 text-text-secondary">Oct 24, 2023</td>
+<td class="px-6 py-4 font-mono-num font-medium">$12,450.00</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-status-success/10 text-status-success font-label-sm text-[11px] border border-status-success/20">
+<span class="w-1.5 h-1.5 rounded-full bg-status-success"></span>
+                                            Paid
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1 text-text-secondary hover:text-primary transition-colors" title="Download PDF"><span class="material-symbols-outlined text-[18px]">download</span></button>
+<button class="p-1 text-text-secondary hover:text-primary transition-colors" title="View Details"><span class="material-symbols-outlined text-[18px]">visibility</span></button>
+</div>
+</td>
+</tr>
+<tr class="border-b border-border-base hover:bg-surface-container/50 transition-colors group">
+<td class="px-6 py-4 font-mono-num font-medium text-primary cursor-pointer hover:underline">INV-2023-090</td>
+<td class="px-6 py-4">Globex Corporation</td>
+<td class="px-6 py-4 text-text-secondary">Oct 22, 2023</td>
+<td class="px-6 py-4 font-mono-num font-medium">$3,200.50</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-status-warning/10 text-[#d48806] font-label-sm text-[11px] border border-status-warning/20">
+<span class="w-1.5 h-1.5 rounded-full bg-[#d48806]"></span>
+                                            Pending
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1 text-text-secondary hover:text-primary transition-colors" title="Download PDF"><span class="material-symbols-outlined text-[18px]">download</span></button>
+<button class="p-1 text-text-secondary hover:text-primary transition-colors" title="View Details"><span class="material-symbols-outlined text-[18px]">visibility</span></button>
+</div>
+</td>
+</tr>
+<tr class="border-b border-border-base hover:bg-surface-container/50 transition-colors group">
+<td class="px-6 py-4 font-mono-num font-medium text-primary cursor-pointer hover:underline">INV-2023-091</td>
+<td class="px-6 py-4">Initech LLC</td>
+<td class="px-6 py-4 text-text-secondary">Oct 15, 2023</td>
+<td class="px-6 py-4 font-mono-num font-medium text-status-error">$8,900.00</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-status-error/10 text-status-error font-label-sm text-[11px] border border-status-error/20">
+<span class="w-1.5 h-1.5 rounded-full bg-status-error"></span>
+                                            Overdue
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1 text-text-secondary hover:text-primary transition-colors" title="Send Reminder"><span class="material-symbols-outlined text-[18px]">forward_to_inbox</span></button>
+<button class="p-1 text-text-secondary hover:text-primary transition-colors" title="View Details"><span class="material-symbols-outlined text-[18px]">visibility</span></button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container/50 transition-colors group">
+<td class="px-6 py-4 font-mono-num font-medium text-primary cursor-pointer hover:underline">INV-2023-092</td>
+<td class="px-6 py-4">Soylent Corp</td>
+<td class="px-6 py-4 text-text-secondary">Oct 10, 2023</td>
+<td class="px-6 py-4 font-mono-num font-medium">$1,150.00</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-variant text-text-secondary font-label-sm text-[11px] border border-border-base">
+<span class="w-1.5 h-1.5 rounded-full bg-text-secondary"></span>
+                                            Draft
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1 text-text-secondary hover:text-primary transition-colors" title="Edit"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1 text-text-secondary hover:text-error transition-colors" title="Delete"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
