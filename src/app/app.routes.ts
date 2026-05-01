@@ -23,7 +23,9 @@ export const routes: Routes = [
       { path: 'roles', loadComponent: () => import('./pages/system/roles-page.component').then((m) => m.RolesPageComponent) },
       { path: 'companies', loadComponent: () => import('./pages/catalog/companies-page.component').then((m) => m.CompaniesPageComponent) },
       { path: 'customers', loadComponent: () => import('./pages/catalog/customers-page.component').then((m) => m.CustomersPageComponent) },
-      { path: 'products', loadComponent: () => import('./pages/catalog/products-page.component').then((m) => m.ProductsPageComponent) }
+      { path: 'products', loadComponent: () => import('./pages/catalog/products-page.component').then((m) => m.ProductsPageComponent) },
+      { path: 'templates/setup', loadComponent: () => import('./pages/templates/templates-setup-page.component').then((m) => m.TemplatesSetupPageComponent) },
+      { path: 'templates/warehouse', loadComponent: () => import('./pages/templates/templates-warehouse-page.component').then((m) => m.TemplatesWarehousePageComponent) }
     ]
   },
   { path: '**', redirectTo: '/auth/login' }
