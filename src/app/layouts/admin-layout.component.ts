@@ -55,6 +55,11 @@ import { SessionService } from '../core/services/session.service';
               <li nz-menu-item routerLink="/admin/templates/warehouse" routerLinkActive="ant-menu-item-selected">Kho mẫu phát hành</li>
             </ul>
           </li>
+          <li nz-submenu nzTitle="Nghiệp vụ Hóa đơn">
+            <ul>
+              <li nz-menu-item routerLink="/admin/invoices" routerLinkActive="ant-menu-item-selected">Quản lý Hóa đơn</li>
+            </ul>
+          </li>
         </ul>
       </nz-sider>
 
