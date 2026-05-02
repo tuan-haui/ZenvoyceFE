@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
@@ -7,11 +8,13 @@ import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { AuthFacadeService } from '../core/services/auth-facade.service';
+import { MenuTreeNode, NavigationService } from '../core/services/navigation.service';
 import { SessionService } from '../core/services/session.service';
 
 @Component({
   selector: 'app-admin-layout',
   imports: [
+    CommonModule,
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
@@ -35,32 +38,28 @@ import { SessionService } from '../core/services/session.service';
           <h1>Zenvoyce</h1>
         </div>
         <ul nz-menu nzTheme="dark" nzMode="inline" [nzInlineCollapsed]="isCollapsed">
-          <li nz-menu-item routerLink="/admin/dashboard" routerLinkActive="ant-menu-item-selected">Dashboard</li>
-          <li nz-submenu nzTitle="Quản trị hệ thống">
-            <ul>
-              <li nz-menu-item routerLink="/admin/users" routerLinkActive="ant-menu-item-selected">Quản lý người dùng</li>
-              <li nz-menu-item routerLink="/admin/roles" routerLinkActive="ant-menu-item-selected">Phân quyền</li>
-            </ul>
-          </li>
-          <li nz-submenu nzTitle="Quản lý danh mục">
-            <ul>
-              <li nz-menu-item routerLink="/admin/companies" routerLinkActive="ant-menu-item-selected">Công ty</li>
-              <li nz-menu-item routerLink="/admin/customers" routerLinkActive="ant-menu-item-selected">Khách hàng</li>
-              <li nz-menu-item routerLink="/admin/products" routerLinkActive="ant-menu-item-selected">Hàng hóa/Dịch vụ</li>
-            </ul>
-          </li>
-          <li nz-submenu nzTitle="Quản lý mẫu hóa đơn">
-            <ul>
-              <li nz-menu-item routerLink="/admin/templates/setup" routerLinkActive="ant-menu-item-selected">Thiết lập mẫu</li>
-              <li nz-menu-item routerLink="/admin/templates/warehouse" routerLinkActive="ant-menu-item-selected">Kho mẫu phát hành</li>
-            </ul>
-          </li>
-          <li nz-submenu nzTitle="Nghiệp vụ Hóa đơn">
-            <ul>
-              <li nz-menu-item routerLink="/admin/invoices" routerLinkActive="ant-menu-item-selected">Quản lý Hóa đơn</li>
-            </ul>
-          </li>
+          <ng-container *ngTemplateOutlet="menuTpl; context: { $implicit: menuTree() }"></ng-container>
         </ul>
+        <ng-template #menuTpl let-nodes>
+          <ng-container *ngFor="let n of nodes">
+            <ng-container *ngIf="n.children && n.children.length > 0">
+              <li nz-submenu [nzTitle]="n.title">
+                <ul>
+                  <ng-container *ngTemplateOutlet="menuTpl; context: { $implicit: n.children }"></ng-container>
+                </ul>
+              </li>
+            </ng-container>
+            <ng-container *ngIf="!n.children || n.children.length === 0">
+              <li
+                nz-menu-item
+                [routerLink]="n.link || '/admin/dashboard'"
+                routerLinkActive="ant-menu-item-selected"
+              >
+                {{ n.title }}
+              </li>
+            </ng-container>
+          </ng-container>
+        </ng-template>
       </nz-sider>
 
       <nz-layout>
@@ -85,38 +84,75 @@ import { SessionService } from '../core/services/session.service';
       </nz-layout>
     </nz-layout>
   `,
-  styles: [`
-    .admin-layout { min-height: 100vh; }
-    .menu-sidebar { box-shadow: 2px 0 8px rgba(15, 23, 42, 0.14); }
-    .sidebar-logo {
-      height: 64px; padding: 0 20px; display: flex; align-items: center; gap: 10px;
-      background: #001529; color: #fff;
-    }
-    .logo-dot {
-      width: 12px; height: 12px; border-radius: 999px; background: #52c41a;
-      display: inline-block;
-    }
-    .sidebar-logo h1 { color: #fff; margin: 0; font-size: 18px; }
-    .header {
-      background: #fff; padding: 0 16px; display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
-    }
-    .user-area { cursor: pointer; font-weight: 500; }
-    .content { margin: 20px; }
-  `]
+  styles: [
+    `
+      .admin-layout {
+        min-height: 100vh;
+      }
+      .menu-sidebar {
+        box-shadow: 2px 0 8px rgba(15, 23, 42, 0.14);
+      }
+      .sidebar-logo {
+        height: 64px;
+        padding: 0 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #001529;
+        color: #fff;
+      }
+      .logo-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        background: #52c41a;
+        display: inline-block;
+      }
+      .sidebar-logo h1 {
+        color: #fff;
+        margin: 0;
+        font-size: 18px;
+      }
+      .header {
+        background: #fff;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+      }
+      .user-area {
+        cursor: pointer;
+        font-weight: 500;
+      }
+      .content {
+        margin: 20px;
+      }
+    `
+  ]
 })
-export class AdminLayoutComponent {
+export class AdminLayoutComponent implements OnInit {
+  private readonly navigation = inject(NavigationService);
+  private readonly sessionService = inject(SessionService);
   isCollapsed = false;
+
+  readonly menuTree = (): MenuTreeNode[] => this.navigation.tree();
+
   get username(): string {
     return this.sessionService.getUsername();
   }
 
   constructor(
     private readonly authFacade: AuthFacadeService,
-    private readonly sessionService: SessionService,
     private readonly message: NzMessageService,
     private readonly router: Router
   ) {}
+
+  ngOnInit(): void {
+    if (!this.navigation.loaded()) {
+      this.navigation.refresh().subscribe({ error: () => void 0 });
+    }
+  }
 
   logout(): void {
     this.authFacade.logout().subscribe({

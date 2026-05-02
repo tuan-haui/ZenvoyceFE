@@ -93,9 +93,13 @@ export class LoginPageComponent {
   }
 
   openForgotPassword(): void {
-    this.modal.info({
+    this.modal.create({
       nzTitle: 'Quên mật khẩu',
-      nzContent: 'Nhập email tại màn hình reset mật khẩu (phase tiếp theo sẽ tích hợp OTP/Link).'
+      nzContent: 'Nhập email đã đăng ký. Hệ thống sẽ gửi hướng dẫn đặt lại mật khẩu (cần triển khai API gửi mail/OTP ở backend).',
+      nzClosable: true,
+      nzOnOk: () => {
+        this.message.info('Yêu cầu đã ghi nhận (mock). Vui lòng liên hệ quản trị nếu cần gấp.');
+      }
     });
   }
 }

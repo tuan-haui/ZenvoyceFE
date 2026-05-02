@@ -2395,6 +2395,7 @@ export class CreateInvoiceCommand implements ICreateInvoiceCommand {
     kyhieu?: string | undefined;
     ngaylap?: Date;
     hanghoas?: InvoiceLineRequestDto[] | undefined;
+    thamChieuHoadonId?: string | undefined;
 
     constructor(data?: ICreateInvoiceCommand) {
         if (data) {
@@ -2417,6 +2418,7 @@ export class CreateInvoiceCommand implements ICreateInvoiceCommand {
                 for (let item of _data["hanghoas"])
                     this.hanghoas!.push(InvoiceLineRequestDto.fromJS(item));
             }
+            this.thamChieuHoadonId = _data["thamChieuHoadonId"];
         }
     }
 
@@ -2439,6 +2441,7 @@ export class CreateInvoiceCommand implements ICreateInvoiceCommand {
             for (let item of this.hanghoas)
                 data["hanghoas"].push(item ? item.toJSON() : undefined as any);
         }
+        data["thamChieuHoadonId"] = this.thamChieuHoadonId;
         return data;
     }
 }
@@ -2450,6 +2453,7 @@ export interface ICreateInvoiceCommand {
     kyhieu?: string | undefined;
     ngaylap?: Date;
     hanghoas?: InvoiceLineRequestDto[] | undefined;
+    thamChieuHoadonId?: string | undefined;
 }
 
 export class CreateMenuCommand implements ICreateMenuCommand {
@@ -2592,6 +2596,8 @@ export class CreateUserCommand implements ICreateUserCommand {
     madonvi?: string | undefined;
     tendangnhap?: string | undefined;
     matkhau?: string | undefined;
+    hoten?: string | undefined;
+    email?: string | undefined;
     dienthoai?: string | undefined;
     trangthai?: number;
 
@@ -2609,6 +2615,8 @@ export class CreateUserCommand implements ICreateUserCommand {
             this.madonvi = _data["madonvi"];
             this.tendangnhap = _data["tendangnhap"];
             this.matkhau = _data["matkhau"];
+            this.hoten = _data["hoten"];
+            this.email = _data["email"];
             this.dienthoai = _data["dienthoai"];
             this.trangthai = _data["trangthai"];
         }
@@ -2626,6 +2634,8 @@ export class CreateUserCommand implements ICreateUserCommand {
         data["madonvi"] = this.madonvi;
         data["tendangnhap"] = this.tendangnhap;
         data["matkhau"] = this.matkhau;
+        data["hoten"] = this.hoten;
+        data["email"] = this.email;
         data["dienthoai"] = this.dienthoai;
         data["trangthai"] = this.trangthai;
         return data;
@@ -2636,6 +2646,8 @@ export interface ICreateUserCommand {
     madonvi?: string | undefined;
     tendangnhap?: string | undefined;
     matkhau?: string | undefined;
+    hoten?: string | undefined;
+    email?: string | undefined;
     dienthoai?: string | undefined;
     trangthai?: number;
 }
@@ -2935,6 +2947,8 @@ export interface IUpdateProductCommand {
 export class UpdateUserCommand implements IUpdateUserCommand {
     id?: string;
     madonvi?: string | undefined;
+    hoten?: string | undefined;
+    email?: string | undefined;
     dienthoai?: string | undefined;
     trangthai?: number;
 
@@ -2951,6 +2965,8 @@ export class UpdateUserCommand implements IUpdateUserCommand {
         if (_data) {
             this.id = _data["id"];
             this.madonvi = _data["madonvi"];
+            this.hoten = _data["hoten"];
+            this.email = _data["email"];
             this.dienthoai = _data["dienthoai"];
             this.trangthai = _data["trangthai"];
         }
@@ -2967,6 +2983,8 @@ export class UpdateUserCommand implements IUpdateUserCommand {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
         data["madonvi"] = this.madonvi;
+        data["hoten"] = this.hoten;
+        data["email"] = this.email;
         data["dienthoai"] = this.dienthoai;
         data["trangthai"] = this.trangthai;
         return data;
@@ -2976,6 +2994,8 @@ export class UpdateUserCommand implements IUpdateUserCommand {
 export interface IUpdateUserCommand {
     id?: string;
     madonvi?: string | undefined;
+    hoten?: string | undefined;
+    email?: string | undefined;
     dienthoai?: string | undefined;
     trangthai?: number;
 }

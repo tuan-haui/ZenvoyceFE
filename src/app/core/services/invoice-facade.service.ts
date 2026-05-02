@@ -51,6 +51,7 @@ export interface CreateInvoicePayload {
   kyhieu?: string;
   ngaylap: string;
   hanghoas: InvoiceLineRequestDto[];
+  thamChieuHoadonId?: string;
 }
 
 // --- Lookup DTOs ---
@@ -93,6 +94,15 @@ export interface InvoiceFilters {
   trangthai?: string;
   tuNgay?: Date;
   denNgay?: Date;
+}
+
+export interface SalesReportRowDto {
+  khachhangId: string;
+  tenKhachHang: string;
+  soHoaDon: number;
+  tongTienHang: number;
+  tienThue: number;
+  tongThanhToan: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -153,6 +163,38 @@ export class InvoiceFacadeService {
 
   getInvoiceHistory(id: string): Observable<InvoiceHistoryItemDto[]> {
     return this.http.get<InvoiceHistoryItemDto[]>(`${this.base}/api/invoices/${id}/history`, {
+      withCredentials: true
+    });
+  }
+
+  sendInvoiceEmail(id: string): Observable<{ sent: boolean; message: string }> {
+    return this.http.post<{ sent: boolean; message: string }>(
+      `${this.base}/api/invoices/${id}/send-email`,
+      {},
+      { withCredentials: true }
+    );
+  }
+
+  createAdjustmentInvoice(sourceId: string, payload: CreateInvoicePayload): Observable<CreateInvoiceResultDto> {
+    const body = {
+      ...payload,
+      ngaylap: payload.ngaylap
+    };
+    return this.http.post<CreateInvoiceResultDto>(
+      `${this.base}/api/invoices/${sourceId}/adjust`,
+      body,
+      { withCredentials: true }
+    );
+  }
+
+  getSalesReport(filters?: { donviId?: string; khachhangId?: string; tuNgay?: Date; denNgay?: Date }): Observable<SalesReportRowDto[]> {
+    let params = new HttpParams();
+    if (filters?.donviId) params = params.set('donviId', filters.donviId);
+    if (filters?.khachhangId) params = params.set('khachhangId', filters.khachhangId);
+    if (filters?.tuNgay) params = params.set('tuNgay', filters.tuNgay.toISOString());
+    if (filters?.denNgay) params = params.set('denNgay', filters.denNgay.toISOString());
+    return this.http.get<SalesReportRowDto[]>(`${this.base}/api/invoices/reports/sales`, {
+      params,
       withCredentials: true
     });
   }

@@ -63,9 +63,10 @@ const MOCK_CUSTOMERS: CustomerVm[] = [
         <p class="page-subtitle">Quản lý thông tin khách hàng, mã số thuế và hóa đơn.</p>
       </div>
       <div class="page-header-actions">
-        <button nz-button nzType="default">
+        <input #csvIn type="file" accept=".csv,.txt,text/csv" hidden (change)="onImportCsv($event)" />
+        <button nz-button nzType="default" (click)="csvIn.click()" nz-tooltip nzTooltipTitle="CSV: tenkhachhang,masothue,email,dienthoai (dòng đầu tiêu đề)">
           <nz-icon nzType="upload" nzTheme="outline"></nz-icon>
-          Import từ Excel
+          Import CSV
         </button>
         <button nz-button nzType="primary" (click)="openCreate()">
           <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
@@ -585,5 +586,70 @@ export class CustomersPageComponent implements OnInit {
       },
       error: (e) => this.apiError.show(e)
     });
+  }
+
+  onImportCsv(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file || !this.companyId) {
+      this.message.warning('Chọn công ty trước khi import.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result ?? '');
+      const lines = text
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
+      if (lines.length < 2) {
+        this.message.error('File CSV không hợp lệ.');
+        return;
+      }
+      const header = lines[0].toLowerCase();
+      const hasHeader = /ten|name|email|mst|thue/.test(header);
+      const dataLines = hasHeader ? lines.slice(1) : lines;
+      let ok = 0;
+      const run = (i: number) => {
+        if (i >= dataLines.length) {
+          this.message.success(`Import xong: ${ok} dòng.`);
+          return;
+        }
+        const parts = dataLines[i].split(/[,;]/).map((p) => p.trim().replace(/^"|"$/g, ''));
+        const [tenkhachhang, masothue, email, dienthoai] = [parts[0] ?? '', parts[1] ?? '', parts[2] ?? '', parts[3] ?? ''];
+        if (!tenkhachhang) {
+          run(i + 1);
+          return;
+        }
+        this.facade
+          .createCustomer(
+            new CreateCustomerCommand({
+              donviid: this.companyId,
+              tenkhachhang,
+              masothue: masothue || undefined,
+              email: email || undefined,
+              dienthoai: dienthoai || undefined
+            })
+          )
+          .subscribe({
+            next: () => {
+              ok++;
+              this.customers.unshift({
+                id: `csv-${Date.now()}-${i}`,
+                tenkhachhang,
+                masothue,
+                email: email ?? '',
+                dienthoai: dienthoai ?? ''
+              });
+              this.applyFilter(this.searchKeyword);
+              run(i + 1);
+            },
+            error: () => run(i + 1)
+          });
+      };
+      run(0);
+    };
+    reader.readAsText(file, 'UTF-8');
   }
 }

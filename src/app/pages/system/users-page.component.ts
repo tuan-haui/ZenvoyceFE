@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -13,20 +13,13 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { CreateUserCommand, UpdateUserCommand } from '../../core/services/app.service';
 import { ApiErrorService } from '../../core/services/api-error.service';
-import { UserRoleFacadeService } from '../../core/services/user-role-facade.service';
-
-interface UserVm {
-  id: string;
-  username: string;
-  phone: string;
-  madonvi: string;
-  status: number;
-}
+import { UserApiDto, UserRoleFacadeService } from '../../core/services/user-role-facade.service';
 
 @Component({
   selector: 'app-users-page',
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     NzTableModule,
     NzButtonModule,
@@ -46,12 +39,20 @@ interface UserVm {
     <nz-table [nzData]="users" [nzLoading]="loading" [nzFrontPagination]="false">
       <thead>
         <tr>
-          <th>Tên đăng nhập</th><th>Điện thoại</th><th>Mã đơn vị</th><th>Trạng thái</th><th>Thao tác</th>
+          <th>Họ tên</th>
+          <th>Tên đăng nhập</th>
+          <th>Email</th>
+          <th>Điện thoại</th>
+          <th>Mã đơn vị</th>
+          <th>Trạng thái</th>
+          <th>Thao tác</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let user of users">
+          <td>{{ user.hoten || '—' }}</td>
           <td>{{ user.username }}</td>
+          <td>{{ user.email || '—' }}</td>
           <td>{{ user.phone }}</td>
           <td>{{ user.madonvi }}</td>
           <td><nz-tag [nzColor]="user.status === 1 ? 'green' : 'red'">{{ user.status === 1 ? 'Hoạt động' : 'Khóa' }}</nz-tag></td>
@@ -64,27 +65,72 @@ interface UserVm {
       </tbody>
     </nz-table>
 
+    <nz-modal
+      [(nzVisible)]="pwdVisible"
+      nzTitle="Đổi mật khẩu"
+      (nzOnCancel)="pwdVisible = false"
+      (nzOnOk)="submitPwd()"
+    >
+      <div *nzModalContent class="pwd-modal">
+        <input nz-input type="password" [(ngModel)]="pwdOld" placeholder="Mật khẩu cũ" />
+        <input nz-input type="password" [(ngModel)]="pwdNew" placeholder="Mật khẩu mới" />
+      </div>
+    </nz-modal>
+
     <nz-modal [(nzVisible)]="formVisible" [nzTitle]="editingUser ? 'Cập nhật người dùng' : 'Thêm người dùng'" (nzOnCancel)="formVisible = false" (nzOnOk)="save()">
-      <form nz-form [formGroup]="form">
+      <form nz-form [formGroup]="form" *nzModalContent>
+        <nz-form-item><nz-form-control nzErrorTip="Nhập họ tên"><input nz-input formControlName="hoten" placeholder="Họ tên" /></nz-form-control></nz-form-item>
         <nz-form-item><nz-form-control nzErrorTip="Nhập tên đăng nhập"><input nz-input formControlName="username" /></nz-form-control></nz-form-item>
-        <nz-form-item><nz-form-control><input nz-input formControlName="madonvi" placeholder="Mã đơn vị" /></nz-form-control></nz-form-item>
+        <nz-form-item><nz-form-control><input nz-input formControlName="email" placeholder="Email" type="email" /></nz-form-control></nz-form-item>
+        <nz-form-item><nz-form-control><input nz-input formControlName="madonvi" placeholder="Mã đơn vị (Guid)" /></nz-form-control></nz-form-item>
         <nz-form-item><nz-form-control><input nz-input formControlName="phone" placeholder="Số điện thoại" /></nz-form-control></nz-form-item>
         <nz-form-item *ngIf="!editingUser"><nz-form-control><input nz-input formControlName="password" type="password" placeholder="Mật khẩu" /></nz-form-control></nz-form-item>
-        <label nz-switch formControlName="active"></label>
+        <label nz-switch formControlName="active"></label> Hoạt động
       </form>
     </nz-modal>
   `,
-  styles: [`.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;} td a{margin-right:10px;}`]
+  styles: [
+    `
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      td a {
+        margin-right: 10px;
+      }
+      .pwd-modal input {
+        display: block;
+        margin-bottom: 8px;
+      }
+    `
+  ]
 })
 export class UsersPageComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
-  users: UserVm[] = [];
+  users: Array<{
+    id: string;
+    username: string;
+    hoten?: string;
+    email?: string;
+    phone: string;
+    madonvi: string;
+    status: number;
+  }> = [];
   loading = false;
   formVisible = false;
-  editingUser: UserVm | null = null;
+  editingUser: (typeof this.users)[0] | null = null;
+  pwdVisible = false;
+  pwdUser: (typeof this.users)[0] | null = null;
+  pwdOld = '';
+  pwdNew = '';
+
   form = this.fb.nonNullable.group({
+    hoten: [''],
     username: ['', Validators.required],
-    madonvi: ['DV001'],
+    email: [''],
+    madonvi: [''],
     phone: [''],
     password: [''],
     active: [true]
@@ -96,32 +142,53 @@ export class UsersPageComponent implements OnInit {
     private readonly message: NzMessageService
   ) {}
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    this.load();
+  }
 
   load(): void {
     this.loading = true;
-    this.facade.getUsers().pipe(finalize(() => (this.loading = false))).subscribe({
-      next: () => {
-        if (!this.users.length) {
-          this.users = [
-            { id: 'u-1', username: 'admin', phone: '0987000001', madonvi: 'DV001', status: 1 },
-            { id: 'u-2', username: 'ketoan01', phone: '0987000002', madonvi: 'DV001', status: 0 }
-          ];
-        }
-      },
-      error: (e) => this.apiError.show(e)
-    });
+    this.facade
+      .getUsers(1, 100)
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: (res) => {
+          const items = res.items ?? [];
+          this.users = items.map((u: UserApiDto) => this.mapUser(u));
+        },
+        error: (e) => this.apiError.show(e)
+      });
+  }
+
+  private mapUser(u: UserApiDto): (typeof this.users)[0] {
+    return {
+      id: u.id,
+      username: u.tendangnhap ?? '',
+      hoten: u.hoten ?? undefined,
+      email: u.email ?? undefined,
+      phone: u.dienthoai ?? '',
+      madonvi: u.madonvi ?? '',
+      status: typeof u.trangthai === 'number' ? u.trangthai : 1
+    };
   }
 
   openCreate(): void {
     this.editingUser = null;
-    this.form.reset({ username: '', madonvi: 'DV001', phone: '', password: '', active: true });
+    this.form.reset({ hoten: '', username: '', email: '', madonvi: '', phone: '', password: '', active: true });
     this.formVisible = true;
   }
 
-  openEdit(user: UserVm): void {
+  openEdit(user: (typeof this.users)[0]): void {
     this.editingUser = user;
-    this.form.patchValue({ username: user.username, phone: user.phone, madonvi: user.madonvi, active: user.status === 1, password: '' });
+    this.form.patchValue({
+      hoten: user.hoten ?? '',
+      username: user.username,
+      email: user.email ?? '',
+      madonvi: user.madonvi,
+      phone: user.phone,
+      password: '',
+      active: user.status === 1
+    });
     this.formVisible = true;
   }
 
@@ -129,46 +196,74 @@ export class UsersPageComponent implements OnInit {
     if (this.form.invalid) return;
     const data = this.form.getRawValue();
     const status = data.active ? 1 : 0;
+    const madonviGuid = data.madonvi?.trim() ? data.madonvi.trim() : undefined;
 
     if (this.editingUser) {
-      const cmd = new UpdateUserCommand({ id: this.editingUser.id, madonvi: data.madonvi, dienthoai: data.phone, trangthai: status });
+      const cmd = new UpdateUserCommand({
+        id: this.editingUser.id,
+        madonvi: madonviGuid,
+        hoten: data.hoten?.trim() || undefined,
+        email: data.email?.trim() || undefined,
+        dienthoai: data.phone?.trim() || undefined,
+        trangthai: status
+      });
       this.facade.updateUser(this.editingUser.id, cmd).subscribe({
         next: () => {
-          if (this.editingUser) {
-            Object.assign(this.editingUser, { phone: data.phone, madonvi: data.madonvi, status });
-          }
           this.message.success('Cập nhật người dùng thành công');
           this.formVisible = false;
+          this.load();
         },
         error: (e) => this.apiError.show(e)
       });
       return;
     }
 
-    const cmd = new CreateUserCommand({ tendangnhap: data.username, matkhau: data.password, madonvi: data.madonvi, dienthoai: data.phone, trangthai: status });
+    const cmd = new CreateUserCommand({
+      tendangnhap: data.username.trim(),
+      matkhau: data.password,
+      madonvi: madonviGuid,
+      hoten: data.hoten?.trim() || undefined,
+      email: data.email?.trim() || undefined,
+      dienthoai: data.phone?.trim() || undefined,
+      trangthai: status
+    });
     this.facade.createUser(cmd).subscribe({
       next: () => {
-        this.users = [{ id: `u-${Date.now()}`, username: data.username, phone: data.phone, madonvi: data.madonvi, status }, ...this.users];
         this.message.success('Thêm người dùng thành công');
         this.formVisible = false;
+        this.load();
       },
       error: (e) => this.apiError.show(e)
     });
   }
 
-  deleteUser(user: UserVm): void {
+  deleteUser(user: (typeof this.users)[0]): void {
     this.facade.deleteUser(user.id).subscribe({
       next: () => {
-        this.users = this.users.filter((u) => u.id !== user.id);
         this.message.success('Đã khóa/xóa người dùng');
+        this.load();
       },
       error: (e) => this.apiError.show(e)
     });
   }
 
-  changePassword(user: UserVm): void {
-    this.facade.changePassword(user.id, 'old-password', 'new-password@123').subscribe({
-      next: () => this.message.success(`Đổi mật khẩu tạm cho ${user.username} thành công`),
+  changePassword(user: (typeof this.users)[0]): void {
+    this.pwdUser = user;
+    this.pwdOld = '';
+    this.pwdNew = '';
+    this.pwdVisible = true;
+  }
+
+  submitPwd(): void {
+    if (!this.pwdUser || !this.pwdOld || !this.pwdNew) {
+      this.message.warning('Nhập đủ mật khẩu cũ và mới');
+      return;
+    }
+    this.facade.changePassword(this.pwdUser.id, this.pwdOld, this.pwdNew).subscribe({
+      next: () => {
+        this.message.success('Đổi mật khẩu thành công');
+        this.pwdVisible = false;
+      },
       error: (e) => this.apiError.show(e)
     });
   }

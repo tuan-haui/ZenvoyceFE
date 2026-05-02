@@ -192,6 +192,23 @@ interface LineItemVm {
                   <nz-icon nzType="stop" nzTheme="outline"></nz-icon>
                 </button>
 
+                <!-- Issued → Gửi email -->
+                <button *ngIf="inv.trangthai === 'Issued'"
+                  nz-button nzType="default" nzSize="small"
+                  nz-tooltip nzTooltipTitle="Gửi email cho khách"
+                  [nzLoading]="actionLoading === inv.id + '_email'"
+                  (click)="sendEmail(inv)">
+                  <nz-icon nzType="mail" nzTheme="outline"></nz-icon>
+                </button>
+
+                <!-- Issued → Lập điều chỉnh -->
+                <button *ngIf="inv.trangthai === 'Issued'"
+                  nz-button nzType="link" nzSize="small"
+                  nz-tooltip nzTooltipTitle="Lập hóa đơn điều chỉnh"
+                  (click)="startAdjustment(inv)">
+                  <nz-icon nzType="diff" nzTheme="outline"></nz-icon>
+                </button>
+
                 <!-- Lịch sử -->
                 <button
                   nz-button nzType="text" nzSize="small"
@@ -218,7 +235,7 @@ interface LineItemVm {
     <!-- ===== DRAWER: Tạo hóa đơn mới ===== -->
     <nz-drawer
       [nzVisible]="createDrawerVisible"
-      nzTitle="Tạo hóa đơn mới"
+      [nzTitle]="adjustSourceId ? 'Lập hóa đơn điều chỉnh (nháp)' : 'Tạo hóa đơn mới'"
       nzWidth="760px"
       [nzClosable]="true"
       (nzOnClose)="closeCreateDrawer()"
@@ -553,6 +570,8 @@ export class InvoicesPageComponent implements OnInit {
   // Create drawer
   createDrawerVisible = false;
   saving = false;
+  /** Hóa đơn gốc khi lập điều chỉnh */
+  adjustSourceId: string | null = null;
 
   createForm = this.fb.group({
     donviId:     ['', Validators.required],
@@ -702,6 +721,7 @@ export class InvoicesPageComponent implements OnInit {
   // ---- Create drawer ----
 
   openCreateDrawer(): void {
+    this.adjustSourceId = null;
     this.createForm.reset({
       donviId: '', khachhangId: '', mauctyId: '',
       ngaylap: new Date(), kyhieu: ''
@@ -715,7 +735,26 @@ export class InvoicesPageComponent implements OnInit {
     this.createDrawerVisible = true;
   }
 
-  closeCreateDrawer(): void { this.createDrawerVisible = false; }
+  closeCreateDrawer(): void {
+    this.createDrawerVisible = false;
+    this.adjustSourceId = null;
+  }
+
+  startAdjustment(inv: InvoiceListItemDto): void {
+    this.adjustSourceId = inv.id;
+    this.createForm.reset({
+      donviId: inv.donviId,
+      khachhangId: inv.khachhangId,
+      mauctyId: inv.mauctyId,
+      ngaylap: new Date(),
+      kyhieu: inv.kyhieu ?? ''
+    });
+    while (this.hanghoasArray.length > 1) this.hanghoasArray.removeAt(this.hanghoasArray.length - 1);
+    this.hanghoasArray.at(0).reset({ hanghoaId: '', soluong: 1, dongia: 0, thueSuat: 10 });
+    this.loadCompanies();
+    this.onCompanyChange(inv.donviId);
+    this.createDrawerVisible = true;
+  }
 
   buildLineGroup() {
     return this.fb.group({
@@ -776,14 +815,21 @@ export class InvoicesPageComponent implements OnInit {
     };
 
     this.saving = true;
-    this.facade.createInvoice(payload).subscribe({
-      next: (result) => {
+    const req$ =
+      this.adjustSourceId != null
+        ? this.facade.createAdjustmentInvoice(this.adjustSourceId, payload)
+        : this.facade.createInvoice(payload);
+    req$.subscribe({
+      next: () => {
         this.saving = false;
         this.closeCreateDrawer();
-        this.message.success(`Tạo hóa đơn thành công!`);
+        this.message.success(this.adjustSourceId ? 'Đã tạo hóa đơn điều chỉnh (nháp).' : 'Tạo hóa đơn thành công!');
         this.loadInvoices();
       },
-      error: (e) => { this.saving = false; this.apiError.show(e); }
+      error: (e) => {
+        this.saving = false;
+        this.apiError.show(e);
+      }
     });
   }
 
@@ -822,7 +868,24 @@ export class InvoicesPageComponent implements OnInit {
         this.actionLoading = null;
         this.message.success(`Phát hành thành công! Số hóa đơn: ${result.soHoadon}`);
       },
-      error: (e) => { this.actionLoading = null; this.apiError.show(e); }
+      error: (e) => {
+        this.actionLoading = null;
+        this.apiError.show(e);
+      }
+    });
+  }
+
+  sendEmail(inv: InvoiceListItemDto): void {
+    this.actionLoading = inv.id + '_email';
+    this.facade.sendInvoiceEmail(inv.id).subscribe({
+      next: (r) => {
+        this.actionLoading = null;
+        this.message.success(r.message ?? 'Đã gửi email.');
+      },
+      error: (e) => {
+        this.actionLoading = null;
+        this.apiError.show(e);
+      }
     });
   }
 
