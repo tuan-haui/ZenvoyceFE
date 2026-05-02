@@ -12,9 +12,17 @@ export class AuthFacadeService {
     private readonly navigation: NavigationService
   ) { }
 
-  login(username: string, password: string): Observable<void> {
+  login(username: string, password: string, remember = true): Observable<void> {
     return this.client.login(new LoginCommand({ username, password })).pipe(
-      tap((res) => this.sessionService.saveLogin(username, res?.token)),
+      tap((res) =>
+        this.sessionService.saveLogin(
+          username,
+          res?.token,
+          res?.userInfo ?? undefined,
+          res?.expiredAt,
+          remember
+        )
+      ),
       tap(() => {
         this.navigation.refresh().subscribe({ error: () => void 0 });
       }),

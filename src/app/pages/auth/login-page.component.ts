@@ -9,6 +9,7 @@ import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 import { AuthFacadeService } from '../../core/services/auth-facade.service';
 import { ApiErrorService } from '../../core/services/api-error.service';
 
@@ -21,7 +22,8 @@ import { ApiErrorService } from '../../core/services/api-error.service';
     NzInputModule,
     NzCheckboxModule,
     NzButtonModule,
-    NzModalModule
+    NzModalModule,
+    NzIconModule
   ],
   template: `
     <nz-card class="login-card">
@@ -30,18 +32,39 @@ import { ApiErrorService } from '../../core/services/api-error.service';
 
       <form nz-form [formGroup]="form" (ngSubmit)="submit()">
         <nz-form-item>
-          <nz-form-control nzErrorTip="Vui lòng nhập tên đăng nhập">
-            <input nz-input formControlName="username" placeholder="Tên đăng nhập" />
+          <nz-form-control [nzErrorTip]="usernameTip">
+            <input nz-input formControlName="username" placeholder="Tên đăng nhập" autocomplete="username" />
           </nz-form-control>
+          <ng-template #usernameTip>
+            @if (form.controls.username.errors?.['required']) { Vui lòng nhập tên đăng nhập }
+            @else if (form.controls.username.errors?.['minlength']) { Tên đăng nhập tối thiểu 5 ký tự }
+            @else if (form.controls.username.errors?.['pattern']) { Tên đăng nhập không được chứa khoảng trắng }
+          </ng-template>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-control nzErrorTip="Vui lòng nhập mật khẩu">
-            <input nz-input type="password" formControlName="password" placeholder="Mật khẩu" />
+            <nz-input-group [nzSuffix]="suffixIcon">
+              <input
+                nz-input
+                [type]="passwordVisible ? 'text' : 'password'"
+                formControlName="password"
+                placeholder="Mật khẩu"
+                autocomplete="current-password"
+              />
+            </nz-input-group>
+            <ng-template #suffixIcon>
+              <span
+                nz-icon
+                [nzType]="passwordVisible ? 'eye' : 'eye-invisible'"
+                style="cursor:pointer; color: #aaa;"
+                (click)="passwordVisible = !passwordVisible"
+              ></span>
+            </ng-template>
           </nz-form-control>
         </nz-form-item>
 
-        <label nz-checkbox formControlName="remember">Nhớ mật khẩu</label>
+        <label nz-checkbox formControlName="remember">Ghi nhớ đăng nhập</label>
         <div class="actions">
           <button nz-button nzType="primary" [nzLoading]="loading" [disabled]="form.invalid">Đăng nhập</button>
           <button nz-button nzType="link" type="button" (click)="openForgotPassword()">Quên mật khẩu?</button>
@@ -59,9 +82,10 @@ import { ApiErrorService } from '../../core/services/api-error.service';
 export class LoginPageComponent {
   private readonly fb = inject(FormBuilder);
   loading = false;
+  passwordVisible = false;
 
   readonly form = this.fb.nonNullable.group({
-    username: ['', Validators.required],
+    username: ['', [Validators.required, Validators.minLength(5), Validators.pattern(/^\S+$/)]],
     password: ['', Validators.required],
     remember: [true]
   });
@@ -80,8 +104,8 @@ export class LoginPageComponent {
       return;
     }
     this.loading = true;
-    const { username, password } = this.form.getRawValue();
-    this.authFacade.login(username, password)
+    const { username, password, remember } = this.form.getRawValue();
+    this.authFacade.login(username, password, remember)
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: () => {
