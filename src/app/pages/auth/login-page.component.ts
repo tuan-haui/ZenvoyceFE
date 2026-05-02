@@ -96,7 +96,7 @@ export class LoginPageComponent {
     private readonly modal: NzModalService,
     private readonly message: NzMessageService,
     private readonly router: Router
-  ) {}
+  ) { }
 
   submit(): void {
     if (this.form.invalid) {

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { map, Observable, tap } from 'rxjs';
+import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
 import { Client, LoginCommand } from './app.service';
 import { NavigationService } from './navigation.service';
 import { SessionService } from './session.service';
@@ -23,9 +23,9 @@ export class AuthFacadeService {
           remember
         )
       ),
-      tap(() => {
-        this.navigation.refresh().subscribe({ error: () => void 0 });
-      }),
+      // Đợi nạp menu xong rồi mới complete để guard navigate sau đó không bị race.
+      // Nếu refresh lỗi, vẫn cho login thành công (NavigationService đã có fallback).
+      switchMap(() => this.navigation.refresh().pipe(catchError(() => of(null)))),
       map(() => void 0)
     );
   }

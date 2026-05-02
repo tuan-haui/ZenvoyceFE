@@ -1,5 +1,4 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, computed, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
@@ -14,7 +13,6 @@ import { SessionService } from '../core/services/session.service';
 @Component({
   selector: 'app-admin-layout',
   imports: [
-    CommonModule,
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
@@ -38,18 +36,22 @@ import { SessionService } from '../core/services/session.service';
           <h1>Zenvoyce</h1>
         </div>
         <ul nz-menu nzTheme="dark" nzMode="inline" [nzInlineCollapsed]="isCollapsed">
-          <ng-container *ngTemplateOutlet="menuTpl; context: { $implicit: menuTree() }"></ng-container>
-        </ul>
-        <ng-template #menuTpl let-nodes>
-          <ng-container *ngFor="let n of nodes">
-            <ng-container *ngIf="n.children && n.children.length > 0">
-              <li nz-submenu [nzTitle]="n.title">
+          @for (n of menuItems(); track n.key) {
+            @if (n.children && n.children.length > 0) {
+              <li nz-submenu [nzTitle]="n.title" nzOpen>
                 <ul>
-                  <ng-container *ngTemplateOutlet="menuTpl; context: { $implicit: n.children }"></ng-container>
+                  @for (c of n.children; track c.key) {
+                    <li
+                      nz-menu-item
+                      [routerLink]="c.link || '/admin/dashboard'"
+                      routerLinkActive="ant-menu-item-selected"
+                    >
+                      {{ c.title }}
+                    </li>
+                  }
                 </ul>
               </li>
-            </ng-container>
-            <ng-container *ngIf="!n.children || n.children.length === 0">
+            } @else {
               <li
                 nz-menu-item
                 [routerLink]="n.link || '/admin/dashboard'"
@@ -57,9 +59,9 @@ import { SessionService } from '../core/services/session.service';
               >
                 {{ n.title }}
               </li>
-            </ng-container>
-          </ng-container>
-        </ng-template>
+            }
+          }
+        </ul>
       </nz-sider>
 
       <nz-layout>
@@ -136,7 +138,14 @@ export class AdminLayoutComponent implements OnInit {
   private readonly sessionService = inject(SessionService);
   isCollapsed = false;
 
-  readonly menuTree = (): MenuTreeNode[] => this.navigation.tree();
+  /** Luôn có ít nhất 1 mục Dashboard kể cả khi tree đang trống/đang load. */
+  readonly menuItems = computed<MenuTreeNode[]>(() => {
+    const tree = this.navigation.tree();
+    if (tree && tree.length > 0) {
+      return tree;
+    }
+    return [{ key: 'dashboard', title: 'Dashboard', link: '/admin/dashboard' }];
+  });
 
   get username(): string {
     return this.sessionService.getUsername();
