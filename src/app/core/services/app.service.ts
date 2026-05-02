@@ -31,7 +31,7 @@ export class Client {
      * @param body (optional) 
      * @return OK
      */
-    login(body: LoginCommand | undefined): Observable<void> {
+    login(body: LoginCommand | undefined): Observable<LoginResponseDto> {
         let url_ = this.baseUrl + "/api/Auth/login";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -44,6 +44,7 @@ export class Client {
             withCredentials: true,
             headers: new HttpHeaders({
                 "Content-Type": "application/json",
+                "Accept": "application/json"
             })
         };
 
@@ -54,14 +55,14 @@ export class Client {
                 try {
                     return this.processLogin(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<void>;
+                    return _observableThrow(e) as any as Observable<LoginResponseDto>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<void>;
+                return _observableThrow(response_) as any as Observable<LoginResponseDto>;
         }));
     }
 
-    protected processLogin(response: HttpResponseBase): Observable<void> {
+    protected processLogin(response: HttpResponseBase): Observable<LoginResponseDto> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -70,7 +71,10 @@ export class Client {
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); } }
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-                return _observableOf(null as any);
+                let result200: any = null;
+                let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = LoginResponseDto.fromJS(resultData200);
+                return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -83,7 +87,7 @@ export class Client {
     /**
      * @return OK
      */
-    seedFirstAdmin(): Observable<void> {
+    seedFirstAdmin(): Observable<SeedFirstAdminResponseDto> {
         let url_ = this.baseUrl + "/api/Auth/seed-first-admin";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -92,6 +96,7 @@ export class Client {
             responseType: "blob",
             withCredentials: true,
             headers: new HttpHeaders({
+                "Accept": "application/json"
             })
         };
 
@@ -102,14 +107,14 @@ export class Client {
                 try {
                     return this.processSeedFirstAdmin(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<void>;
+                    return _observableThrow(e) as any as Observable<SeedFirstAdminResponseDto>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<void>;
+                return _observableThrow(response_) as any as Observable<SeedFirstAdminResponseDto>;
         }));
     }
 
-    protected processSeedFirstAdmin(response: HttpResponseBase): Observable<void> {
+    protected processSeedFirstAdmin(response: HttpResponseBase): Observable<SeedFirstAdminResponseDto> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -118,7 +123,10 @@ export class Client {
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); } }
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-                return _observableOf(null as any);
+                let result200: any = null;
+                let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = SeedFirstAdminResponseDto.fromJS(resultData200);
+                return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -3254,6 +3262,142 @@ export class LoginCommand implements ILoginCommand {
 export interface ILoginCommand {
     username?: string | undefined;
     password?: string | undefined;
+}
+
+export class LoginResponseDto implements ILoginResponseDto {
+    token?: string | undefined;
+    expiredAt?: Date;
+    userInfo?: LoginUserInfoDto;
+
+    constructor(data?: ILoginResponseDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.token = _data["token"];
+            this.expiredAt = _data["expiredAt"] ? new Date(_data["expiredAt"].toString()) : undefined as any;
+            this.userInfo = _data["userInfo"] ? LoginUserInfoDto.fromJS(_data["userInfo"]) : undefined as any;
+        }
+    }
+
+    static fromJS(data: any): LoginResponseDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new LoginResponseDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["token"] = this.token;
+        data["expiredAt"] = this.expiredAt ? this.expiredAt.toISOString() : undefined as any;
+        data["userInfo"] = this.userInfo ? this.userInfo.toJSON() : undefined as any;
+        return data;
+    }
+}
+
+export interface ILoginResponseDto {
+    token?: string | undefined;
+    expiredAt?: Date;
+    userInfo?: LoginUserInfoDto;
+}
+
+export class LoginUserInfoDto implements ILoginUserInfoDto {
+    id?: string;
+    tendangnhap?: string | undefined;
+    hoten?: string | undefined;
+    trangthai?: number;
+
+    constructor(data?: ILoginUserInfoDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.tendangnhap = _data["tendangnhap"];
+            this.hoten = _data["hoten"];
+            this.trangthai = _data["trangthai"];
+        }
+    }
+
+    static fromJS(data: any): LoginUserInfoDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new LoginUserInfoDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["tendangnhap"] = this.tendangnhap;
+        data["hoten"] = this.hoten;
+        data["trangthai"] = this.trangthai;
+        return data;
+    }
+}
+
+export interface ILoginUserInfoDto {
+    id?: string;
+    tendangnhap?: string | undefined;
+    hoten?: string | undefined;
+    trangthai?: number;
+}
+
+export class SeedFirstAdminResponseDto implements ISeedFirstAdminResponseDto {
+    seeded?: boolean;
+    message?: string | undefined;
+    userId?: string | undefined;
+
+    constructor(data?: ISeedFirstAdminResponseDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.seeded = _data["seeded"];
+            this.message = _data["message"];
+            this.userId = _data["userId"];
+        }
+    }
+
+    static fromJS(data: any): SeedFirstAdminResponseDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new SeedFirstAdminResponseDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["seeded"] = this.seeded;
+        data["message"] = this.message;
+        data["userId"] = this.userId;
+        return data;
+    }
+}
+
+export interface ISeedFirstAdminResponseDto {
+    seeded?: boolean;
+    message?: string | undefined;
+    userId?: string | undefined;
 }
 
 export class UpdateBaseTemplateCommand implements IUpdateBaseTemplateCommand {

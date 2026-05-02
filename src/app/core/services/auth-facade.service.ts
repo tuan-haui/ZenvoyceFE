@@ -10,7 +10,7 @@ export class AuthFacadeService {
     private readonly client: Client,
     private readonly sessionService: SessionService,
     private readonly navigation: NavigationService
-  ) {}
+  ) { }
 
   login(username: string, password: string): Observable<void> {
     return this.client.login(new LoginCommand({ username, password })).pipe(
