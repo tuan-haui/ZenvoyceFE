@@ -10,6 +10,7 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
@@ -18,6 +19,7 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { CreateCustomerCommand, UpdateCustomerCommand } from '../../core/services/app.service';
 import { ApiErrorService } from '../../core/services/api-error.service';
 import { CatalogFacadeService } from '../../core/services/catalog-facade.service';
+import { CompanyDto, InvoiceFacadeService } from '../../core/services/invoice-facade.service';
 
 interface CustomerVm {
   id: string;
@@ -27,14 +29,6 @@ interface CustomerVm {
   dienthoai: string;
   diachi?: string;
 }
-
-const MOCK_CUSTOMERS: CustomerVm[] = [
-  { id: 'kh-1', tenkhachhang: 'Công ty Cổ phần Acme', masothue: '0101234567', email: 'billing@acme.vn', dienthoai: '02438251111', diachi: '123 Nguyễn Huệ, Quận 1, TP.HCM' },
-  { id: 'kh-2', tenkhachhang: 'Công ty TNHH Globex', masothue: '0109876543', email: 'finance@globex.vn', dienthoai: '02438222222', diachi: '456 Lê Lợi, Quận 1, TP.HCM' },
-  { id: 'kh-3', tenkhachhang: 'Công ty CP Initech Solutions', masothue: '0105554444', email: 'accounts@initech.vn', dienthoai: '02363813333', diachi: '789 Trần Phú, Đà Nẵng' },
-  { id: 'kh-4', tenkhachhang: 'Tập đoàn Massive Dynamic', masothue: '0102223333', email: 'ap@massivedynamic.vn', dienthoai: '02439344444', diachi: '101 Hoàng Diệu, Hà Nội' },
-  { id: 'kh-5', tenkhachhang: 'Công ty TNHH Umbrella Corp', masothue: '0106665555', email: 'info@umbrella.vn', dienthoai: '02435556666', diachi: '202 Đinh Tiên Hoàng, Hà Nội' }
-];
 
 @Component({
   selector: 'app-customers-page',
@@ -52,6 +46,7 @@ const MOCK_CUSTOMERS: CustomerVm[] = [
     NzTagModule,
     NzIconModule,
     NzPaginationModule,
+    NzSelectModule,
     NzSpaceModule,
     NzToolTipModule
   ],
@@ -80,6 +75,14 @@ const MOCK_CUSTOMERS: CustomerVm[] = [
       <!-- Toolbar -->
       <div class="toolbar">
         <div class="toolbar-left">
+          <nz-select
+            [(ngModel)]="companyId"
+            nzPlaceHolder="Chọn công ty"
+            style="width: 240px"
+            (ngModelChange)="onCompanyChange($event)"
+          >
+            <nz-option *ngFor="let c of companies" [nzValue]="c.id" [nzLabel]="c.tendonvi || c.id"></nz-option>
+          </nz-select>
           <nz-input-group [nzPrefix]="searchPrefix" class="search-input">
             <input
               nz-input
@@ -407,9 +410,11 @@ const MOCK_CUSTOMERS: CustomerVm[] = [
 })
 export class CustomersPageComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
+  private readonly invoiceFacade = inject(InvoiceFacadeService);
   readonly Math = Math;
 
-  companyId = 'c-1';
+  companies: CompanyDto[] = [];
+  companyId: string | undefined;
   customers: CustomerVm[] = [];
   filteredCustomers: CustomerVm[] = [];
   displayedCustomers: CustomerVm[] = [];
@@ -444,9 +449,40 @@ export class CustomersPageComponent implements OnInit {
     });
 
     this.loading = true;
-    this.facade.getCustomers(this.companyId).subscribe({
-      next: () => {
-        this.customers = [...MOCK_CUSTOMERS];
+    this.invoiceFacade.getCompanies().subscribe({
+      next: (list) => {
+        this.companies = list;
+        this.companyId = list[0]?.id;
+        this.loadCustomers();
+      },
+      error: (e) => {
+        this.apiError.show(e);
+        this.loading = false;
+      }
+    });
+  }
+
+  onCompanyChange(_id: string | undefined): void {
+    this.loadCustomers();
+  }
+
+  private loadCustomers(): void {
+    if (!this.companyId) {
+      this.customers = [];
+      this.applyFilter(this.searchKeyword);
+      this.loading = false;
+      return;
+    }
+    this.loading = true;
+    this.invoiceFacade.getCustomers(this.companyId).subscribe({
+      next: (rows) => {
+        this.customers = rows.map((r) => ({
+          id: r.id,
+          tenkhachhang: r.tenkhachhang ?? '',
+          masothue: r.masothue ?? '',
+          email: r.email ?? '',
+          dienthoai: r.dienthoai ?? ''
+        }));
         this.applyFilter(this.searchKeyword);
         this.loading = false;
       },
@@ -540,17 +576,20 @@ export class CustomersPageComponent implements OnInit {
       });
       return;
     }
+    if (!this.companyId) {
+      this.message.warning('Vui lòng chọn công ty trước khi lưu.');
+      return;
+    }
     this.saving = true;
     const raw = this.form.getRawValue();
 
     if (this.editing) {
       this.facade.updateCustomer(this.editing.id, new UpdateCustomerCommand({ id: this.editing.id, tenkhachhang: raw.tenkhachhang, masothue: raw.masothue, email: raw.email, dienthoai: raw.dienthoai })).subscribe({
         next: () => {
-          Object.assign(this.editing!, raw);
-          this.applyFilter(this.searchKeyword);
           this.saving = false;
           this.closeDrawer();
           this.message.success('Cập nhật khách hàng thành công');
+          this.loadCustomers();
         },
         error: (e) => {
           this.saving = false;
@@ -562,12 +601,10 @@ export class CustomersPageComponent implements OnInit {
 
     this.facade.createCustomer(new CreateCustomerCommand({ donviid: this.companyId, tenkhachhang: raw.tenkhachhang, masothue: raw.masothue, email: raw.email, dienthoai: raw.dienthoai })).subscribe({
       next: () => {
-        const newCustomer: CustomerVm = { id: `kh-${Date.now()}`, ...raw };
-        this.customers = [newCustomer, ...this.customers];
-        this.applyFilter(this.searchKeyword);
         this.saving = false;
         this.closeDrawer();
         this.message.success('Thêm khách hàng thành công');
+        this.loadCustomers();
       },
       error: (e) => {
         this.saving = false;

@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable, Optional, signal } from '@angular/core';
-import { Observable, catchError, of, tap } from 'rxjs';
+import { Observable, catchError, map, of, tap } from 'rxjs';
 import { API_BASE_URL } from './app.service';
+import { ZenvoyceApiEnvelope } from '../http/api-envelope';
 
 export interface MenuItemDto {
   id: string;
@@ -36,7 +37,10 @@ export class NavigationService {
   }
 
   refresh(): Observable<MenuItemDto[]> {
-    return this.http.get<MenuItemDto[]>(`${this.base}/api/menus/sidebar`, { withCredentials: true }).pipe(
+    return this.http
+      .get<ZenvoyceApiEnvelope<MenuItemDto[]>>(`${this.base}/api/menus/sidebar`, { withCredentials: true })
+      .pipe(
+      map((env) => env.data ?? []),
       tap((rows) => {
         this._menus.set(rows);
         this._tree.set(this.buildTree(rows));

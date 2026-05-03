@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable, Optional } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import {
   AssignPermissionsRequestDto,
   ChangePasswordCommand,
@@ -10,6 +10,7 @@ import {
   UpdateUserCommand
 } from './app.service';
 import { API_BASE_URL } from './app.service';
+import { ZenvoyceApiEnvelope } from '../http/api-envelope';
 
 export interface PagedUsersDto {
   items?: UserApiDto[];
@@ -59,53 +60,65 @@ export class UserRoleFacadeService {
       pageNumber: String(pageNumber),
       pageSize: String(pageSize)
     };
-    return this.http.get<PagedUsersDto>(`${this.base}/api/users`, {
-      params,
-      withCredentials: true
-    });
+    return this.http
+      .get<ZenvoyceApiEnvelope<PagedUsersDto>>(`${this.base}/api/users`, {
+        params,
+        withCredentials: true
+      })
+      .pipe(map((e) => e.data ?? { items: [], pageNumber, pageSize, totalCount: 0 }));
   }
 
   createUser(payload: CreateUserCommand): Observable<void> {
-    return this.client.usersPOST(payload);
+    return this.client.usersPOST(payload).pipe(map(() => void 0));
   }
 
   updateUser(id: string, payload: UpdateUserCommand): Observable<void> {
-    return this.client.usersPUT(id, payload);
+    return this.client.usersPUT(id, payload).pipe(map(() => void 0));
   }
 
   deleteUser(id: string): Observable<void> {
-    return this.client.usersDELETE(id);
+    return this.client.usersDELETE(id).pipe(map(() => void 0));
   }
 
   changePassword(id: string, oldPassword: string, newPassword: string): Observable<void> {
-    return this.client.changePassword(id, new ChangePasswordCommand({ id, oldPassword, newPassword }));
+    return this.client
+      .changePassword(id, new ChangePasswordCommand({ id, oldPassword, newPassword }))
+      .pipe(map(() => void 0));
   }
 
   getRoles(): Observable<RoleApiDto[]> {
-    return this.http.get<RoleApiDto[]>(`${this.base}/api/roles`, { withCredentials: true });
+    return this.http
+      .get<ZenvoyceApiEnvelope<RoleApiDto[]>>(`${this.base}/api/roles`, { withCredentials: true })
+      .pipe(map((e) => e.data ?? []));
   }
 
   createRole(tenquyen: string, mota: string): Observable<void> {
-    return this.client.rolesPOST(new CreateRoleCommand({ tenquyen, mota }));
+    return this.client.rolesPOST(new CreateRoleCommand({ tenquyen, mota })).pipe(map(() => void 0));
   }
 
   getMenusForRole(roleId: string): Observable<MenuApiDto[]> {
-    return this.http.get<MenuApiDto[]>(`${this.base}/api/menus/for-role/${roleId}`, {
-      withCredentials: true
-    });
+    return this.http
+      .get<ZenvoyceApiEnvelope<MenuApiDto[]>>(`${this.base}/api/menus/for-role/${roleId}`, {
+        withCredentials: true
+      })
+      .pipe(map((e) => e.data ?? []));
   }
 
   getAssignedMenuIds(roleId: string, userId: string): Observable<string[]> {
-    return this.http.get<string[]>(`${this.base}/api/roles/${roleId}/users/${userId}/assigned-menu-ids`, {
-      withCredentials: true
-    });
+    return this.http
+      .get<ZenvoyceApiEnvelope<string[]>>(`${this.base}/api/roles/${roleId}/users/${userId}/assigned-menu-ids`, {
+        withCredentials: true
+      })
+      .pipe(map((e) => (e.data ?? []).map((id) => String(id))));
   }
 
   assignPermissions(roleId: string, userId: string, menuIds: string[]): Observable<void> {
     const body = new AssignPermissionsRequestDto({ roleId, userId, menuIds });
-    return this.http.put<void>(`${this.base}/api/roles/${roleId}/assign-permissions`, body, {
-      withCredentials: true,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return this.http
+      .put<ZenvoyceApiEnvelope<null>>(`${this.base}/api/roles/${roleId}/assign-permissions`, body, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .pipe(map(() => void 0));
   }
 }

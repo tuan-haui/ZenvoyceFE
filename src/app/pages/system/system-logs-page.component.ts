@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzTableModule } from 'ng-zorro-antd/table';
+import { ZenvoyceApiEnvelope } from '../../core/http/api-envelope';
 import { API_BASE_URL } from '../../core/services/app.service';
 import { ApiErrorService } from '../../core/services/api-error.service';
 
@@ -82,9 +83,12 @@ export class SystemLogsPageComponent implements OnInit {
     let params = new HttpParams().set('pageNumber', '1').set('pageSize', '50');
     if (this.dateRange?.[0]) params = params.set('fromDate', this.dateRange[0].toISOString());
     if (this.dateRange?.[1]) params = params.set('toDate', this.dateRange[1].toISOString());
-    this.http.get<PagedLogs>(`${this.base}/api/system/logs`, { params, withCredentials: true }).subscribe({
+    this.http
+      .get<ZenvoyceApiEnvelope<PagedLogs>>(`${this.base}/api/system/logs`, { params, withCredentials: true })
+      .subscribe({
       next: (res) => {
-        this.rows = res.items ?? [];
+        const page = res.data;
+        this.rows = page?.items ?? [];
         this.loading = false;
       },
       error: (e) => {

@@ -10,27 +10,30 @@ export class AuthFacadeService {
     private readonly client: Client,
     private readonly sessionService: SessionService,
     private readonly navigation: NavigationService
-  ) { }
+  ) {}
 
   login(username: string, password: string, remember = true): Observable<void> {
     return this.client.login(new LoginCommand({ username, password })).pipe(
-      tap((res) =>
+      map((env) => env.data),
+      tap((res) => {
+        if (!res) return;
         this.sessionService.saveLogin(
           username,
-          res?.token,
-          res?.userInfo ?? undefined,
-          res?.expiredAt,
+          res.token,
+          res.userInfo ?? undefined,
+          res.expiredAt,
           remember
-        )
-      ),
-      // Đợi nạp menu xong rồi mới complete để guard navigate sau đó không bị race.
-      // Nếu refresh lỗi, vẫn cho login thành công (NavigationService đã có fallback).
+        );
+      }),
       switchMap(() => this.navigation.refresh().pipe(catchError(() => of(null)))),
       map(() => void 0)
     );
   }
 
   logout(): Observable<void> {
-    return this.client.logout().pipe(tap(() => this.sessionService.clear()));
+    return this.client.logout().pipe(
+      tap(() => this.sessionService.clear()),
+      map(() => void 0)
+    );
   }
 }

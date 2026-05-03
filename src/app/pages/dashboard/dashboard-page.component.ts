@@ -3,11 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { API_BASE_URL } from '../../core/services/app.service';
+import { ZenvoyceApiEnvelope } from '../../core/http/api-envelope';
 import { InvoiceFacadeService } from '../../core/services/invoice-facade.service';
 import { UserRoleFacadeService } from '../../core/services/user-role-facade.service';
 
@@ -76,7 +77,9 @@ export class DashboardPageComponent implements OnInit {
   ngOnInit(): void {
     forkJoin({
       users: this.usersApi.getUsers(1, 1).pipe(catchError(() => of({ totalCount: 0 }))),
-      companies: this.http.get<unknown[]>(`${this.base}/api/companies`, { withCredentials: true }).pipe(catchError(() => of([]))),
+      companies: this.http
+        .get<ZenvoyceApiEnvelope<unknown[]>>(`${this.base}/api/companies`, { withCredentials: true })
+        .pipe(map((e) => e.data ?? []), catchError(() => of([]))),
       invoices: this.invoicesApi.getInvoices().pipe(catchError(() => of([])))
     }).subscribe({
       next: ({ users, companies, invoices }) => {

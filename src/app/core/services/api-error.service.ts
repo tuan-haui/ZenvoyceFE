@@ -13,7 +13,7 @@ export class ApiErrorService {
   extract(error: unknown, fallback = 'Đã có lỗi xảy ra, vui lòng thử lại.'): string {
     if (error instanceof ApiException) {
       try {
-        const body = JSON.parse(error.response);
+        const body = JSON.parse(error.response) as { message?: string; title?: string };
         return body?.message ?? body?.title ?? fallback;
       } catch {
         return error.message || fallback;
