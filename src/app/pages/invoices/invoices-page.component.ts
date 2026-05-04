@@ -479,7 +479,7 @@ interface LineItemVm {
     }
 
     .mono-text { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 13px; }
-    .invoice-number { font-weight: 600; color: #1677ff; }
+    .invoice-number { font-weight: 600; color: var(--app-primary, #1677ff); }
     .invoice-kyhieu { font-size: 11px; color: #8c8c8c; margin-top: 2px; }
     .customer-name { font-weight: 500; color: #262626; }
     .amount-cell { font-size: 13px; color: #434343; }
@@ -545,6 +545,33 @@ interface LineItemVm {
     .history-action { margin: 0; font-size: 14px; color: #262626; }
     .history-meta { margin: 4px 0; }
     .history-time { margin: 0; font-size: 12px; color: #8c8c8c; }
+
+    /* ── Dark mode ── */
+    :host-context(html.dark-mode) .page-title { color: rgba(255,255,255,0.85); }
+    :host-context(html.dark-mode) .filter-bar {
+      background: #262626;
+      border-color: rgba(255,255,255,0.1);
+    }
+    :host-context(html.dark-mode) .table-card {
+      background: #1f1f1f;
+      border-color: rgba(255,255,255,0.1);
+    }
+    :host-context(html.dark-mode) .customer-name { color: rgba(255,255,255,0.85); }
+    :host-context(html.dark-mode) .invoice-kyhieu { color: rgba(255,255,255,0.4); }
+    :host-context(html.dark-mode) .amount-cell { color: rgba(255,255,255,0.75); }
+    :host-context(html.dark-mode) .total-cell { color: rgba(255,255,255,0.85); }
+    :host-context(html.dark-mode) .empty-state { color: rgba(255,255,255,0.25); }
+    :host-context(html.dark-mode) .line-item {
+      background: #262626;
+      border-color: rgba(255,255,255,0.1);
+    }
+    :host-context(html.dark-mode) .line-amount { color: rgba(255,255,255,0.85); }
+    :host-context(html.dark-mode) .totals-section {
+      background: rgba(82,196,26,0.1);
+      border-color: rgba(82,196,26,0.25);
+    }
+    :host-context(html.dark-mode) .history-action { color: rgba(255,255,255,0.85); }
+    :host-context(html.dark-mode) .history-time { color: rgba(255,255,255,0.45); }
   `]
 })
 export class InvoicesPageComponent implements OnInit {

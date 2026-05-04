@@ -18,7 +18,13 @@ import {
   DatabaseOutline,
   FileDoneOutline,
   LineChartOutline,
-  BarChartOutline
+  BarChartOutline,
+  /* --- profile popup icons --- */
+  LogoutOutline,
+  CheckOutline,
+  MoonOutline,
+  SunOutline,
+  EllipsisOutline,
 } from '@ant-design/icons-angular/icons';
 
 export const icons = [
@@ -41,5 +47,10 @@ export const icons = [
   DatabaseOutline,
   FileDoneOutline,
   LineChartOutline,
-  BarChartOutline
+  BarChartOutline,
+  LogoutOutline,
+  CheckOutline,
+  MoonOutline,
+  SunOutline,
+  EllipsisOutline,
 ];

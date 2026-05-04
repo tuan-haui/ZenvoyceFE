@@ -318,7 +318,7 @@ const STATUS_MAP: Record<number, TrangthaiLabel> = {
       position: absolute;
       top: 8px;
       right: 8px;
-      background: #1677ff;
+      background: var(--app-primary, #1677ff);
       color: #fff;
       font-size: 10px;
       padding: 2px 8px;
@@ -361,6 +361,46 @@ const STATUS_MAP: Record<number, TrangthaiLabel> = {
     .detail-value { font-size: 14px; color: #262626; font-weight: 500; }
     .detail-value.mono { font-family: monospace; font-size: 15px; }
     .detail-steps-title { font-size: 14px; font-weight: 600; color: #262626; margin-bottom: 14px; }
+
+    /* ── Dark mode ── */
+    :host-context(html.dark-mode) .page-title { color: rgba(255,255,255,0.85); }
+    :host-context(html.dark-mode) .toolbar {
+      background: #262626;
+      border-color: rgba(255,255,255,0.1);
+    }
+    :host-context(html.dark-mode) .count-text { color: rgba(255,255,255,0.45); }
+    :host-context(html.dark-mode) .template-card {
+      border-color: rgba(255,255,255,0.12);
+    }
+    :host-context(html.dark-mode) .template-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    :host-context(html.dark-mode) .card-thumbnail {
+      background: linear-gradient(135deg, #1f1f1f 0%, #262626 100%);
+      border-bottom-color: rgba(255,255,255,0.08);
+    }
+    :host-context(html.dark-mode) .card-thumbnail.thumb-accepted {
+      background: linear-gradient(135deg, rgba(82,196,26,0.15) 0%, rgba(82,196,26,0.08) 100%);
+    }
+    :host-context(html.dark-mode) .mini-paper {
+      background: #2a2a2a;
+      border-color: rgba(255,255,255,0.15);
+    }
+    :host-context(html.dark-mode) .mini-line { background: rgba(255,255,255,0.1); }
+    :host-context(html.dark-mode) .card-body { background: #1f1f1f; }
+    :host-context(html.dark-mode) .card-top { border-bottom-color: rgba(255,255,255,0.08); }
+    :host-context(html.dark-mode) .card-kyhieu { color: rgba(255,255,255,0.85); }
+    :host-context(html.dark-mode) .card-tenmau { color: rgba(255,255,255,0.75); }
+    :host-context(html.dark-mode) .card-loai { color: rgba(255,255,255,0.45); }
+    :host-context(html.dark-mode) .card-date { color: rgba(255,255,255,0.25); }
+    :host-context(html.dark-mode) .card-actions {
+      border-top-color: rgba(255,255,255,0.07);
+      background: #1f1f1f;
+    }
+    :host-context(html.dark-mode) .detail-label { color: rgba(255,255,255,0.45); }
+    :host-context(html.dark-mode) .detail-value { color: rgba(255,255,255,0.85); }
+    :host-context(html.dark-mode) .detail-steps-title { color: rgba(255,255,255,0.85); }
+    :host-context(html.dark-mode) .empty-state { color: rgba(255,255,255,0.25); }
   `]
 })
 export class TemplatesWarehousePageComponent implements OnInit {

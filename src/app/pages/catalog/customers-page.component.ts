@@ -341,7 +341,7 @@ interface CustomerVm {
       font-size: 13px;
     }
     .email-link {
-      color: #1677ff;
+      color: var(--app-primary, #1677ff);
       text-decoration: none;
     }
     .email-link:hover {
@@ -358,7 +358,7 @@ interface CustomerVm {
       opacity: 1;
     }
     .selected-row {
-      background: #e6f4ff;
+      background: var(--app-lightbg, #e6f4ff);
     }
     .action-btn {
       color: #8c8c8c;
@@ -367,7 +367,7 @@ interface CustomerVm {
       height: 30px;
     }
     .action-btn:hover {
-      color: #1677ff;
+      color: var(--app-primary, #1677ff);
     }
     .action-btn-danger:hover {
       color: #ff4d4f !important;
@@ -406,6 +406,30 @@ interface CustomerVm {
       justify-content: flex-end;
       gap: 10px;
     }
+
+    /* ── Dark mode ── */
+    :host-context(html.dark-mode) .page-title { color: rgba(255,255,255,0.85); }
+    :host-context(html.dark-mode) .table-card {
+      background: #1f1f1f;
+      border-color: rgba(255,255,255,0.1);
+    }
+    :host-context(html.dark-mode) .toolbar {
+      background: #262626;
+      border-bottom-color: rgba(255,255,255,0.08);
+    }
+    :host-context(html.dark-mode) .pagination-bar {
+      background: #1f1f1f;
+      border-top-color: rgba(255,255,255,0.08);
+    }
+    :host-context(html.dark-mode) .pagination-info { color: rgba(255,255,255,0.45); }
+    :host-context(html.dark-mode) .selected-row {
+      background: rgba(255,255,255,0.08) !important;
+    }
+    :host-context(html.dark-mode) .customer-name { color: rgba(255,255,255,0.85); }
+    :host-context(html.dark-mode) .customer-address { color: rgba(255,255,255,0.45); }
+    :host-context(html.dark-mode) .mono-text { color: rgba(255,255,255,0.65); }
+    :host-context(html.dark-mode) .action-btn { color: rgba(255,255,255,0.35); }
+    :host-context(html.dark-mode) .empty-state { color: rgba(255,255,255,0.25); }
   `]
 })
 export class CustomersPageComponent implements OnInit {

@@ -392,7 +392,7 @@ const BANKS = [
       margin: 6px 0 4px;
     }
     .upload-link {
-      color: #1677ff;
+      color: var(--app-primary, #1677ff);
       cursor: pointer;
     }
     .upload-hint {
@@ -437,6 +437,31 @@ const BANKS = [
       border-radius: 6px;
       font-size: 13px;
       color: #389e0d;
+    }
+
+    /* ── Dark mode ── */
+    :host-context(html.dark-mode) .page-title { color: rgba(255,255,255,0.85); }
+    :host-context(html.dark-mode) .mst-value { color: rgba(255,255,255,0.65); }
+    :host-context(html.dark-mode) .logo-area {
+      border-left-color: rgba(255,255,255,0.1);
+    }
+    :host-context(html.dark-mode) .logo-label { color: rgba(255,255,255,0.85); }
+    :host-context(html.dark-mode) .logo-preview {
+      background: #262626;
+      border-color: rgba(255,255,255,0.15);
+    }
+    :host-context(html.dark-mode) .cert-card {
+      border-color: rgba(255,255,255,0.1);
+    }
+    :host-context(html.dark-mode) .cert-desc { color: rgba(255,255,255,0.65); }
+    :host-context(html.dark-mode) .cert-file-info {
+      background: rgba(82,196,26,0.12);
+      border-color: rgba(82,196,26,0.3);
+      color: #73d13d;
+    }
+    :host-context(html.dark-mode) .section-title { color: rgba(255,255,255,0.85); }
+    :host-context(html.dark-mode) ::ng-deep .company-tabs .ant-tabs-nav {
+      background: transparent;
     }
   `]
 })

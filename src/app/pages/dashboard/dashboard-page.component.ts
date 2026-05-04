@@ -56,7 +56,26 @@ import { UserRoleFacadeService } from '../../core/services/user-role-facade.serv
       .links a {
         padding: 8px 12px;
         border-radius: 8px;
-        background: #f0f5ff;
+        background: var(--app-lightbg, #f0f5ff);
+        color: var(--app-primary, #1677ff);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        transition: background 0.2s, color 0.2s;
+      }
+      .links a:hover {
+        filter: brightness(0.95);
+      }
+
+      /* ── Dark mode ── */
+      :host-context(html.dark-mode) h2 { color: rgba(255,255,255,0.85); }
+      :host-context(html.dark-mode) .links a {
+        background: rgba(255,255,255,0.08);
+        color: var(--app-primary, #52c41a);
+      }
+      :host-context(html.dark-mode) .links a:hover {
+        background: rgba(255,255,255,0.13);
+        filter: none;
       }
     `
   ]

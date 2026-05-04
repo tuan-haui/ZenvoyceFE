@@ -393,8 +393,8 @@ const PRESET_COLORS = ['#005daa', '#1a1a2e', '#16a34a', '#dc2626', '#7c3aed'];
       overflow: hidden;
       transition: border-color 0.2s;
     }
-    .template-card:hover { border-color: #1677ff; }
-    .template-card.selected { border-color: #1677ff; }
+    .template-card:hover { border-color: var(--app-primary, #1677ff); }
+    .template-card.selected { border-color: var(--app-primary, #1677ff); }
     .template-thumbnail {
       height: 72px;
       background: #f5f5f5;
@@ -422,7 +422,7 @@ const PRESET_COLORS = ['#005daa', '#1a1a2e', '#16a34a', '#dc2626', '#7c3aed'];
       border-top: 1px solid #f0f0f0;
     }
     .template-name { font-size: 11px; font-weight: 500; color: #262626; }
-    .check-icon { color: #1677ff; font-size: 14px; }
+    .check-icon { color: var(--app-primary, #1677ff); font-size: 14px; }
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 
     /* Logo Upload */
@@ -439,7 +439,7 @@ const PRESET_COLORS = ['#005daa', '#1a1a2e', '#16a34a', '#dc2626', '#7c3aed'];
     }
     .upload-icon { font-size: 24px; color: #8c8c8c; }
     .upload-text { font-size: 13px; color: #595959; margin: 0; }
-    .upload-link { color: #1677ff; cursor: pointer; }
+    .upload-link { color: var(--app-primary, #1677ff); cursor: pointer; }
     .upload-hint { font-size: 11px; color: #8c8c8c; margin: 0; }
     .logo-preview-img { max-height: 60px; object-fit: contain; }
 
@@ -457,7 +457,7 @@ const PRESET_COLORS = ['#005daa', '#1a1a2e', '#16a34a', '#dc2626', '#7c3aed'];
       background: #fff;
       outline: none;
     }
-    .native-select:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1); }
+    .native-select:focus { border-color: var(--app-primary, #1677ff); box-shadow: 0 0 0 2px var(--app-shadow, rgba(22,119,255,0.1)); }
 
     /* Colors */
     .color-palette { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
@@ -468,14 +468,14 @@ const PRESET_COLORS = ['#005daa', '#1a1a2e', '#16a34a', '#dc2626', '#7c3aed'];
       transition: transform 0.15s;
     }
     .color-swatch:hover { transform: scale(1.15); }
-    .color-swatch.selected { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,0.3); }
+    .color-swatch.selected { border-color: var(--app-primary, #1677ff); box-shadow: 0 0 0 2px var(--app-shadow, rgba(22,119,255,0.3)); }
     .color-custom {
       width: 30px; height: 30px; border-radius: 50%;
       border: 2px dashed #d9d9d9;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; position: relative; font-size: 14px; color: #8c8c8c;
     }
-    .color-custom:hover { border-color: #1677ff; color: #1677ff; }
+    .color-custom:hover { border-color: var(--app-primary, #1677ff); color: var(--app-primary, #1677ff); }
     .color-input {
       position: absolute; width: 100%; height: 100%;
       opacity: 0; cursor: pointer; left: 0; top: 0;
@@ -491,7 +491,7 @@ const PRESET_COLORS = ['#005daa', '#1a1a2e', '#16a34a', '#dc2626', '#7c3aed'];
       resize: vertical; font-family: inherit; line-height: 1.5;
       outline: none;
     }
-    .native-textarea:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,0.1); }
+    .native-textarea:focus { border-color: var(--app-primary, #1677ff); box-shadow: 0 0 0 2px var(--app-shadow, rgba(22,119,255,0.1)); }
 
     .apply-btn-wrap { margin-top: 24px; }
 
@@ -671,6 +671,55 @@ const PRESET_COLORS = ['#005daa', '#1a1a2e', '#16a34a', '#dc2626', '#7c3aed'];
     .qr-block { display: flex; flex-direction: column; align-items: center; color: #8c8c8c; }
     .qr-icon { font-size: 40px; }
     .qr-label { font-size: 9px; }
+
+    /* ── Dark mode ── */
+    :host-context(html.dark-mode) .config-panel {
+      background: #1f1f1f;
+      border-right-color: rgba(255,255,255,0.1);
+    }
+    :host-context(html.dark-mode) .config-header {
+      background: #1f1f1f;
+      border-bottom-color: rgba(255,255,255,0.1);
+    }
+    :host-context(html.dark-mode) .config-title { color: rgba(255,255,255,0.85); }
+    :host-context(html.dark-mode) .section-title {
+      color: rgba(255,255,255,0.85);
+      border-bottom-color: rgba(255,255,255,0.1);
+    }
+    :host-context(html.dark-mode) .field-label { color: rgba(255,255,255,0.55); }
+    :host-context(html.dark-mode) .template-card {
+      border-color: rgba(255,255,255,0.15);
+    }
+    :host-context(html.dark-mode) .template-thumbnail { background: #2a2a2a; }
+    :host-context(html.dark-mode) .thumb-line { background: rgba(255,255,255,0.1); }
+    :host-context(html.dark-mode) .template-card-footer {
+      background: #262626;
+      border-top-color: rgba(255,255,255,0.08);
+    }
+    :host-context(html.dark-mode) .template-name { color: rgba(255,255,255,0.85); }
+    :host-context(html.dark-mode) .native-select {
+      background: #141414;
+      border-color: rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.85);
+    }
+    :host-context(html.dark-mode) .native-textarea {
+      background: #141414;
+      border-color: rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.85);
+    }
+    :host-context(html.dark-mode) .switch-label { color: rgba(255,255,255,0.85); }
+    :host-context(html.dark-mode) .upload-icon { color: rgba(255,255,255,0.35); }
+    :host-context(html.dark-mode) .upload-text { color: rgba(255,255,255,0.55); }
+    :host-context(html.dark-mode) .preview-panel { background: #0f0f0f; }
+    :host-context(html.dark-mode) .preview-toolbar {
+      background: #1f1f1f;
+      border-bottom-color: rgba(255,255,255,0.1);
+    }
+    :host-context(html.dark-mode) .paper-container { background: #0f0f0f; }
+    /* paper-a4 giữ trắng vì đây là preview tài liệu thực */
+    :host-context(html.dark-mode) .paper-a4 {
+      box-shadow: 0 4px 32px rgba(0,0,0,0.5);
+    }
   `]
 })
 export class TemplatesSetupPageComponent implements OnInit {
