@@ -40,7 +40,7 @@ interface PermRow {
     <form nz-form [formGroup]="roleForm" class="role-create">
       <input nz-input formControlName="name" placeholder="Tên vai trò" />
       <input nz-input formControlName="description" placeholder="Mô tả" />
-      <button nz-button nzType="primary" (click)="createRole()">+ Thêm vai trò</button>
+      <button nz-button nzType="primary" type="button" (click)="createRole()">+ Thêm vai trò</button>
     </form>
 
     <div class="matrix-toolbar">
@@ -63,7 +63,7 @@ interface PermRow {
       >
         <nz-option *ngFor="let u of users" [nzValue]="u.id ?? ''" [nzLabel]="(u.tendangnhap ?? '') + (u.hoten ? ' — ' + u.hoten : '')"></nz-option>
       </nz-select>
-      <button nz-button nzType="primary" [nzLoading]="saving" (click)="savePermissions()">Lưu cấu hình quyền</button>
+      <button nz-button nzType="primary" type="button" [nzLoading]="saving" (click)="savePermissions()">Lưu cấu hình quyền</button>
     </div>
 
     <nz-table [nzData]="permissionRows" [nzLoading]="loadingMatrix" [nzFrontPagination]="false">
@@ -140,6 +140,7 @@ export class RolesPageComponent implements OnInit {
       next: (r) => {
         this.roles = r;
         this.selectedRoleId = r[0]?.id ?? '';
+        this.onRoleOrUserChange();
       },
       error: (e) => this.apiError.show(e)
     });
@@ -154,16 +155,27 @@ export class RolesPageComponent implements OnInit {
   }
 
   createRole(): void {
-    if (this.roleForm.invalid) return;
+    if (this.roleForm.invalid) {
+      this.roleForm.markAllAsTouched();
+      this.message.warning('Nhập tên vai trò trước khi thêm mới');
+      return;
+    }
     const { name, description } = this.roleForm.getRawValue();
-    this.facade.createRole(name, description).subscribe({
-      next: () => {
+    const normalizedName = name.trim();
+    if (!normalizedName) {
+      this.message.warning('Tên vai trò không được để trống');
+      return;
+    }
+    const normalizedDescription = description?.trim() ?? '';
+    this.facade.createRole(normalizedName, normalizedDescription).subscribe({
+      next: (createdRole) => {
         this.roleForm.reset({ name: '', description: '' });
         this.message.success('Thêm vai trò thành công');
         this.facade.getRoles().subscribe({
           next: (r) => {
             this.roles = r;
-            this.selectedRoleId = r[r.length - 1]?.id ?? '';
+            const createdRoleId = createdRole?.id ?? '';
+            this.selectedRoleId = (createdRoleId && r.find((x) => x.id === createdRoleId)?.id) || r[r.length - 1]?.id || '';
             this.onRoleOrUserChange();
           },
           error: (e) => this.apiError.show(e)

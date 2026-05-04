@@ -116,9 +116,9 @@ interface UserRow {
               nz-button
               nzType="text"
               nz-tooltip
-              nzTooltipTitle="Khóa người dùng"
+              nzTooltipTitle="Xoá người dùng"
               nz-popconfirm
-              nzPopconfirmTitle="Khóa người dùng?"
+              nzPopconfirmTitle="Xoá người dùng này?"
               (nzOnConfirm)="deleteUser(user)"
             >
               <nz-icon nzType="delete" nzTheme="outline"></nz-icon>

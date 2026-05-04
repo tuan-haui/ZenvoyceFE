@@ -27,7 +27,7 @@ import { ApiErrorService } from '../../core/services/api-error.service';
   ],
   template: `
     <nz-card class="login-card">
-      <div class="logo">Zenvoyce</div>
+      <div class="logo">Zenvoyce<p class="version">phần mềm quản lý hoá đơn điện tử</p></div>
       <h2>Đăng nhập hệ thống</h2>
 
       <form nz-form [formGroup]="form" (ngSubmit)="submit()">
@@ -77,6 +77,7 @@ import { ApiErrorService } from '../../core/services/api-error.service';
     .logo { font-size: 24px; font-weight: 700; color: #005daa; margin-bottom: 8px; }
     h2 { margin-bottom: 18px; }
     .actions { margin-top: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .version { font-size: 12px; color: #999; margin-left: 8px; }
   `]
 })
 export class LoginPageComponent {

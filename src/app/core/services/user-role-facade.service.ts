@@ -55,8 +55,12 @@ export class UserRoleFacadeService {
     return this.client.rolesGET().pipe(map((env) => env.data ?? []));
   }
 
-  createRole(tenquyen: string, mota: string): Observable<void> {
-    return this.client.rolesPOST(new CreateRoleCommand({ tenquyen, mota })).pipe(map(() => void 0));
+  createRole(tenquyen: string, mota: string): Observable<RoleDto | undefined> {
+    const normalizedName = (tenquyen ?? '').trim();
+    const normalizedDescription = (mota ?? '').trim();
+    return this.client
+      .rolesPOST(new CreateRoleCommand({ tenquyen: normalizedName, mota: normalizedDescription }))
+      .pipe(map((env) => env.data));
   }
 
   getMenusForRole(roleId: string): Observable<MenuDto[]> {
