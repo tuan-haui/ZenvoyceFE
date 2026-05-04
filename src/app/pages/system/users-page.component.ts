@@ -121,7 +121,7 @@ interface UserRow {
               nzPopconfirmTitle="Khóa người dùng?"
               (nzOnConfirm)="deleteUser(user)"
             >
-              <nz-icon nzType="lock" nzTheme="outline"></nz-icon>
+              <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
             </button>
             <button nz-button nzType="text" nz-tooltip nzTooltipTitle="Đổi mật khẩu" (click)="changePassword(user)">
               <nz-icon nzType="key" nzTheme="outline"></nz-icon>
@@ -521,7 +521,7 @@ export class UsersPageComponent implements OnInit {
   deleteUser(user: UserRow): void {
     this.facade.deleteUser(user.id).subscribe({
       next: () => {
-        this.message.success('Đã khóa/xóa người dùng');
+        this.message.success('Đã xóa người dùng');
         this.reloadUsers();
       },
       error: (e) => this.apiError.show(e)

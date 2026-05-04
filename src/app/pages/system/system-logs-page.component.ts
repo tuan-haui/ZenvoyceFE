@@ -14,6 +14,7 @@ interface AuditLogRow {
   invoiceId?: string;
   actionType?: string;
   actionTime?: Date;
+  detail?: string;
 }
 
 @Component({
@@ -31,6 +32,7 @@ interface AuditLogRow {
           <th>Thời gian</th>
           <th>Người dùng</th>
           <th>Loại</th>
+          <th>Chi tiết</th>
           <th>Hóa đơn</th>
         </tr>
       </thead>
@@ -39,6 +41,7 @@ interface AuditLogRow {
           <td>{{ r.actionTime | date: 'short' }}</td>
           <td>{{ r.username || r.userId || '—' }}</td>
           <td>{{ r.actionType || '—' }}</td>
+          <td class="detail-cell">{{ r.detail || '—' }}</td>
           <td>{{ r.invoiceId || '—' }}</td>
         </tr>
       </tbody>
@@ -52,6 +55,12 @@ interface AuditLogRow {
         margin-bottom: 12px;
         flex-wrap: wrap;
         align-items: center;
+      }
+      .detail-cell {
+        max-width: 420px;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-size: 12px;
       }
     `
   ]
@@ -91,7 +100,8 @@ export class SystemLogsPageComponent implements OnInit {
       username: item.username ?? undefined,
       invoiceId: item.invoiceId ?? undefined,
       actionType: item.actionType ?? undefined,
-      actionTime: item.actionTime ?? undefined
+      actionTime: item.actionTime ?? undefined,
+      detail: item.detail ?? undefined
     };
   }
 }

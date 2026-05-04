@@ -4767,6 +4767,7 @@ export class AuditLogDto implements IAuditLogDto {
     invoiceId?: string | undefined;
     actionType?: string | undefined;
     actionTime?: Date | undefined;
+    detail?: string | undefined;
 
     constructor(data?: IAuditLogDto) {
         if (data) {
@@ -4785,6 +4786,7 @@ export class AuditLogDto implements IAuditLogDto {
             this.invoiceId = _data["invoiceId"];
             this.actionType = _data["actionType"];
             this.actionTime = _data["actionTime"] ? new Date(_data["actionTime"].toString()) : undefined as any;
+            this.detail = _data["detail"];
         }
     }
 
@@ -4803,6 +4805,7 @@ export class AuditLogDto implements IAuditLogDto {
         data["invoiceId"] = this.invoiceId;
         data["actionType"] = this.actionType;
         data["actionTime"] = this.actionTime ? this.actionTime.toISOString() : undefined as any;
+        data["detail"] = this.detail;
         return data;
     }
 }
@@ -4814,6 +4817,7 @@ export interface IAuditLogDto {
     invoiceId?: string | undefined;
     actionType?: string | undefined;
     actionTime?: Date | undefined;
+    detail?: string | undefined;
 }
 
 export class BaseTemplateDto implements IBaseTemplateDto {
