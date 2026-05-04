@@ -1,0 +1,1 @@
+## File app.service.ts là file tự động Gen từ Swagger OpenAPI của backend bằng Nswag, không được sửa file này.

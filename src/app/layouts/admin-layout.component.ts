@@ -35,10 +35,10 @@ import { SessionService } from '../core/services/session.service';
           <span class="logo-dot"></span>
           <h1>Zenvoyce</h1>
         </div>
-        <ul nz-menu nzTheme="dark" nzMode="inline" [nzInlineCollapsed]="isCollapsed">
+        <ul nz-menu nzTheme="light" nzMode="inline" [nzInlineCollapsed]="isCollapsed">
           @for (n of menuItems(); track n.key) {
             @if (n.children && n.children.length > 0) {
-              <li nz-submenu [nzTitle]="n.title" nzOpen>
+              <li nz-submenu [nzTitle]="n.title" [nzIcon]="n.icon || 'appstore'" nzOpen>
                 <ul>
                   @for (c of n.children; track c.key) {
                     <li
@@ -46,7 +46,8 @@ import { SessionService } from '../core/services/session.service';
                       [routerLink]="c.link || '/admin/dashboard'"
                       routerLinkActive="ant-menu-item-selected"
                     >
-                      {{ c.title }}
+                      <nz-icon [nzType]="c.icon || 'appstore'" />
+                      <span>{{ c.title }}</span>
                     </li>
                   }
                 </ul>
@@ -57,7 +58,8 @@ import { SessionService } from '../core/services/session.service';
                 [routerLink]="n.link || '/admin/dashboard'"
                 routerLinkActive="ant-menu-item-selected"
               >
-                {{ n.title }}
+                <nz-icon [nzType]="n.icon || 'appstore'" />
+                <span>{{ n.title }}</span>
               </li>
             }
           }
@@ -92,7 +94,18 @@ import { SessionService } from '../core/services/session.service';
         min-height: 100vh;
       }
       .menu-sidebar {
-        box-shadow: 2px 0 8px rgba(15, 23, 42, 0.14);
+        background: #ffffff;
+        box-shadow: 2px 0 8px rgba(15, 23, 42, 0.08);
+      }
+      :host ::ng-deep .menu-sidebar.ant-layout-sider {
+        background: #ffffff;
+      }
+      :host ::ng-deep .menu-sidebar .ant-layout-sider-children {
+        background: #ffffff;
+      }
+      :host ::ng-deep .menu-sidebar .ant-menu-light {
+        background: #ffffff;
+        border-inline-end: none !important;
       }
       .sidebar-logo {
         height: 64px;
@@ -100,8 +113,9 @@ import { SessionService } from '../core/services/session.service';
         display: flex;
         align-items: center;
         gap: 10px;
-        background: #001529;
-        color: #fff;
+        background: #ffffff;
+        color: #0f172a;
+        border-bottom: 1px solid #f0f0f0;
       }
       .logo-dot {
         width: 12px;
@@ -111,9 +125,10 @@ import { SessionService } from '../core/services/session.service';
         display: inline-block;
       }
       .sidebar-logo h1 {
-        color: #fff;
+        color: #0f172a;
         margin: 0;
         font-size: 18px;
+        font-weight: 600;
       }
       .header {
         background: #fff;
@@ -144,7 +159,7 @@ export class AdminLayoutComponent implements OnInit {
     if (tree && tree.length > 0) {
       return tree;
     }
-    return [{ key: 'dashboard', title: 'Dashboard', link: '/admin/dashboard' }];
+    return [{ key: 'dashboard', title: 'Dashboard', link: '/admin/dashboard', icon: 'dashboard' }];
   });
 
   get username(): string {

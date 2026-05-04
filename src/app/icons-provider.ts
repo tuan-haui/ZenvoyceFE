@@ -4,7 +4,42 @@ import {
   FormOutline,
   DashboardOutline,
   EyeOutline,
-  EyeInvisibleOutline
+  EyeInvisibleOutline,
+  AppstoreOutline,
+  UserOutline,
+  SafetyCertificateOutline,
+  SettingOutline,
+  FileSearchOutline,
+  BankOutline,
+  TeamOutline,
+  ShoppingOutline,
+  FolderOutline,
+  FileProtectOutline,
+  DatabaseOutline,
+  FileDoneOutline,
+  LineChartOutline,
+  BarChartOutline
 } from '@ant-design/icons-angular/icons';
 
-export const icons = [MenuFoldOutline, MenuUnfoldOutline, DashboardOutline, FormOutline, EyeOutline, EyeInvisibleOutline];
+export const icons = [
+  MenuFoldOutline,
+  MenuUnfoldOutline,
+  DashboardOutline,
+  FormOutline,
+  EyeOutline,
+  EyeInvisibleOutline,
+  AppstoreOutline,
+  UserOutline,
+  SafetyCertificateOutline,
+  SettingOutline,
+  FileSearchOutline,
+  BankOutline,
+  TeamOutline,
+  ShoppingOutline,
+  FolderOutline,
+  FileProtectOutline,
+  DatabaseOutline,
+  FileDoneOutline,
+  LineChartOutline,
+  BarChartOutline
+];

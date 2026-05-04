@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { Observable, catchError, map, of, tap } from 'rxjs';
 import { Client, MenuDto } from './app.service';
+import { resolveMenuIcon } from './menu-icons';
 
 export interface MenuItemDto {
   id: string;
@@ -14,6 +15,7 @@ export interface MenuTreeNode {
   key: string;
   title: string;
   link?: string;
+  icon?: string;
   children?: MenuTreeNode[];
 }
 
@@ -89,6 +91,7 @@ export class NavigationService {
             key: m.id,
             title: m.tenmenu,
             link: m.duongdan || undefined,
+            icon: resolveMenuIcon(m.duongdan, m.tenmenu),
             children: sub.length > 0 ? sub : undefined
           };
           return node;
@@ -101,7 +104,8 @@ export class NavigationService {
     return flat.map((m) => ({
       key: m.id,
       title: m.tenmenu,
-      link: m.duongdan || undefined
+      link: m.duongdan || undefined,
+      icon: resolveMenuIcon(m.duongdan, m.tenmenu)
     }));
   }
 
@@ -109,7 +113,8 @@ export class NavigationService {
     return {
       key: 'dashboard',
       title: 'Dashboard',
-      link: '/admin/dashboard'
+      link: '/admin/dashboard',
+      icon: resolveMenuIcon('/admin/dashboard', 'Dashboard')
     };
   }
 }
