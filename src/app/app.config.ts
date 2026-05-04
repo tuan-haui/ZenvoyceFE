@@ -9,7 +9,7 @@ import { registerLocaleData } from '@angular/common';
 import en from '@angular/common/locales/en';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { API_BASE_URL } from './core/services/app.service';
+import { API_BASE_URL, Client } from './core/services/app.service';
 import { environment } from '../environments/environment';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { NzModalModule } from 'ng-zorro-antd/modal';
@@ -26,6 +26,7 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     provideHttpClient(withInterceptors([authInterceptor])),
     { provide: API_BASE_URL, useValue: environment.API_TOKEN_URL },
+    Client,
     importProvidersFrom(NzModalModule)
   ]
 };

@@ -117,7 +117,7 @@ export interface StringMessageDto {
 
 @Injectable({ providedIn: 'root' })
 export class InvoiceFacadeService {
-  constructor(private readonly client: Client) {}
+  constructor(private readonly client: Client) { }
 
   getInvoices(filters?: InvoiceFilters): Observable<InvoiceListItemDto[]> {
     return this.client
@@ -206,12 +206,12 @@ export class InvoiceFacadeService {
 
   getCustomers(donviId: string, keyword = ''): Observable<CustomerDto[]> {
     return this.client
-      .getCustomerByCompany(donviId, keyword || undefined)
+      .customersGET(donviId, keyword || undefined)
       .pipe(map((res) => (res.data ?? []).map((x) => this.mapCustomer(x))));
   }
 
   getProducts(donviId: string): Observable<ProductDto[]> {
-    return this.client.products(donviId, undefined).pipe(map((res) => (res.data ?? []).map((x) => this.mapProduct(x))));
+    return this.client.productsGET(donviId, undefined).pipe(map((res) => (res.data ?? []).map((x) => this.mapProduct(x))));
   }
 
   getTemplates(donviId: string): Observable<TemplateDto[]> {

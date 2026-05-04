@@ -16,22 +16,11 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzTypographyModule } from 'ng-zorro-antd/typography';
 import { NzUploadChangeParam, NzUploadFile, NzUploadModule } from 'ng-zorro-antd/upload';
+import { VietQrBankDto } from '../../core/models/vietqr-bank.models';
 import { CreateCompanyCommand, UpdateCompanyCommand } from '../../core/services/app.service';
 import { ApiErrorService } from '../../core/services/api-error.service';
 import { CatalogFacadeService } from '../../core/services/catalog-facade.service';
-
-const BANKS = [
-  'Vietcombank - Ngân hàng TMCP Ngoại thương VN',
-  'Techcombank - Ngân hàng TMCP Kỹ thương VN',
-  'VietinBank - Ngân hàng TMCP Công thương VN',
-  'BIDV - Ngân hàng Đầu tư và Phát triển VN',
-  'Agribank - Ngân hàng Nông nghiệp và PTNT VN',
-  'MB Bank - Ngân hàng TMCP Quân đội',
-  'TPBank - Ngân hàng TMCP Tiên Phong',
-  'ACB - Ngân hàng TMCP Á Châu',
-  'Sacombank - Ngân hàng TMCP Sài Gòn Thương Tín',
-  'VPBank - Ngân hàng TMCP Việt Nam Thịnh Vượng'
-];
+import { VietQrBankService } from '../../core/services/vietqr-bank.service';
 
 @Component({
   selector: 'app-companies-page',
@@ -174,8 +163,18 @@ const BANKS = [
                   <nz-form-item>
                     <nz-form-label>Ngân hàng</nz-form-label>
                     <nz-form-control>
-                      <nz-select formControlName="nganhang" nzShowSearch nzAllowClear nzPlaceHolder="Chọn ngân hàng">
-                        <nz-option *ngFor="let b of banks" [nzValue]="b" [nzLabel]="b"></nz-option>
+                      <nz-select
+                        formControlName="nganhang"
+                        nzShowSearch
+                        nzAllowClear
+                        nzPlaceHolder="Chọn ngân hàng"
+                        [nzLoading]="banksLoading"
+                      >
+                        <nz-option
+                          *ngFor="let b of banks"
+                          [nzValue]="b.bin"
+                          [nzLabel]="bankOptionLabel(b)"
+                        ></nz-option>
                       </nz-select>
                     </nz-form-control>
                   </nz-form-item>
@@ -472,7 +471,8 @@ export class CompaniesPageComponent implements OnInit {
   hasInvoices = false;
   saving = false;
   isActive = true;
-  banks = BANKS;
+  banks: VietQrBankDto[] = [];
+  banksLoading = false;
   logoFileList: NzUploadFile[] = [];
   logoPreviewUrl: string | null = null;
   certFileList: NzUploadFile[] = [];
@@ -486,19 +486,32 @@ export class CompaniesPageComponent implements OnInit {
     dienthoai: [''],
     email: ['', [Validators.required, Validators.email]],
     sotaikhoan: [''],
-    nganhang: [''],
+    nganhang: [null as string | null],
     active: [true]
   });
 
   constructor(
     private readonly facade: CatalogFacadeService,
     private readonly apiError: ApiErrorService,
-    private readonly message: NzMessageService
-  ) {}
+    private readonly message: NzMessageService,
+    private readonly vietQrBanks: VietQrBankService
+  ) { }
 
   ngOnInit(): void {
     this.form.get('active')!.valueChanges.subscribe((val) => {
       this.isActive = val;
+    });
+
+    this.banksLoading = true;
+    this.vietQrBanks.getBanks().subscribe({
+      next: (list) => {
+        this.banks = list;
+        this.banksLoading = false;
+      },
+      error: () => {
+        this.banksLoading = false;
+        this.message.error('Không tải được danh sách ngân hàng (VietQR). Vui lòng thử lại sau.');
+      }
     });
 
     this.facade.getCompanies().subscribe({
@@ -515,7 +528,7 @@ export class CompaniesPageComponent implements OnInit {
             dienthoai: '',
             email: '',
             sotaikhoan: '',
-            nganhang: '',
+            nganhang: null,
             active: true
           });
           this.form.get('masothue')!.enable();
@@ -528,12 +541,12 @@ export class CompaniesPageComponent implements OnInit {
         const patchData = {
           tendonvi: first.tendonvi ?? '',
           masothue: first.masothue ?? '',
-          nguoidaidien: '',
+          nguoidaidien: first.nguoidaidien ?? '',
           diachi: first.diachi ?? '',
           dienthoai: first.dienthoai ?? '',
-          email: '',
-          sotaikhoan: '',
-          nganhang: '',
+          email: first.emailcongty ?? '',
+          sotaikhoan: first.bankAccount ?? '',
+          nganhang: first.bankId != null ? String(first.bankId) : null,
           active: first.trangthai === 1
         };
         this.form.patchValue(patchData);
@@ -551,6 +564,12 @@ export class CompaniesPageComponent implements OnInit {
     } else {
       this.form.reset();
     }
+  }
+
+  /** Nhãn hiển thị; giá trị lưu trong form là `bin`. */
+  bankOptionLabel(b: VietQrBankDto): string {
+    const short = (b.shortName || b.short_name || b.code).trim();
+    return `${short} — ${b.name}`;
   }
 
   beforeLogoUpload = (file: NzUploadFile): boolean => {
@@ -613,8 +632,24 @@ export class CompaniesPageComponent implements OnInit {
     };
 
     if (this.currentId) {
-      const cmd = new UpdateCompanyCommand({ id: this.currentId, tendonvi: raw.tendonvi, masothue: raw.masothue, diachi: raw.diachi, dienthoai: raw.dienthoai });
-      this.facade.updateCompany(this.currentId, cmd).subscribe({ next: onDone, error: onError });
+      const bin = raw.nganhang?.trim();
+      const parsedBankId = bin ? parseInt(bin, 10) : NaN;
+      const bankId = bin && !Number.isNaN(parsedBankId) ? parsedBankId : undefined;
+      const cmd = new UpdateCompanyCommand({
+        id: this.currentId,
+        tendonvi: raw.tendonvi,
+        masothue: raw.masothue,
+        diachi: raw.diachi,
+        dienthoai: raw.dienthoai,
+        bankAccount: raw.sotaikhoan || undefined,
+        bankId,
+        nguoidaidien: raw.nguoidaidien,
+        emailcongty: raw.email || undefined
+      });
+      this.facade.updateCompany(this.currentId, cmd).subscribe({
+        next: () => onDone(),
+        error: onError
+      });
       return;
     }
 
