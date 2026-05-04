@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  API_TOKEN_URL: 'https://feephim.com'
+  API_TOKEN_URL: 'https://api.feephim.com'
 };
