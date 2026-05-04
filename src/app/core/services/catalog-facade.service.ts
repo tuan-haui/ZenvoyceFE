@@ -35,7 +35,7 @@ export class CatalogFacadeService {
   }
 
   getCustomers(companyId: string, keyword = ''): Observable<CustomerDto[]> {
-    return this.client.customersGET(companyId, keyword || undefined).pipe(map((r) => r.data ?? []));
+    return this.client.getCustomerByCompany(companyId, keyword || undefined).pipe(map((r) => r.data ?? []));
   }
 
   createCustomer(payload: CreateCustomerCommand): Observable<void> {
@@ -51,7 +51,7 @@ export class CatalogFacadeService {
   }
 
   getProducts(companyId: string, keyword = ''): Observable<ProductDto[]> {
-    return this.client.productsGET(companyId, keyword || undefined).pipe(map((r) => r.data ?? []));
+    return this.client.products(companyId, keyword || undefined).pipe(map((r) => r.data ?? []));
   }
 
   createProduct(payload: CreateProductCommand): Observable<ProductDto> {
