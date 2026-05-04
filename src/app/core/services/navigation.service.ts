@@ -19,6 +19,28 @@ export interface MenuTreeNode {
   children?: MenuTreeNode[];
 }
 
+/**
+ * Thứ tự hiển thị sidebar (số nhỏ hơn = lên trên).
+ * Dùng để sắp xếp lại menu nhận từ API bất kể thứ tự backend trả về.
+ */
+const PATH_SORT_ORDER: Record<string, number> = {
+  '/admin/dashboard': 0,
+  // Hoá đơn
+  '/admin/invoices': 10,
+  '/admin/reports/sales': 11,
+  // Mẫu in
+  '/admin/templates/setup': 20,
+  '/admin/templates/warehouse': 21,
+  // Danh mục
+  '/admin/companies': 30,
+  '/admin/customers': 31,
+  '/admin/products': 32,
+  // Hệ thống
+  '/admin/users': 40,
+  '/admin/roles': 41,
+  '/admin/system/logs': 42
+};
+
 @Injectable({ providedIn: 'root' })
 export class NavigationService {
   private readonly _loaded = signal(false);
@@ -85,6 +107,7 @@ export class NavigationService {
     const childrenOf = (parentId: string | null | undefined): MenuTreeNode[] => {
       return flat
         .filter((m) => (m.menuchaId ?? null) === (parentId ?? null))
+        .sort((a, b) => this.sortKeyForItem(a, flat) - this.sortKeyForItem(b, flat))
         .map((m) => {
           const sub = childrenOf(m.id);
           const node: MenuTreeNode = {
@@ -101,12 +124,44 @@ export class NavigationService {
     if (roots.length > 0) {
       return roots;
     }
-    return flat.map((m) => ({
-      key: m.id,
-      title: m.tenmenu,
-      link: m.duongdan || undefined,
-      icon: resolveMenuIcon(m.duongdan, m.tenmenu)
-    }));
+    return flat
+      .sort((a, b) => this.sortKeyForItem(a, flat) - this.sortKeyForItem(b, flat))
+      .map((m) => ({
+        key: m.id,
+        title: m.tenmenu,
+        link: m.duongdan || undefined,
+        icon: resolveMenuIcon(m.duongdan, m.tenmenu)
+      }));
+  }
+
+  /** Trả về sort key theo path đã khai báo trong PATH_SORT_ORDER. */
+  private sortKeyForPath(path: string | undefined): number {
+    const p = (path ?? '').trim().toLowerCase();
+    if (p && PATH_SORT_ORDER[p] !== undefined) {
+      return PATH_SORT_ORDER[p];
+    }
+    // Khớp prefix (vd. '/admin/reports' → min order của children)
+    const candidates = Object.keys(PATH_SORT_ORDER)
+      .filter((key) => p && (key.startsWith(p + '/') || p.startsWith(key + '/')))
+      .sort((a, b) => b.length - a.length);
+    if (candidates.length > 0) {
+      return PATH_SORT_ORDER[candidates[0]];
+    }
+    return 999;
+  }
+
+  /**
+   * Sort key cho một menu item.
+   * - Nếu có đường dẫn → dùng path order.
+   * - Nếu là menu cha (không có đường dẫn) → dùng min sort key của con trực tiếp.
+   */
+  private sortKeyForItem(item: MenuItemDto, flat: MenuItemDto[]): number {
+    if (item.duongdan) {
+      return this.sortKeyForPath(item.duongdan);
+    }
+    const children = flat.filter((m) => m.menuchaId === item.id);
+    if (children.length === 0) return 999;
+    return Math.min(...children.map((c) => this.sortKeyForPath(c.duongdan)));
   }
 
   private fallbackNode(): MenuTreeNode {
