@@ -20,6 +20,7 @@ export class SessionService {
     expiredAt?: Date,
     remember = true
   ): void {
+    this.clear();
     const storage = remember ? localStorage : sessionStorage;
     storage.setItem(AUTH_KEY, '1');
     storage.setItem(USER_KEY, username);

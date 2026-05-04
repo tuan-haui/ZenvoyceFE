@@ -1,12 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzTableModule } from 'ng-zorro-antd/table';
-import { ZenvoyceApiEnvelope } from '../../core/http/api-envelope';
-import { API_BASE_URL } from '../../core/services/app.service';
+import { AuditLogDto, Client } from '../../core/services/app.service';
 import { ApiErrorService } from '../../core/services/api-error.service';
 
 interface AuditLogRow {
@@ -15,14 +13,7 @@ interface AuditLogRow {
   username?: string;
   invoiceId?: string;
   actionType?: string;
-  actionTime?: string;
-}
-
-interface PagedLogs {
-  items?: AuditLogRow[];
-  totalCount?: number;
-  pageNumber?: number;
-  pageSize?: number;
+  actionTime?: Date;
 }
 
 @Component({
@@ -66,13 +57,12 @@ interface PagedLogs {
   ]
 })
 export class SystemLogsPageComponent implements OnInit {
-  private readonly http = inject(HttpClient);
-  private readonly base = inject(API_BASE_URL, { optional: true }) ?? '';
+  private readonly client = inject(Client);
+  private readonly apiError = inject(ApiErrorService);
+
   rows: AuditLogRow[] = [];
   loading = false;
   dateRange: [Date, Date] | null = null;
-
-  constructor(private readonly apiError: ApiErrorService) {}
 
   ngOnInit(): void {
     this.load();
@@ -80,15 +70,11 @@ export class SystemLogsPageComponent implements OnInit {
 
   load(): void {
     this.loading = true;
-    let params = new HttpParams().set('pageNumber', '1').set('pageSize', '50');
-    if (this.dateRange?.[0]) params = params.set('fromDate', this.dateRange[0].toISOString());
-    if (this.dateRange?.[1]) params = params.set('toDate', this.dateRange[1].toISOString());
-    this.http
-      .get<ZenvoyceApiEnvelope<PagedLogs>>(`${this.base}/api/system/logs`, { params, withCredentials: true })
-      .subscribe({
-      next: (res) => {
-        const page = res.data;
-        this.rows = page?.items ?? [];
+    const fromDate = this.dateRange?.[0];
+    const toDate = this.dateRange?.[1];
+    this.client.logs(fromDate, toDate, undefined, undefined, 1, 50).subscribe({
+      next: (env) => {
+        this.rows = (env.data?.items ?? []).map((item) => this.mapRow(item));
         this.loading = false;
       },
       error: (e) => {
@@ -96,5 +82,16 @@ export class SystemLogsPageComponent implements OnInit {
         this.apiError.show(e);
       }
     });
+  }
+
+  private mapRow(item: AuditLogDto): AuditLogRow {
+    return {
+      id: item.id ?? '',
+      userId: item.userId ?? undefined,
+      username: item.username ?? undefined,
+      invoiceId: item.invoiceId ?? undefined,
+      actionType: item.actionType ?? undefined,
+      actionTime: item.actionTime ?? undefined
+    };
   }
 }

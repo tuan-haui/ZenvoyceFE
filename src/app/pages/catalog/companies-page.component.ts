@@ -477,25 +477,43 @@ export class CompaniesPageComponent implements OnInit {
     });
 
     this.facade.getCompanies().subscribe({
-      next: () => {
-        this.currentId = 'c-1';
-        this.hasInvoices = true;
+      next: (list) => {
+        const first = list[0];
+        if (!first?.id) {
+          this.currentId = null;
+          this.hasInvoices = false;
+          this.form.reset({
+            tendonvi: '',
+            masothue: '',
+            nguoidaidien: '',
+            diachi: '',
+            dienthoai: '',
+            email: '',
+            sotaikhoan: '',
+            nganhang: '',
+            active: true
+          });
+          this.form.get('masothue')!.enable();
+          this.isActive = true;
+          this.originalValue = this.form.getRawValue();
+          return;
+        }
+        this.currentId = first.id;
+        this.hasInvoices = false;
         const patchData = {
-          tendonvi: 'Công ty TNHH Zenvoyce',
-          masothue: '0101234567',
-          nguoidaidien: 'Nguyễn Văn A',
-          diachi: 'Số 1 Đại Cồ Việt, Phường Bách Khoa, Quận Hai Bà Trưng, Hà Nội',
-          dienthoai: '0241234567',
-          email: 'contact@zenvoyce.vn',
+          tendonvi: first.tendonvi ?? '',
+          masothue: first.masothue ?? '',
+          nguoidaidien: '',
+          diachi: first.diachi ?? '',
+          dienthoai: first.dienthoai ?? '',
+          email: '',
           sotaikhoan: '',
           nganhang: '',
-          active: true
+          active: first.trangthai === 1
         };
         this.form.patchValue(patchData);
         this.isActive = patchData.active;
-        if (this.hasInvoices) {
-          this.form.get('masothue')!.disable();
-        }
+        this.form.get('masothue')!.enable();
         this.originalValue = this.form.getRawValue();
       },
       error: (e) => this.apiError.show(e)
@@ -577,8 +595,8 @@ export class CompaniesPageComponent implements OnInit {
 
     const cmd = new CreateCompanyCommand({ tendonvi: raw.tendonvi, masothue: raw.masothue, diachi: raw.diachi, dienthoai: raw.dienthoai });
     this.facade.createCompany(cmd).subscribe({
-      next: () => {
-        this.currentId = `c-${Date.now()}`;
+      next: (created) => {
+        this.currentId = created.id ?? null;
         onDone();
       },
       error: onError

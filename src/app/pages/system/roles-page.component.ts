@@ -51,7 +51,7 @@ interface PermRow {
         (ngModelChange)="onRoleOrUserChange()"
         style="min-width: 200px"
       >
-        <nz-option *ngFor="let r of roles" [nzValue]="r.id" [nzLabel]="r.tenquyen"></nz-option>
+        <nz-option *ngFor="let r of roles" [nzValue]="r.id ?? ''" [nzLabel]="r.tenquyen ?? ''"></nz-option>
       </nz-select>
       <nz-select
         [(ngModel)]="selectedUserId"
@@ -61,7 +61,7 @@ interface PermRow {
         style="min-width: 220px"
         nzShowSearch
       >
-        <nz-option *ngFor="let u of users" [nzValue]="u.id" [nzLabel]="u.tendangnhap + (u.hoten ? ' — ' + u.hoten : '')"></nz-option>
+        <nz-option *ngFor="let u of users" [nzValue]="u.id ?? ''" [nzLabel]="(u.tendangnhap ?? '') + (u.hoten ? ' — ' + u.hoten : '')"></nz-option>
       </nz-select>
       <button nz-button nzType="primary" [nzLoading]="saving" (click)="savePermissions()">Lưu cấu hình quyền</button>
     </div>
@@ -185,14 +185,18 @@ export class RolesPageComponent implements OnInit {
     }).subscribe({
       next: ({ menus, assigned }) => {
         const set = new Set(assigned.map((x) => x.toLowerCase()));
-        this.permissionRows = menus.map((m) => ({
-          menuId: m.id,
-          label: m.tenmenu + (m.duongdan ? ` (${m.duongdan})` : ''),
-          view: set.has(m.id.toLowerCase()),
-          create: set.has(m.id.toLowerCase()),
-          edit: set.has(m.id.toLowerCase()),
-          delete: set.has(m.id.toLowerCase())
-        }));
+        this.permissionRows = menus.map((m) => {
+          const id = (m.id ?? '').toString();
+          const key = id.toLowerCase();
+          return {
+            menuId: id,
+            label: (m.tenmenu ?? '') + (m.duongdan ? ` (${m.duongdan})` : ''),
+            view: set.has(key),
+            create: set.has(key),
+            edit: set.has(key),
+            delete: set.has(key)
+          };
+        });
         this.loadingMatrix = false;
       },
       error: (e) => {

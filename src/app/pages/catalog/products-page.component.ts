@@ -17,9 +17,10 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
-import { CreateProductCommand, UpdateProductCommand } from '../../core/services/app.service';
+import { CreateProductCommand, ProductDto, UpdateProductCommand } from '../../core/services/app.service';
 import { ApiErrorService } from '../../core/services/api-error.service';
 import { CatalogFacadeService } from '../../core/services/catalog-facade.service';
+import { InvoiceFacadeService } from '../../core/services/invoice-facade.service';
 
 type ProductStatus = 'active' | 'disabled';
 
@@ -43,13 +44,18 @@ const TAX_RATES = [
 
 const UNITS = ['Cái', 'Chiếc', 'Bộ', 'Gói', 'Hộp', 'Kg', 'Tấn', 'Lít', 'Thùng', 'Giờ', 'Ngày', 'Tháng', 'Năm', 'Dịch vụ'];
 
-const MOCK_PRODUCTS: ProductVm[] = [
-  { id: 'hh-1', mahang: 'ITM-001', tenhanghoa: 'Dịch vụ Phát triển Phần mềm', donvitinh: 'Giờ', dongia: 500000, thuesuat: '10', trangthai: 'active' },
-  { id: 'hh-2', mahang: 'ITM-002', tenhanghoa: 'Gói Lưu trữ Cloud Hàng năm', donvitinh: 'Năm', dongia: 12000000, thuesuat: '10', trangthai: 'active' },
-  { id: 'hh-3', mahang: 'ITM-003', tenhanghoa: 'Hỗ trợ Phần cứng Cũ', donvitinh: 'Tháng', dongia: 5000000, thuesuat: '8', trangthai: 'disabled' },
-  { id: 'hh-4', mahang: 'ITM-004', tenhanghoa: 'Tư vấn Kiểm toán CNTT', donvitinh: 'Ngày', dongia: 3500000, thuesuat: '10', trangthai: 'active' },
-  { id: 'hh-5', mahang: 'ITM-005', tenhanghoa: 'Thiết bị Router Mạng', donvitinh: 'Cái', dongia: 2200000, thuesuat: '10', trangthai: 'active' }
-];
+function mapProductDto(p: ProductDto): ProductVm {
+  const id = p.id ?? '';
+  return {
+    id,
+    mahang: id ? id.slice(0, 8) : '—',
+    tenhanghoa: p.tenhanghoa ?? '',
+    donvitinh: p.donvitinh ?? '',
+    dongia: p.dongia ?? 0,
+    thuesuat: '10',
+    trangthai: 'active'
+  };
+}
 
 @Component({
   selector: 'app-products-page',
@@ -473,7 +479,7 @@ export class ProductsPageComponent implements OnInit {
   readonly taxRates = TAX_RATES;
   readonly units = UNITS;
 
-  companyId = 'c-1';
+  companyId: string | undefined;
   products: ProductVm[] = [];
   filteredProducts: ProductVm[] = [];
   displayedProducts: ProductVm[] = [];
@@ -502,6 +508,7 @@ export class ProductsPageComponent implements OnInit {
 
   constructor(
     private readonly facade: CatalogFacadeService,
+    private readonly invoiceFacade: InvoiceFacadeService,
     private readonly apiError: ApiErrorService,
     private readonly message: NzMessageService
   ) {}
@@ -511,10 +518,29 @@ export class ProductsPageComponent implements OnInit {
       this.applyFilter(kw);
     });
 
+    this.invoiceFacade.getCompanies().subscribe({
+      next: (list) => {
+        this.companyId = list[0]?.id;
+        this.reloadProducts();
+      },
+      error: (e) => {
+        this.apiError.show(e);
+        this.loading = false;
+      }
+    });
+  }
+
+  private reloadProducts(): void {
+    if (!this.companyId) {
+      this.products = [];
+      this.applyFilter(this.searchKeyword);
+      this.loading = false;
+      return;
+    }
     this.loading = true;
     this.facade.getProducts(this.companyId).subscribe({
-      next: () => {
-        this.products = [...MOCK_PRODUCTS];
+      next: (rows) => {
+        this.products = rows.map(mapProductDto);
         this.applyFilter(this.searchKeyword);
         this.loading = false;
       },
@@ -614,40 +640,47 @@ export class ProductsPageComponent implements OnInit {
       });
       return;
     }
+    if (!this.companyId) {
+      this.message.warning('Chưa có công ty để gán hàng hóa.');
+      return;
+    }
     this.saving = true;
     const raw = this.form.getRawValue();
 
     if (this.editing) {
-      this.facade.updateProduct(this.editing.id, new UpdateProductCommand({ id: this.editing.id, tenhanghoa: raw.tenhanghoa, donvitinh: raw.donvitinh, dongia: raw.dongia })).subscribe({
-        next: () => {
-          Object.assign(this.editing!, raw);
+      this.facade
+        .updateProduct(this.editing.id, new UpdateProductCommand({ id: this.editing.id, tenhanghoa: raw.tenhanghoa, donvitinh: raw.donvitinh, dongia: raw.dongia }))
+        .subscribe({
+          next: (updated) => {
+            Object.assign(this.editing!, mapProductDto(updated));
+            this.applyFilter(this.searchKeyword);
+            this.saving = false;
+            this.closeDrawer();
+            this.message.success('Cập nhật hàng hóa thành công');
+          },
+          error: (e) => {
+            this.saving = false;
+            this.apiError.show(e);
+          }
+        });
+      return;
+    }
+
+    this.facade
+      .createProduct(new CreateProductCommand({ donviid: this.companyId, tenhanghoa: raw.tenhanghoa, donvitinh: raw.donvitinh, dongia: raw.dongia }))
+      .subscribe({
+        next: (created) => {
+          this.products = [mapProductDto(created), ...this.products];
           this.applyFilter(this.searchKeyword);
           this.saving = false;
           this.closeDrawer();
-          this.message.success('Cập nhật hàng hóa thành công');
+          this.message.success('Thêm hàng hóa thành công');
         },
         error: (e) => {
           this.saving = false;
           this.apiError.show(e);
         }
       });
-      return;
-    }
-
-    this.facade.createProduct(new CreateProductCommand({ donviid: this.companyId, tenhanghoa: raw.tenhanghoa, donvitinh: raw.donvitinh, dongia: raw.dongia })).subscribe({
-      next: () => {
-        const newProduct: ProductVm = { id: `hh-${Date.now()}`, ...raw, trangthai: 'active' };
-        this.products = [newProduct, ...this.products];
-        this.applyFilter(this.searchKeyword);
-        this.saving = false;
-        this.closeDrawer();
-        this.message.success('Thêm hàng hóa thành công');
-      },
-      error: (e) => {
-        this.saving = false;
-        this.apiError.show(e);
-      }
-    });
   }
 
   toggleStatus(p: ProductVm): void {

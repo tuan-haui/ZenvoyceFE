@@ -1596,6 +1596,33 @@
       }
     },
     "/api/templates/base": {
+      "get": {
+        "tags": [
+          "Templates"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfArrayOfBaseTemplateDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfArrayOfBaseTemplateDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfArrayOfBaseTemplateDto"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "Templates"
@@ -2143,6 +2170,36 @@
   },
   "components": {
     "schemas": {
+      "ApiResponseOfArrayOfBaseTemplateDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaseTemplateDto"
+            },
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "ApiResponseOfArrayOfCompanyDto": {
         "type": "object",
         "properties": {
@@ -3155,6 +3212,18 @@
           "donviid": {
             "type": "string",
             "format": "uuid"
+          },
+          "tenmaugoc": {
+            "type": "string",
+            "nullable": true
+          },
+          "kyhieu": {
+            "type": "string",
+            "nullable": true
+          },
+          "loaihoadon": {
+            "type": "string",
+            "nullable": true
           },
           "css": {
             "type": "string",

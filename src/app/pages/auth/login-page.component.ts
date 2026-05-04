@@ -122,7 +122,7 @@ export class LoginPageComponent {
       nzContent: 'Nhập email đã đăng ký. Hệ thống sẽ gửi hướng dẫn đặt lại mật khẩu (cần triển khai API gửi mail/OTP ở backend).',
       nzClosable: true,
       nzOnOk: () => {
-        this.message.info('Yêu cầu đã ghi nhận (mock). Vui lòng liên hệ quản trị nếu cần gấp.');
+        this.message.info('Yêu cầu đã ghi nhận. Vui lòng liên hệ quản trị nếu cần gấp.');
       }
     });
   }

@@ -17,6 +17,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ApiErrorService } from '../../core/services/api-error.service';
+import { InvoiceFacadeService } from '../../core/services/invoice-facade.service';
 import { CompanyTemplateVm, TemplateFacadeService } from '../../core/services/template-facade.service';
 
 type TrangthaiLabel = { color: string; text: string; };
@@ -27,13 +28,6 @@ const STATUS_MAP: Record<number, TrangthaiLabel> = {
   2: { color: 'success', text: 'Đã chấp nhận' },
   3: { color: 'error', text: 'Từ chối' }
 };
-
-const MOCK_TEMPLATES: (CompanyTemplateVm & { loaiMau: string })[] = [
-  { id: 'ct-1', maugocid: 'base-1', tenmaugoc: 'Classic Professional', kyhieu: '1C26TAA', loaihoadon: 'Hóa đơn GTGT', loaiMau: 'GTGT', trangthaiPhatHanh: 2, lamaumacdinh: true,  ngaykichhoat: '2026-01-15' },
-  { id: 'ct-2', maugocid: 'base-2', tenmaugoc: 'Modern Minimal',        kyhieu: '1C26TAB', loaihoadon: 'Hóa đơn GTGT', loaiMau: 'GTGT', trangthaiPhatHanh: 0, lamaumacdinh: false, ngaykichhoat: '2026-03-10' },
-  { id: 'ct-3', maugocid: 'base-3', tenmaugoc: 'Compact Standard',      kyhieu: '2C26TAA', loaihoadon: 'Hóa đơn bán hàng', loaiMau: 'Bán hàng', trangthaiPhatHanh: 1, lamaumacdinh: false, ngaykichhoat: '2026-04-20' },
-  { id: 'ct-4', maugocid: 'base-1', tenmaugoc: 'Classic Professional',  kyhieu: '1C26TAC', loaihoadon: 'Hóa đơn GTGT', loaiMau: 'GTGT', trangthaiPhatHanh: 3, lamaumacdinh: false, ngaykichhoat: '2026-04-28' }
-];
 
 @Component({
   selector: 'app-templates-warehouse-page',
@@ -370,10 +364,10 @@ const MOCK_TEMPLATES: (CompanyTemplateVm & { loaiMau: string })[] = [
   `]
 })
 export class TemplatesWarehousePageComponent implements OnInit {
-  companyId = 'c-1';
-  templates: (CompanyTemplateVm & { loaiMau: string })[] = [];
-  filteredTemplates: (CompanyTemplateVm & { loaiMau: string })[] = [];
-  displayedTemplates: (CompanyTemplateVm & { loaiMau: string })[] = [];
+  companyId: string | undefined;
+  templates: CompanyTemplateVm[] = [];
+  filteredTemplates: CompanyTemplateVm[] = [];
+  displayedTemplates: CompanyTemplateVm[] = [];
   loading = false;
   searchKeyword = '';
   filterStatus: number | null = null;
@@ -381,7 +375,7 @@ export class TemplatesWarehousePageComponent implements OnInit {
   pageSize = 8;
   notifyingId: string | null = null;
   detailVisible = false;
-  selectedTemplate: (CompanyTemplateVm & { loaiMau: string }) | null = null;
+  selectedTemplate: CompanyTemplateVm | null = null;
   private search$ = new Subject<string>();
 
   get detailTitle(): string {
@@ -390,6 +384,7 @@ export class TemplatesWarehousePageComponent implements OnInit {
 
   constructor(
     private readonly facade: TemplateFacadeService,
+    private readonly invoiceFacade: InvoiceFacadeService,
     private readonly apiError: ApiErrorService,
     private readonly message: NzMessageService,
     private readonly router: Router
@@ -399,20 +394,35 @@ export class TemplatesWarehousePageComponent implements OnInit {
     this.search$.pipe(debounceTime(300), distinctUntilChanged()).subscribe((kw) => {
       this.applyFilter(kw);
     });
-    this.loadTemplates();
+    this.invoiceFacade.getCompanies().subscribe({
+      next: (list) => {
+        this.companyId = list[0]?.id;
+        this.loadTemplates();
+      },
+      error: (e) => {
+        this.apiError.show(e);
+        this.loading = false;
+      }
+    });
   }
 
   loadTemplates(): void {
+    if (!this.companyId) {
+      this.templates = [];
+      this.applyFilter(this.searchKeyword);
+      this.loading = false;
+      return;
+    }
     this.loading = true;
     this.facade.getCompanyTemplates(this.companyId).subscribe({
-      next: () => {
-        this.templates = [...MOCK_TEMPLATES];
+      next: (rows) => {
+        this.templates = rows;
         this.applyFilter(this.searchKeyword);
         this.loading = false;
       },
       error: (e) => {
-        // Fallback to mock data if API not ready
-        this.templates = [...MOCK_TEMPLATES];
+        this.apiError.show(e);
+        this.templates = [];
         this.applyFilter(this.searchKeyword);
         this.loading = false;
       }
@@ -463,7 +473,7 @@ export class TemplatesWarehousePageComponent implements OnInit {
     return 'Gửi thông báo phát hành lên Tổng cục Thuế';
   }
 
-  notifyTax(t: CompanyTemplateVm & { loaiMau: string }): void {
+  notifyTax(t: CompanyTemplateVm): void {
     if (!this.canNotify(t.trangthaiPhatHanh)) return;
     this.notifyingId = t.id;
     this.facade.notifyTax(t.id).subscribe({
@@ -471,11 +481,6 @@ export class TemplatesWarehousePageComponent implements OnInit {
         t.trangthaiPhatHanh = 1;
         this.notifyingId = null;
         this.message.success(`Đã gửi thông báo phát hành mẫu ${t.kyhieu} lên CQT`);
-        // Simulate async response: update to "Đã chấp nhận" after 3s
-        setTimeout(() => {
-          t.trangthaiPhatHanh = 2;
-          this.message.success(`CQT đã chấp nhận mẫu ${t.kyhieu}`);
-        }, 3000);
       },
       error: (e) => {
         t.trangthaiPhatHanh = 3;
@@ -485,7 +490,7 @@ export class TemplatesWarehousePageComponent implements OnInit {
     });
   }
 
-  openDetail(t: CompanyTemplateVm & { loaiMau: string }): void {
+  openDetail(t: CompanyTemplateVm): void {
     this.selectedTemplate = t;
     this.detailVisible = true;
   }

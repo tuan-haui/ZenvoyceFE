@@ -13,6 +13,7 @@ import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzUploadFile, NzUploadModule } from 'ng-zorro-antd/upload';
 import { ApplyTemplateCommand } from '../../core/services/app.service';
 import { ApiErrorService } from '../../core/services/api-error.service';
+import { InvoiceFacadeService } from '../../core/services/invoice-facade.service';
 import { BaseTemplateVm, TemplateFacadeService } from '../../core/services/template-facade.service';
 
 type LogoAlignment = 'left' | 'center' | 'right';
@@ -676,7 +677,8 @@ export class TemplatesSetupPageComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
 
   baseTemplates: BaseTemplateVm[] = [];
-  selectedBaseId = 'base-1';
+  selectedBaseId = '';
+  companyId: string | undefined;
   logoFileList: NzUploadFile[] = [];
   logoPreviewUrl: string | null = null;
   logoAlignment: LogoAlignment = 'left';
@@ -701,15 +703,25 @@ export class TemplatesSetupPageComponent implements OnInit {
 
   constructor(
     private readonly facade: TemplateFacadeService,
+    private readonly invoiceFacade: InvoiceFacadeService,
     private readonly apiError: ApiErrorService,
     private readonly message: NzMessageService,
     private readonly router: Router
   ) {}
 
   ngOnInit(): void {
-    this.facade.getBaseTemplates().subscribe((list) => {
-      this.baseTemplates = list;
-      if (list.length) this.selectedBaseId = list[0].id;
+    this.invoiceFacade.getCompanies().subscribe({
+      next: (list) => {
+        this.companyId = list[0]?.id;
+      },
+      error: (e) => this.apiError.show(e)
+    });
+    this.facade.getBaseTemplates().subscribe({
+      next: (list) => {
+        this.baseTemplates = list;
+        if (list.length) this.selectedBaseId = list[0].id;
+      },
+      error: (e) => this.apiError.show(e)
     });
   }
 
@@ -739,6 +751,10 @@ export class TemplatesSetupPageComponent implements OnInit {
   }
 
   applyTemplate(): void {
+    if (!this.companyId) {
+      this.message.warning('Chưa có công ty. Vui lòng khai báo công ty trước.');
+      return;
+    }
     if (!this.selectedBaseId) {
       this.message.warning('Vui lòng chọn mẫu nền trước khi áp dụng');
       return;
@@ -746,7 +762,7 @@ export class TemplatesSetupPageComponent implements OnInit {
     this.saving = true;
     const payload = new ApplyTemplateCommand({
       maugocid: this.selectedBaseId,
-      donviid: 'c-1',
+      donviid: this.companyId,
       css: `--theme-color:${this.themeColor};`,
       header: JSON.stringify({ logoAlignment: this.logoAlignment, logoSize: this.logoSize }),
       lamaumacdinh: true,

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { map, Observable, of } from 'rxjs';
-import { ApplyTemplateCommand, Client } from './app.service';
+import { map, Observable } from 'rxjs';
+import { ApplyTemplateCommand, BaseTemplateDto, Client, CompanyTemplateDto } from './app.service';
 
 export interface BaseTemplateVm {
   id: string;
@@ -21,18 +21,14 @@ export interface CompanyTemplateVm {
   ngaykichhoat: string;
 }
 
-const BASE_TEMPLATES: BaseTemplateVm[] = [
-  { id: 'base-1', tenmau: 'Classic Professional', loaihoadon: 'GTGT', kyhieu: '1C26TAA', thumbnail: 'classic' },
-  { id: 'base-2', tenmau: 'Modern Minimal', loaihoadon: 'GTGT', kyhieu: '1C26TAB', thumbnail: 'modern' },
-  { id: 'base-3', tenmau: 'Compact Standard', loaihoadon: 'Bán hàng', kyhieu: '2C26TAA', thumbnail: 'compact' }
-];
+const THUMBS: BaseTemplateVm['thumbnail'][] = ['classic', 'modern', 'compact'];
 
 @Injectable({ providedIn: 'root' })
 export class TemplateFacadeService {
   constructor(private readonly client: Client) {}
 
   getBaseTemplates(): Observable<BaseTemplateVm[]> {
-    return of(BASE_TEMPLATES);
+    return this.client.baseGET().pipe(map((res) => (res.data ?? []).map((d) => this.mapBaseTemplate(d))));
   }
 
   getCompanyTemplates(
@@ -40,8 +36,10 @@ export class TemplateFacadeService {
     kyhieuMau?: string,
     loaiHoadon?: string,
     trangthaiPhatHanh?: number
-  ): Observable<void> {
-    return this.client.company(donviId, kyhieuMau, loaiHoadon, trangthaiPhatHanh).pipe(map(() => void 0));
+  ): Observable<CompanyTemplateVm[]> {
+    return this.client
+      .company(donviId, kyhieuMau, loaiHoadon, trangthaiPhatHanh)
+      .pipe(map((res) => (res.data ?? []).map((x) => this.mapCompanyTemplate(x))));
   }
 
   applyTemplate(payload: ApplyTemplateCommand): Observable<void> {
@@ -50,5 +48,32 @@ export class TemplateFacadeService {
 
   notifyTax(id: string): Observable<void> {
     return this.client.notifyTax(id).pipe(map(() => void 0));
+  }
+
+  private mapBaseTemplate(d: BaseTemplateDto): BaseTemplateVm {
+    const id = d.id ?? '';
+    let h = 0;
+    for (let i = 0; i < id.length; i++) h += id.charCodeAt(i);
+    return {
+      id,
+      tenmau: d.tenmau ?? '',
+      loaihoadon: d.loaihoadon ?? '',
+      kyhieu: d.kyhieu ?? '',
+      thumbnail: THUMBS[h % THUMBS.length]!
+    };
+  }
+
+  private mapCompanyTemplate(x: CompanyTemplateDto): CompanyTemplateVm {
+    const ngay = x.ngaykichhoat;
+    return {
+      id: x.id ?? '',
+      maugocid: x.maugocid ?? '',
+      tenmaugoc: x.tenmaugoc ?? '',
+      kyhieu: x.kyhieu ?? '',
+      loaihoadon: x.loaihoadon ?? '',
+      trangthaiPhatHanh: x.trangthaiphathanh ?? 0,
+      lamaumacdinh: x.lamaumacdinh ?? false,
+      ngaykichhoat: ngay ? ngay.toISOString().slice(0, 10) : ''
+    };
   }
 }

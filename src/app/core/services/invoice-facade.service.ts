@@ -1,8 +1,16 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Inject, Injectable, Optional } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { API_BASE_URL } from './app.service';
-import { ZenvoyceApiEnvelope } from '../http/api-envelope';
+import {
+  CancelInvoiceRequest,
+  Client,
+  CompanyDto as ApiCompanyDto,
+  CreateInvoiceCommand,
+  CreateInvoiceResultDto as ApiCreateInvoiceResultDto,
+  CustomerDto as ApiCustomerDto,
+  InvoiceHistoryItemDto as ApiInvoiceHistoryItemDto,
+  InvoiceListItemDto as ApiInvoiceListItemDto,
+  ProductDto as ApiProductDto
+} from './app.service';
 
 export interface InvoiceListItemDto {
   id: string;
@@ -109,102 +117,65 @@ export interface StringMessageDto {
 
 @Injectable({ providedIn: 'root' })
 export class InvoiceFacadeService {
-  private readonly base: string;
-
-  constructor(
-    private readonly http: HttpClient,
-    @Optional() @Inject(API_BASE_URL) baseUrl?: string
-  ) {
-    this.base = baseUrl ?? '';
-  }
+  constructor(private readonly client: Client) {}
 
   getInvoices(filters?: InvoiceFilters): Observable<InvoiceListItemDto[]> {
-    let params = new HttpParams();
-    if (filters?.khachhangId) params = params.set('khachhangId', filters.khachhangId);
-    if (filters?.trangthai) params = params.set('trangthai', filters.trangthai);
-    if (filters?.tuNgay) params = params.set('tuNgay', filters.tuNgay.toISOString());
-    if (filters?.denNgay) params = params.set('denNgay', filters.denNgay.toISOString());
-
-    return this.http
-      .get<ZenvoyceApiEnvelope<InvoiceListItemDto[]>>(`${this.base}/api/invoices`, {
-        params,
-        withCredentials: true
-      })
-      .pipe(map((e) => e.data ?? []));
+    return this.client
+      .invoicesGET(filters?.khachhangId, filters?.trangthai, filters?.tuNgay, filters?.denNgay)
+      .pipe(map((res) => (res.data ?? []).map((x) => this.mapInvoiceListItem(x))));
   }
 
   createInvoice(payload: CreateInvoicePayload): Observable<CreateInvoiceResultDto> {
-    return this.http
-      .post<ZenvoyceApiEnvelope<CreateInvoiceResultDto>>(`${this.base}/api/invoices`, payload, {
-        withCredentials: true
-      })
-      .pipe(map((e) => e.data!));
+    return this.client
+      .invoicesPOST(this.toCreateCommand(payload))
+      .pipe(map((res) => this.mapCreateResult(res.data)));
   }
 
   forwardInvoice(id: string): Observable<StringMessageDto> {
-    return this.http
-      .post<ZenvoyceApiEnvelope<StringMessageDto>>(`${this.base}/api/invoices/${id}/forward`, {}, {
-        withCredentials: true
-      })
-      .pipe(map((e) => e.data ?? {}));
+    return this.client.forward(id).pipe(map((res) => ({ message: res.data?.message })));
   }
 
   signInvoice(id: string): Observable<{ id: string; trangthai: string; xmlDaKy: string }> {
-    return this.http
-      .post<
-        ZenvoyceApiEnvelope<{ id: string; trangthai: string; xmlDaKy: string }>
-      >(`${this.base}/api/invoices/${id}/sign`, {}, { withCredentials: true })
-      .pipe(map((e) => e.data!));
+    return this.client.sign(id).pipe(
+      map((res) => ({
+        id: res.data?.id ?? '',
+        trangthai: res.data?.trangthai ?? '',
+        xmlDaKy: res.data?.xmlDaKy ?? ''
+      }))
+    );
   }
 
   publishInvoice(id: string): Observable<{ id: string; trangthai: string; soHoadon: string }> {
-    return this.http
-      .post<
-        ZenvoyceApiEnvelope<{ id: string; trangthai: string; soHoadon: string }>
-      >(`${this.base}/api/invoices/${id}/publish`, {}, { withCredentials: true })
-      .pipe(map((e) => e.data!));
+    return this.client.publish(id).pipe(
+      map((res) => ({
+        id: res.data?.id ?? '',
+        trangthai: res.data?.trangthai ?? '',
+        soHoadon: res.data?.soHoadon ?? ''
+      }))
+    );
   }
 
   cancelInvoice(id: string, lyDo: string): Observable<StringMessageDto> {
-    return this.http
-      .post<ZenvoyceApiEnvelope<StringMessageDto>>(
-        `${this.base}/api/invoices/${id}/cancel`,
-        { lyDo },
-        { withCredentials: true }
-      )
-      .pipe(map((e) => e.data ?? {}));
+    return this.client
+      .cancel(id, new CancelInvoiceRequest({ lyDo }))
+      .pipe(map((res) => ({ message: res.data?.message })));
   }
 
   getInvoiceHistory(id: string): Observable<InvoiceHistoryItemDto[]> {
-    return this.http
-      .get<ZenvoyceApiEnvelope<InvoiceHistoryItemDto[]>>(`${this.base}/api/invoices/${id}/history`, {
-        withCredentials: true
-      })
-      .pipe(map((e) => e.data ?? []));
+    return this.client.history(id).pipe(map((res) => (res.data ?? []).map((x) => this.mapHistoryItem(x))));
   }
 
   sendInvoiceEmail(id: string): Observable<{ sent: boolean; message: string }> {
-    return this.http
-      .post<ZenvoyceApiEnvelope<{ sent: boolean; message: string }>>(
-        `${this.base}/api/invoices/${id}/send-email`,
-        {},
-        { withCredentials: true }
-      )
-      .pipe(map((e) => e.data!));
+    return this.client.sendEmail(id).pipe(
+      map((res) => ({
+        sent: res.data?.sent ?? false,
+        message: res.data?.message ?? ''
+      }))
+    );
   }
 
   createAdjustmentInvoice(sourceId: string, payload: CreateInvoicePayload): Observable<CreateInvoiceResultDto> {
-    const body = {
-      ...payload,
-      ngaylap: payload.ngaylap
-    };
-    return this.http
-      .post<ZenvoyceApiEnvelope<CreateInvoiceResultDto>>(
-        `${this.base}/api/invoices/${sourceId}/adjust`,
-        body,
-        { withCredentials: true }
-      )
-      .pipe(map((e) => e.data!));
+    return this.client.adjust(sourceId, this.toCreateCommand(payload)).pipe(map((res) => this.mapCreateResult(res.data)));
   }
 
   getSalesReport(filters?: {
@@ -213,51 +184,129 @@ export class InvoiceFacadeService {
     tuNgay?: Date;
     denNgay?: Date;
   }): Observable<SalesReportRowDto[]> {
-    let params = new HttpParams();
-    if (filters?.donviId) params = params.set('donviId', filters.donviId);
-    if (filters?.khachhangId) params = params.set('khachhangId', filters.khachhangId);
-    if (filters?.tuNgay) params = params.set('tuNgay', filters.tuNgay.toISOString());
-    if (filters?.denNgay) params = params.set('denNgay', filters.denNgay.toISOString());
-    return this.http
-      .get<ZenvoyceApiEnvelope<SalesReportRowDto[]>>(`${this.base}/api/invoices/reports/sales`, {
-        params,
-        withCredentials: true
-      })
-      .pipe(map((e) => e.data ?? []));
+    return this.client
+      .sales(filters?.donviId, filters?.khachhangId, filters?.tuNgay, filters?.denNgay)
+      .pipe(
+        map((res) =>
+          (res.data ?? []).map((r) => ({
+            khachhangId: r.khachhangId ?? '',
+            tenKhachHang: r.tenKhachHang ?? '',
+            soHoaDon: r.soHoaDon ?? 0,
+            tongTienHang: r.tongTienHang ?? 0,
+            tienThue: r.tienThue ?? 0,
+            tongThanhToan: r.tongThanhToan ?? 0
+          }))
+        )
+      );
   }
 
   getCompanies(): Observable<CompanyDto[]> {
-    return this.http
-      .get<ZenvoyceApiEnvelope<CompanyDto[]>>(`${this.base}/api/companies`, { withCredentials: true })
-      .pipe(map((e) => e.data ?? []));
+    return this.client.companiesGET().pipe(map((res) => (res.data ?? []).map((x) => this.mapCompany(x))));
   }
 
   getCustomers(donviId: string, keyword = ''): Observable<CustomerDto[]> {
-    let params = new HttpParams();
-    if (keyword) params = params.set('keyword', keyword);
-    return this.http
-      .get<ZenvoyceApiEnvelope<CustomerDto[]>>(`${this.base}/api/companies/${donviId}/customers`, {
-        params,
-        withCredentials: true
-      })
-      .pipe(map((e) => e.data ?? []));
+    return this.client
+      .customersGET(donviId, keyword || undefined)
+      .pipe(map((res) => (res.data ?? []).map((x) => this.mapCustomer(x))));
   }
 
   getProducts(donviId: string): Observable<ProductDto[]> {
-    return this.http
-      .get<ZenvoyceApiEnvelope<ProductDto[]>>(`${this.base}/api/companies/${donviId}/products`, {
-        withCredentials: true
-      })
-      .pipe(map((e) => e.data ?? []));
+    return this.client.productsGET(donviId, undefined).pipe(map((res) => (res.data ?? []).map((x) => this.mapProduct(x))));
   }
 
   getTemplates(donviId: string): Observable<TemplateDto[]> {
-    const params = new HttpParams().set('donviId', donviId);
-    return this.http
-      .get<ZenvoyceApiEnvelope<TemplateDto[]>>(`${this.base}/api/templates/company`, {
-        params,
-        withCredentials: true
-      })
-      .pipe(map((e) => e.data ?? []));
+    return this.client.company(donviId, undefined, undefined, undefined).pipe(
+      map((e) =>
+        (e.data ?? []).map((row) => ({
+          id: row.id ?? '',
+          donviId,
+          kyhieuMau: row.kyhieu,
+          loaiHoadon: row.loaihoadon,
+          trangthaiPhatHanh: row.trangthaiphathanh
+        }))
+      )
+    );
+  }
+
+  private toCreateCommand(payload: CreateInvoicePayload): CreateInvoiceCommand {
+    return CreateInvoiceCommand.fromJS({
+      donviId: payload.donviId,
+      khachhangId: payload.khachhangId,
+      mauctyId: payload.mauctyId,
+      kyhieu: payload.kyhieu,
+      ngaylap: payload.ngaylap,
+      hanghoas: payload.hanghoas,
+      thamChieuHoadonId: payload.thamChieuHoadonId
+    });
+  }
+
+  private mapCreateResult(d: ApiCreateInvoiceResultDto | undefined): CreateInvoiceResultDto {
+    return {
+      id: d?.id ?? '',
+      trangthai: d?.trangthai ?? '',
+      tongtien: d?.tongtien ?? 0,
+      tienthue: d?.tienthue ?? 0,
+      tongthanhtoan: d?.tongthanhtoan ?? 0
+    };
+  }
+
+  private mapInvoiceListItem(x: ApiInvoiceListItemDto): InvoiceListItemDto {
+    return {
+      id: x.id ?? '',
+      donviId: x.donviId ?? '',
+      khachhangId: x.khachhangId ?? '',
+      mauctyId: x.mauctyId ?? '',
+      kyhieu: x.kyhieu,
+      sohoadon: x.sohoadon,
+      ngaylap: x.ngaylap ? x.ngaylap.toISOString() : '',
+      tongtien: x.tongtien ?? 0,
+      tienthue: x.tienthue ?? 0,
+      tongthanhtoan: x.tongthanhtoan ?? 0,
+      trangthai: x.trangthai ?? ''
+    };
+  }
+
+  private mapHistoryItem(x: ApiInvoiceHistoryItemDto): InvoiceHistoryItemDto {
+    return {
+      id: x.id ?? '',
+      hoadonId: x.hoadonId ?? '',
+      hanhdong: x.hanhdong ?? '',
+      trangthaicu: x.trangthaiCu,
+      trangthaimoi: x.trangthaiMoi,
+      thoigian: x.thoigian ? x.thoigian.toISOString() : '',
+      nguoidungId: x.nguoidungId
+    };
+  }
+
+  private mapCompany(x: ApiCompanyDto): CompanyDto {
+    return {
+      id: x.id ?? '',
+      tendonvi: x.tendonvi,
+      masothue: x.masothue,
+      trangthai: x.trangthai
+    };
+  }
+
+  private mapCustomer(x: ApiCustomerDto): CustomerDto {
+    return {
+      id: x.id ?? '',
+      donviid: x.donviid,
+      tenkhachhang: x.tenkhachhang,
+      masothue: x.masothue,
+      email: x.email,
+      dienthoai: x.dienthoai
+    };
+  }
+
+  private mapProduct(x: ApiProductDto): ProductDto {
+    return {
+      id: x.id ?? '',
+      donviid: x.donviid,
+      tenhanghoa: x.tenhanghoa,
+      mahang: undefined,
+      donvitinh: x.donvitinh,
+      dongia: x.dongia ?? 0,
+      thuesuat: undefined
+    };
   }
 }

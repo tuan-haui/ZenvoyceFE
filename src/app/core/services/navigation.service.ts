@@ -1,8 +1,6 @@
-import { HttpClient } from '@angular/common/http';
-import { Inject, Injectable, Optional, signal } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Observable, catchError, map, of, tap } from 'rxjs';
-import { API_BASE_URL } from './app.service';
-import { ZenvoyceApiEnvelope } from '../http/api-envelope';
+import { Client, MenuDto } from './app.service';
 
 export interface MenuItemDto {
   id: string;
@@ -21,7 +19,6 @@ export interface MenuTreeNode {
 
 @Injectable({ providedIn: 'root' })
 export class NavigationService {
-  private readonly base: string;
   private readonly _loaded = signal(false);
   private readonly _menus = signal<MenuItemDto[]>([]);
   private readonly _tree = signal<MenuTreeNode[]>([]);
@@ -29,29 +26,21 @@ export class NavigationService {
   readonly loaded = this._loaded.asReadonly();
   readonly tree = this._tree.asReadonly();
 
-  constructor(
-    private readonly http: HttpClient,
-    @Optional() @Inject(API_BASE_URL) baseUrl?: string
-  ) {
-    this.base = baseUrl ?? '';
-  }
+  constructor(private readonly client: Client) {}
 
   refresh(): Observable<MenuItemDto[]> {
-    return this.http
-      .get<ZenvoyceApiEnvelope<MenuItemDto[]>>(`${this.base}/api/menus/sidebar`, { withCredentials: true })
-      .pipe(
-      map((env) => env.data ?? []),
+    return this.client.sidebar().pipe(
+      map((env) => (env.data ?? []).map((m) => this.mapMenu(m))),
       tap((rows) => {
         this._menus.set(rows);
         this._tree.set(this.buildTree(rows));
         this._loaded.set(true);
       }),
       catchError(() => {
-        const fb = fallbackSidebarMenu();
-        this._menus.set(fb);
-        this._tree.set(this.buildTree(fb));
+        this._menus.set([]);
+        this._tree.set(this.buildTree([]));
         this._loaded.set(true);
-        return of(fb);
+        return of([] as MenuItemDto[]);
       })
     );
   }
@@ -77,11 +66,20 @@ export class NavigationService {
     return allowed.some((d) => path === d || path.startsWith(d + '/'));
   }
 
+  private mapMenu(m: MenuDto): MenuItemDto {
+    return {
+      id: m.id ?? '',
+      tenmenu: m.tenmenu ?? '',
+      duongdan: m.duongdan ?? undefined,
+      menuchaId: m.menuchaId ?? undefined,
+      quyenId: m.quyenId ?? undefined
+    };
+  }
+
   private buildTree(flat: MenuItemDto[]): MenuTreeNode[] {
     if (flat.length === 0) {
       return [this.fallbackNode()];
     }
-    const byId = new Map(flat.map((m) => [m.id, m] as const));
     const childrenOf = (parentId: string | null | undefined): MenuTreeNode[] => {
       return flat
         .filter((m) => (m.menuchaId ?? null) === (parentId ?? null))
@@ -114,20 +112,4 @@ export class NavigationService {
       link: '/admin/dashboard'
     };
   }
-}
-
-function fallbackSidebarMenu(): MenuItemDto[] {
-  return [
-    { id: 'fb-1', tenmenu: 'Dashboard', duongdan: '/admin/dashboard' },
-    { id: 'fb-2', tenmenu: 'Người dùng', duongdan: '/admin/users' },
-    { id: 'fb-3', tenmenu: 'Phân quyền', duongdan: '/admin/roles' },
-    { id: 'fb-4', tenmenu: 'Nhật ký', duongdan: '/admin/system/logs' },
-    { id: 'fb-5', tenmenu: 'Công ty', duongdan: '/admin/companies' },
-    { id: 'fb-6', tenmenu: 'Khách hàng', duongdan: '/admin/customers' },
-    { id: 'fb-7', tenmenu: 'Hàng hóa', duongdan: '/admin/products' },
-    { id: 'fb-8', tenmenu: 'Thiết lập mẫu', duongdan: '/admin/templates/setup' },
-    { id: 'fb-9', tenmenu: 'Kho mẫu', duongdan: '/admin/templates/warehouse' },
-    { id: 'fb-a', tenmenu: 'Hóa đơn', duongdan: '/admin/invoices' },
-    { id: 'fb-b', tenmenu: 'Báo cáo bán', duongdan: '/admin/reports/sales' }
-  ];
 }
