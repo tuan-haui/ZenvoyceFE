@@ -108,10 +108,24 @@ interface UserRow {
               {{ user.status === 1 ? 'Hoạt động' : 'Khóa' }}
             </nz-tag>
           </td>
-          <td>
-            <a (click)="openEdit(user)">Sửa</a>
-            <a nz-popconfirm nzPopconfirmTitle="Khóa người dùng?" (nzOnConfirm)="deleteUser(user)">Khóa</a>
-            <a (click)="changePassword(user)">Đổi mật khẩu</a>
+          <td class="ops-cell">
+            <button nz-button nzType="text" nz-tooltip nzTooltipTitle="Sửa" (click)="openEdit(user)">
+              <nz-icon nzType="edit" nzTheme="outline"></nz-icon>
+            </button>
+            <button
+              nz-button
+              nzType="text"
+              nz-tooltip
+              nzTooltipTitle="Khóa người dùng"
+              nz-popconfirm
+              nzPopconfirmTitle="Khóa người dùng?"
+              (nzOnConfirm)="deleteUser(user)"
+            >
+              <nz-icon nzType="lock" nzTheme="outline"></nz-icon>
+            </button>
+            <button nz-button nzType="text" nz-tooltip nzTooltipTitle="Đổi mật khẩu" (click)="changePassword(user)">
+              <nz-icon nzType="key" nzTheme="outline"></nz-icon>
+            </button>
           </td>
         </tr>
       </tbody>
@@ -252,8 +266,8 @@ interface UserRow {
         align-items: center;
         margin-bottom: 16px;
       }
-      td a {
-        margin-right: 10px;
+      .ops-cell {
+        display: flex;
       }
       .pwd-modal input {
         display: block;
@@ -324,7 +338,7 @@ export class UsersPageComponent implements OnInit {
     private readonly catalog: CatalogFacadeService,
     private readonly apiError: ApiErrorService,
     private readonly message: NzMessageService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadAll();
