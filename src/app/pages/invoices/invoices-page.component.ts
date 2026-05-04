@@ -126,6 +126,7 @@ interface LineItemVm {
         [nzScroll]="{ x: '1100px' }"
         [nzFrontPagination]="true"
         [nzPageSize]="15"
+        [nzTemplateMode]="true"
       >
         <thead>
           <tr>

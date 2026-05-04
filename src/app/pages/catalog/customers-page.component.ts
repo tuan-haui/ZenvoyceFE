@@ -169,14 +169,6 @@ interface CustomerVm {
               </div>
             </td>
           </tr>
-          <tr *ngIf="displayedCustomers.length === 0 && !loading">
-            <td colspan="6" class="empty-cell">
-              <div class="empty-state">
-                <nz-icon nzType="inbox" nzTheme="outline" class="empty-icon"></nz-icon>
-                <p>Chưa có khách hàng nào</p>
-              </div>
-            </td>
-          </tr>
         </tbody>
       </nz-table>
 
@@ -372,20 +364,6 @@ interface CustomerVm {
     .action-btn-danger:hover {
       color: #ff4d4f !important;
     }
-    .empty-cell {
-      text-align: center;
-      padding: 40px !important;
-    }
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: #bfbfbf;
-    }
-    .empty-icon {
-      font-size: 40px;
-      margin-bottom: 8px;
-    }
     .pagination-bar {
       display: flex;
       justify-content: space-between;
@@ -429,7 +407,6 @@ interface CustomerVm {
     :host-context(html.dark-mode) .customer-address { color: rgba(255,255,255,0.45); }
     :host-context(html.dark-mode) .mono-text { color: rgba(255,255,255,0.65); }
     :host-context(html.dark-mode) .action-btn { color: rgba(255,255,255,0.35); }
-    :host-context(html.dark-mode) .empty-state { color: rgba(255,255,255,0.25); }
   `]
 })
 export class CustomersPageComponent implements OnInit {
@@ -465,7 +442,7 @@ export class CustomersPageComponent implements OnInit {
     private readonly facade: CatalogFacadeService,
     private readonly apiError: ApiErrorService,
     private readonly message: NzMessageService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.search$.pipe(debounceTime(300), distinctUntilChanged()).subscribe((kw) => {
@@ -527,11 +504,11 @@ export class CustomersPageComponent implements OnInit {
     const kw = keyword.trim().toLowerCase();
     this.filteredCustomers = kw
       ? this.customers.filter(
-          (c) =>
-            c.tenkhachhang.toLowerCase().includes(kw) ||
-            c.masothue.includes(kw) ||
-            c.email.toLowerCase().includes(kw)
-        )
+        (c) =>
+          c.tenkhachhang.toLowerCase().includes(kw) ||
+          c.masothue.includes(kw) ||
+          c.email.toLowerCase().includes(kw)
+      )
       : [...this.customers];
     this.pageIndex = 1;
     this.updateDisplayed();

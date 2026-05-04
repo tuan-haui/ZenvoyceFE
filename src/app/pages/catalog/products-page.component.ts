@@ -216,14 +216,6 @@ function mapProductDto(p: ProductDto): ProductVm {
               </div>
             </td>
           </tr>
-          <tr *ngIf="displayedProducts.length === 0 && !loading">
-            <td colspan="8" class="empty-cell">
-              <div class="empty-state">
-                <nz-icon nzType="inbox" nzTheme="outline" class="empty-icon"></nz-icon>
-                <p>Chưa có hàng hóa / dịch vụ nào</p>
-              </div>
-            </td>
-          </tr>
         </tbody>
       </nz-table>
 
@@ -537,7 +529,7 @@ export class ProductsPageComponent implements OnInit {
     private readonly invoiceFacade: InvoiceFacadeService,
     private readonly apiError: ApiErrorService,
     private readonly message: NzMessageService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.search$.pipe(debounceTime(300), distinctUntilChanged()).subscribe((kw) => {
