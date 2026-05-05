@@ -26,33 +26,24 @@ type ProductStatus = 'active' | 'disabled';
 
 interface ProductVm {
   id: string;
-  mahang: string;
+  sku: string;
   tenhanghoa: string;
   donvitinh: string;
   dongia: number;
-  thuesuat: string;
+  thuesuat: number;
   trangthai: ProductStatus;
 }
-
-const TAX_RATES = [
-  { label: '0%', value: '0' },
-  { label: '5%', value: '5' },
-  { label: '8%', value: '8' },
-  { label: '10%', value: '10' },
-  { label: 'KCT (Không chịu thuế)', value: 'KCT' }
-];
 
 const UNITS = ['Cái', 'Chiếc', 'Bộ', 'Gói', 'Hộp', 'Kg', 'Tấn', 'Lít', 'Thùng', 'Giờ', 'Ngày', 'Tháng', 'Năm', 'Dịch vụ'];
 
 function mapProductDto(p: ProductDto): ProductVm {
-  const id = p.id ?? '';
   return {
-    id,
-    mahang: id ? id.slice(0, 8) : '—',
+    id: p.id ?? '',
+    sku: p.sku?.trim() ?? '',
     tenhanghoa: p.tenhanghoa ?? '',
     donvitinh: p.donvitinh ?? '',
     dongia: p.dongia ?? 0,
-    thuesuat: '10',
+    thuesuat: p.thuesuat ?? 0,
     trangthai: 'active'
   };
 }
@@ -105,7 +96,7 @@ function mapProductDto(p: ProductDto): ProductVm {
           <nz-input-group [nzPrefix]="searchPrefix" class="search-input">
             <input
               nz-input
-              placeholder="Tìm theo mã hoặc tên hàng hóa..."
+              placeholder="Tìm theo SKU hoặc tên hàng hóa..."
               [value]="searchKeyword"
               (input)="onSearch($event)"
             />
@@ -147,7 +138,7 @@ function mapProductDto(p: ProductDto): ProductVm {
             <th nzWidth="48px">
               <label nz-checkbox [nzChecked]="allChecked" (nzCheckedChange)="onAllChecked($event)"></label>
             </th>
-            <th nzWidth="120px">Mã hàng</th>
+            <th nzWidth="120px">SKU</th>
             <th>Tên hàng hóa / Dịch vụ</th>
             <th nzWidth="110px">Đơn vị tính</th>
             <th nzWidth="140px" nzAlign="right">Đơn giá</th>
@@ -161,7 +152,7 @@ function mapProductDto(p: ProductDto): ProductVm {
             <td>
               <label nz-checkbox [nzChecked]="checked.has(p.id)" (nzCheckedChange)="onItemChecked(p.id, $event)"></label>
             </td>
-            <td class="mono-text">{{ p.mahang }}</td>
+            <td class="mono-text">{{ p.sku || '—' }}</td>
             <td>
               <span class="product-name" [class.disabled-text]="p.trangthai === 'disabled'">{{ p.tenhanghoa }}</span>
             </td>
@@ -251,9 +242,9 @@ function mapProductDto(p: ProductDto): ProductVm {
         <form nz-form [formGroup]="form" nzLayout="vertical" class="drawer-form">
           <div class="form-grid-2col">
             <nz-form-item>
-              <nz-form-label nzRequired>Mã hàng</nz-form-label>
-              <nz-form-control nzErrorTip="Vui lòng nhập mã hàng">
-                <input nz-input formControlName="mahang" placeholder="VD: ITM-001" />
+              <nz-form-label nzRequired>SKU</nz-form-label>
+              <nz-form-control nzErrorTip="Vui lòng nhập SKU">
+                <input nz-input formControlName="sku" placeholder="VD: SP-001" />
               </nz-form-control>
             </nz-form-item>
 
@@ -291,10 +282,8 @@ function mapProductDto(p: ProductDto): ProductVm {
 
             <nz-form-item>
               <nz-form-label nzRequired>Thuế suất</nz-form-label>
-              <nz-form-control nzErrorTip="Vui lòng chọn thuế suất">
-                <nz-select formControlName="thuesuat" nzPlaceHolder="Chọn thuế suất">
-                  <nz-option *ngFor="let t of taxRates" [nzValue]="t.value" [nzLabel]="t.label"></nz-option>
-                </nz-select>
+              <nz-form-control nzErrorTip="Vui lòng nhập thuế suất hợp lệ">
+                <input nz-input formControlName="thuesuat" placeholder="VD: 8 hoặc 8.5 hoặc 10%" />
               </nz-form-control>
             </nz-form-item>
           </div>
@@ -494,7 +483,6 @@ function mapProductDto(p: ProductDto): ProductVm {
 export class ProductsPageComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   readonly Math = Math;
-  readonly taxRates = TAX_RATES;
   readonly units = UNITS;
 
   companyId: string | undefined;
@@ -514,7 +502,7 @@ export class ProductsPageComponent implements OnInit {
   private search$ = new Subject<string>();
 
   form = this.fb.nonNullable.group({
-    mahang: ['', Validators.required],
+    sku: ['', [Validators.required, Validators.maxLength(20)]],
     tenhanghoa: ['', Validators.required],
     donvitinh: ['', Validators.required],
     dongia: [0, [Validators.required, Validators.min(0)]],
@@ -569,8 +557,9 @@ export class ProductsPageComponent implements OnInit {
     });
   }
 
-  formatTax(value: string): string {
-    return value === 'KCT' ? 'KCT' : `${value}%`;
+  formatTax(value: number): string {
+    if (!Number.isFinite(value)) return '0%';
+    return `${value % 1 === 0 ? value.toFixed(0) : value.toFixed(2).replace(/\.?0+$/, '')}%`;
   }
 
   onSearch(event: Event): void {
@@ -584,7 +573,7 @@ export class ProductsPageComponent implements OnInit {
     let result = this.products;
     if (kw) {
       result = result.filter(
-        (p) => p.mahang.toLowerCase().includes(kw) || p.tenhanghoa.toLowerCase().includes(kw)
+        (p) => p.sku.toLowerCase().includes(kw) || p.tenhanghoa.toLowerCase().includes(kw)
       );
     }
     if (this.filterStatus) {
@@ -635,13 +624,19 @@ export class ProductsPageComponent implements OnInit {
 
   openCreate(): void {
     this.editing = null;
-    this.form.reset({ mahang: '', tenhanghoa: '', donvitinh: '', dongia: 0, thuesuat: '10' });
+    this.form.reset({ sku: '', tenhanghoa: '', donvitinh: '', dongia: 0, thuesuat: '10' });
     this.drawerVisible = true;
   }
 
   openEdit(p: ProductVm): void {
     this.editing = p;
-    this.form.patchValue({ mahang: p.mahang, tenhanghoa: p.tenhanghoa, donvitinh: p.donvitinh, dongia: p.dongia, thuesuat: p.thuesuat });
+    this.form.patchValue({
+      sku: p.sku,
+      tenhanghoa: p.tenhanghoa,
+      donvitinh: p.donvitinh,
+      dongia: p.dongia,
+      thuesuat: p.thuesuat.toString()
+    });
     this.drawerVisible = true;
   }
 
@@ -664,10 +659,26 @@ export class ProductsPageComponent implements OnInit {
     }
     this.saving = true;
     const raw = this.form.getRawValue();
+    const taxRate = this.parseTaxRate(raw.thuesuat);
+    if (taxRate == null) {
+      this.saving = false;
+      this.message.warning('Thuế suất không hợp lệ. Ví dụ hợp lệ: 8, 8.5, 10%.');
+      return;
+    }
 
     if (this.editing) {
       this.facade
-        .updateProduct(this.editing.id, new UpdateProductCommand({ id: this.editing.id, tenhanghoa: raw.tenhanghoa, donvitinh: raw.donvitinh, dongia: raw.dongia }))
+        .updateProduct(
+          this.editing.id,
+          new UpdateProductCommand({
+            id: this.editing.id,
+            tenhanghoa: raw.tenhanghoa,
+            sku: raw.sku.trim(),
+            donvitinh: raw.donvitinh,
+            dongia: raw.dongia,
+            thuesuat: taxRate
+          })
+        )
         .subscribe({
           next: (updated) => {
             Object.assign(this.editing!, mapProductDto(updated));
@@ -685,7 +696,16 @@ export class ProductsPageComponent implements OnInit {
     }
 
     this.facade
-      .createProduct(new CreateProductCommand({ donviid: this.companyId, tenhanghoa: raw.tenhanghoa, donvitinh: raw.donvitinh, dongia: raw.dongia }))
+      .createProduct(
+        new CreateProductCommand({
+          donviid: this.companyId,
+          tenhanghoa: raw.tenhanghoa,
+          sku: raw.sku.trim(),
+          donvitinh: raw.donvitinh,
+          dongia: raw.dongia,
+          thuesuat: taxRate
+        })
+      )
       .subscribe({
         next: (created) => {
           this.products = [mapProductDto(created), ...this.products];
@@ -707,5 +727,13 @@ export class ProductsPageComponent implements OnInit {
     p.trangthai = newStatus;
     this.applyFilter(this.searchKeyword);
     this.message.success(label);
+  }
+
+  private parseTaxRate(input: string): number | null {
+    const normalized = input.trim().replace('%', '').replace(',', '.');
+    if (!normalized) return null;
+    const value = Number(normalized);
+    if (!Number.isFinite(value) || value < 0) return null;
+    return Math.round(value * 100) / 100;
   }
 }

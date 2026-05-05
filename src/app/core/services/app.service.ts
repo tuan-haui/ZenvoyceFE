@@ -1859,14 +1859,11 @@ export class Client {
     /**
      * @return OK
      */
-    assignedMenuIds(roleId: string, userId: string): Observable<ApiResponseOfArrayOfGuid> {
-        let url_ = this.baseUrl + "/api/Roles/{roleId}/users/{userId}/assigned-menu-ids";
+    assignedMenuIds(roleId: string): Observable<ApiResponseOfArrayOfGuid> {
+        let url_ = this.baseUrl + "/api/Roles/{roleId}/assigned-menu-ids";
         if (roleId === undefined || roleId === null)
             throw new globalThis.Error("The parameter 'roleId' must be defined.");
         url_ = url_.replace("{roleId}", encodeURIComponent("" + roleId));
-        if (userId === undefined || userId === null)
-            throw new globalThis.Error("The parameter 'userId' must be defined.");
-        url_ = url_.replace("{userId}", encodeURIComponent("" + userId));
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: any = {
@@ -4816,7 +4813,6 @@ export interface IApplyTemplateMetadataItem {
 
 export class AssignPermissionsRequestDto implements IAssignPermissionsRequestDto {
     roleId?: string;
-    userId?: string;
     menuIds?: string[] | undefined;
 
     constructor(data?: IAssignPermissionsRequestDto) {
@@ -4831,7 +4827,6 @@ export class AssignPermissionsRequestDto implements IAssignPermissionsRequestDto
     init(_data?: any) {
         if (_data) {
             this.roleId = _data["roleId"];
-            this.userId = _data["userId"];
             if (Array.isArray(_data["menuIds"])) {
                 this.menuIds = [] as any;
                 for (let item of _data["menuIds"])
@@ -4850,7 +4845,6 @@ export class AssignPermissionsRequestDto implements IAssignPermissionsRequestDto
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["roleId"] = this.roleId;
-        data["userId"] = this.userId;
         if (Array.isArray(this.menuIds)) {
             data["menuIds"] = [];
             for (let item of this.menuIds)
@@ -4862,7 +4856,6 @@ export class AssignPermissionsRequestDto implements IAssignPermissionsRequestDto
 
 export interface IAssignPermissionsRequestDto {
     roleId?: string;
-    userId?: string;
     menuIds?: string[] | undefined;
 }
 
@@ -5566,7 +5559,8 @@ export class CreateMenuCommand implements ICreateMenuCommand {
     tenmenu?: string | undefined;
     duongdan?: string | undefined;
     menuchaId?: string | undefined;
-    quyenId?: string | undefined;
+    icon?: string | undefined;
+    stt?: number | undefined;
 
     constructor(data?: ICreateMenuCommand) {
         if (data) {
@@ -5582,7 +5576,8 @@ export class CreateMenuCommand implements ICreateMenuCommand {
             this.tenmenu = _data["tenmenu"];
             this.duongdan = _data["duongdan"];
             this.menuchaId = _data["menuchaId"];
-            this.quyenId = _data["quyenId"];
+            this.icon = _data["icon"];
+            this.stt = _data["stt"];
         }
     }
 
@@ -5598,7 +5593,8 @@ export class CreateMenuCommand implements ICreateMenuCommand {
         data["tenmenu"] = this.tenmenu;
         data["duongdan"] = this.duongdan;
         data["menuchaId"] = this.menuchaId;
-        data["quyenId"] = this.quyenId;
+        data["icon"] = this.icon;
+        data["stt"] = this.stt;
         return data;
     }
 }
@@ -5607,14 +5603,17 @@ export interface ICreateMenuCommand {
     tenmenu?: string | undefined;
     duongdan?: string | undefined;
     menuchaId?: string | undefined;
-    quyenId?: string | undefined;
+    icon?: string | undefined;
+    stt?: number | undefined;
 }
 
 export class CreateProductCommand implements ICreateProductCommand {
     donviid?: string;
     tenhanghoa?: string | undefined;
+    sku?: string | undefined;
     donvitinh?: string | undefined;
     dongia?: number;
+    thuesuat?: number;
 
     constructor(data?: ICreateProductCommand) {
         if (data) {
@@ -5629,8 +5628,10 @@ export class CreateProductCommand implements ICreateProductCommand {
         if (_data) {
             this.donviid = _data["donviid"];
             this.tenhanghoa = _data["tenhanghoa"];
+            this.sku = _data["sku"];
             this.donvitinh = _data["donvitinh"];
             this.dongia = _data["dongia"];
+            this.thuesuat = _data["thuesuat"];
         }
     }
 
@@ -5645,8 +5646,10 @@ export class CreateProductCommand implements ICreateProductCommand {
         data = typeof data === 'object' ? data : {};
         data["donviid"] = this.donviid;
         data["tenhanghoa"] = this.tenhanghoa;
+        data["sku"] = this.sku;
         data["donvitinh"] = this.donvitinh;
         data["dongia"] = this.dongia;
+        data["thuesuat"] = this.thuesuat;
         return data;
     }
 }
@@ -5654,8 +5657,10 @@ export class CreateProductCommand implements ICreateProductCommand {
 export interface ICreateProductCommand {
     donviid?: string;
     tenhanghoa?: string | undefined;
+    sku?: string | undefined;
     donvitinh?: string | undefined;
     dongia?: number;
+    thuesuat?: number;
 }
 
 export class CreateRoleCommand implements ICreateRoleCommand {
@@ -5700,6 +5705,7 @@ export interface ICreateRoleCommand {
 
 export class CreateUserCommand implements ICreateUserCommand {
     madonvi?: string | undefined;
+    quyenid?: string | undefined;
     tendangnhap?: string | undefined;
     matkhau?: string | undefined;
     hoten?: string | undefined;
@@ -5719,6 +5725,7 @@ export class CreateUserCommand implements ICreateUserCommand {
     init(_data?: any) {
         if (_data) {
             this.madonvi = _data["madonvi"];
+            this.quyenid = _data["quyenid"];
             this.tendangnhap = _data["tendangnhap"];
             this.matkhau = _data["matkhau"];
             this.hoten = _data["hoten"];
@@ -5738,6 +5745,7 @@ export class CreateUserCommand implements ICreateUserCommand {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["madonvi"] = this.madonvi;
+        data["quyenid"] = this.quyenid;
         data["tendangnhap"] = this.tendangnhap;
         data["matkhau"] = this.matkhau;
         data["hoten"] = this.hoten;
@@ -5750,6 +5758,7 @@ export class CreateUserCommand implements ICreateUserCommand {
 
 export interface ICreateUserCommand {
     madonvi?: string | undefined;
+    quyenid?: string | undefined;
     tendangnhap?: string | undefined;
     matkhau?: string | undefined;
     hoten?: string | undefined;
@@ -6163,6 +6172,8 @@ export class LoginUserInfoDto implements ILoginUserInfoDto {
     tendangnhap?: string | undefined;
     hoten?: string | undefined;
     trangthai?: number;
+    quyenid?: string | undefined;
+    tenquyen?: string | undefined;
 
     constructor(data?: ILoginUserInfoDto) {
         if (data) {
@@ -6179,6 +6190,8 @@ export class LoginUserInfoDto implements ILoginUserInfoDto {
             this.tendangnhap = _data["tendangnhap"];
             this.hoten = _data["hoten"];
             this.trangthai = _data["trangthai"];
+            this.quyenid = _data["quyenid"];
+            this.tenquyen = _data["tenquyen"];
         }
     }
 
@@ -6195,6 +6208,8 @@ export class LoginUserInfoDto implements ILoginUserInfoDto {
         data["tendangnhap"] = this.tendangnhap;
         data["hoten"] = this.hoten;
         data["trangthai"] = this.trangthai;
+        data["quyenid"] = this.quyenid;
+        data["tenquyen"] = this.tenquyen;
         return data;
     }
 }
@@ -6204,6 +6219,8 @@ export interface ILoginUserInfoDto {
     tendangnhap?: string | undefined;
     hoten?: string | undefined;
     trangthai?: number;
+    quyenid?: string | undefined;
+    tenquyen?: string | undefined;
 }
 
 export class MenuDto implements IMenuDto {
@@ -6211,7 +6228,8 @@ export class MenuDto implements IMenuDto {
     tenmenu?: string | undefined;
     duongdan?: string | undefined;
     menuchaId?: string | undefined;
-    quyenId?: string | undefined;
+    icon?: string | undefined;
+    stt?: number | undefined;
 
     constructor(data?: IMenuDto) {
         if (data) {
@@ -6228,7 +6246,8 @@ export class MenuDto implements IMenuDto {
             this.tenmenu = _data["tenmenu"];
             this.duongdan = _data["duongdan"];
             this.menuchaId = _data["menuchaId"];
-            this.quyenId = _data["quyenId"];
+            this.icon = _data["icon"];
+            this.stt = _data["stt"];
         }
     }
 
@@ -6245,7 +6264,8 @@ export class MenuDto implements IMenuDto {
         data["tenmenu"] = this.tenmenu;
         data["duongdan"] = this.duongdan;
         data["menuchaId"] = this.menuchaId;
-        data["quyenId"] = this.quyenId;
+        data["icon"] = this.icon;
+        data["stt"] = this.stt;
         return data;
     }
 }
@@ -6255,7 +6275,8 @@ export interface IMenuDto {
     tenmenu?: string | undefined;
     duongdan?: string | undefined;
     menuchaId?: string | undefined;
-    quyenId?: string | undefined;
+    icon?: string | undefined;
+    stt?: number | undefined;
 }
 
 export class PagedResultOfAuditLogDto implements IPagedResultOfAuditLogDto {
@@ -6374,8 +6395,10 @@ export class ProductDto implements IProductDto {
     id?: string;
     donviid?: string;
     tenhanghoa?: string | undefined;
+    sku?: string | undefined;
     donvitinh?: string | undefined;
     dongia?: number;
+    thuesuat?: number;
 
     constructor(data?: IProductDto) {
         if (data) {
@@ -6391,8 +6414,10 @@ export class ProductDto implements IProductDto {
             this.id = _data["id"];
             this.donviid = _data["donviid"];
             this.tenhanghoa = _data["tenhanghoa"];
+            this.sku = _data["sku"];
             this.donvitinh = _data["donvitinh"];
             this.dongia = _data["dongia"];
+            this.thuesuat = _data["thuesuat"];
         }
     }
 
@@ -6408,8 +6433,10 @@ export class ProductDto implements IProductDto {
         data["id"] = this.id;
         data["donviid"] = this.donviid;
         data["tenhanghoa"] = this.tenhanghoa;
+        data["sku"] = this.sku;
         data["donvitinh"] = this.donvitinh;
         data["dongia"] = this.dongia;
+        data["thuesuat"] = this.thuesuat;
         return data;
     }
 }
@@ -6418,8 +6445,10 @@ export interface IProductDto {
     id?: string;
     donviid?: string;
     tenhanghoa?: string | undefined;
+    sku?: string | undefined;
     donvitinh?: string | undefined;
     dongia?: number;
+    thuesuat?: number;
 }
 
 export class PublishInvoiceResultDto implements IPublishInvoiceResultDto {
@@ -6973,8 +7002,10 @@ export interface IUpdateCustomerCommand {
 export class UpdateProductCommand implements IUpdateProductCommand {
     id?: string;
     tenhanghoa?: string | undefined;
+    sku?: string | undefined;
     donvitinh?: string | undefined;
     dongia?: number;
+    thuesuat?: number;
 
     constructor(data?: IUpdateProductCommand) {
         if (data) {
@@ -6989,8 +7020,10 @@ export class UpdateProductCommand implements IUpdateProductCommand {
         if (_data) {
             this.id = _data["id"];
             this.tenhanghoa = _data["tenhanghoa"];
+            this.sku = _data["sku"];
             this.donvitinh = _data["donvitinh"];
             this.dongia = _data["dongia"];
+            this.thuesuat = _data["thuesuat"];
         }
     }
 
@@ -7005,8 +7038,10 @@ export class UpdateProductCommand implements IUpdateProductCommand {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
         data["tenhanghoa"] = this.tenhanghoa;
+        data["sku"] = this.sku;
         data["donvitinh"] = this.donvitinh;
         data["dongia"] = this.dongia;
+        data["thuesuat"] = this.thuesuat;
         return data;
     }
 }
@@ -7014,13 +7049,16 @@ export class UpdateProductCommand implements IUpdateProductCommand {
 export interface IUpdateProductCommand {
     id?: string;
     tenhanghoa?: string | undefined;
+    sku?: string | undefined;
     donvitinh?: string | undefined;
     dongia?: number;
+    thuesuat?: number;
 }
 
 export class UpdateUserCommand implements IUpdateUserCommand {
     id?: string;
     madonvi?: string | undefined;
+    quyenid?: string | undefined;
     hoten?: string | undefined;
     email?: string | undefined;
     dienthoai?: string | undefined;
@@ -7039,6 +7077,7 @@ export class UpdateUserCommand implements IUpdateUserCommand {
         if (_data) {
             this.id = _data["id"];
             this.madonvi = _data["madonvi"];
+            this.quyenid = _data["quyenid"];
             this.hoten = _data["hoten"];
             this.email = _data["email"];
             this.dienthoai = _data["dienthoai"];
@@ -7057,6 +7096,7 @@ export class UpdateUserCommand implements IUpdateUserCommand {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
         data["madonvi"] = this.madonvi;
+        data["quyenid"] = this.quyenid;
         data["hoten"] = this.hoten;
         data["email"] = this.email;
         data["dienthoai"] = this.dienthoai;
@@ -7068,6 +7108,7 @@ export class UpdateUserCommand implements IUpdateUserCommand {
 export interface IUpdateUserCommand {
     id?: string;
     madonvi?: string | undefined;
+    quyenid?: string | undefined;
     hoten?: string | undefined;
     email?: string | undefined;
     dienthoai?: string | undefined;
@@ -7084,6 +7125,8 @@ export class UserDto implements IUserDto {
     trangthai?: number;
     createdAt?: Date;
     updatedAt?: Date;
+    quyenid?: string | undefined;
+    tenquyen?: string | undefined;
 
     constructor(data?: IUserDto) {
         if (data) {
@@ -7105,6 +7148,8 @@ export class UserDto implements IUserDto {
             this.trangthai = _data["trangthai"];
             this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : undefined as any;
             this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : undefined as any;
+            this.quyenid = _data["quyenid"];
+            this.tenquyen = _data["tenquyen"];
         }
     }
 
@@ -7126,6 +7171,8 @@ export class UserDto implements IUserDto {
         data["trangthai"] = this.trangthai;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : undefined as any;
         data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : undefined as any;
+        data["quyenid"] = this.quyenid;
+        data["tenquyen"] = this.tenquyen;
         return data;
     }
 }
@@ -7140,6 +7187,8 @@ export interface IUserDto {
     trangthai?: number;
     createdAt?: Date;
     updatedAt?: Date;
+    quyenid?: string | undefined;
+    tenquyen?: string | undefined;
 }
 
 export class ApiException extends Error {

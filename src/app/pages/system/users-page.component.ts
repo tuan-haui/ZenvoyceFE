@@ -25,7 +25,7 @@ import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { CompanyDto, CreateUserCommand, UpdateUserCommand } from '../../core/services/app.service';
 import { ApiErrorService } from '../../core/services/api-error.service';
 import { CatalogFacadeService } from '../../core/services/catalog-facade.service';
-import { UserApiDto, UserRoleFacadeService } from '../../core/services/user-role-facade.service';
+import { RoleApiDto, UserApiDto, UserRoleFacadeService } from '../../core/services/user-role-facade.service';
 
 // Validator riêng cho mật khẩu, khớp với regex phía backend:
 //   ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$
@@ -54,6 +54,8 @@ interface UserRow {
   email?: string;
   phone: string;
   madonvi: string;
+  quyenid: string;
+  tenquyen?: string;
   status: number;
 }
 
@@ -92,6 +94,7 @@ interface UserRow {
           <th>Email</th>
           <th>Điện thoại</th>
           <th>Đơn vị</th>
+          <th>Nhóm quyền</th>
           <th>Trạng thái</th>
           <th>Thao tác</th>
         </tr>
@@ -103,6 +106,7 @@ interface UserRow {
           <td>{{ user.email || '—' }}</td>
           <td>{{ user.phone || '—' }}</td>
           <td>{{ companyName(user.madonvi) }}</td>
+          <td>{{ user.tenquyen || '—' }}</td>
           <td>
             <nz-tag [nzColor]="user.status === 1 ? 'green' : 'red'">
               {{ user.status === 1 ? 'Hoạt động' : 'Khóa' }}
@@ -217,6 +221,23 @@ interface UserRow {
             </nz-form-control>
           </nz-form-item>
 
+          <!-- Nhóm quyền -->
+          <nz-form-item>
+            <nz-form-label>Nhóm quyền</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                formControlName="quyenid"
+                nzPlaceHolder="Chọn nhóm quyền"
+                nzAllowClear
+                nzShowSearch
+                [nzLoading]="loadingRoles"
+                [nzOptionHeightPx]="40"
+              >
+                <nz-option *ngFor="let r of roles" [nzValue]="r.id ?? ''" [nzLabel]="r.tenquyen ?? ''"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+
           <!-- Số điện thoại -->
           <nz-form-item>
             <nz-form-label>Số điện thoại</nz-form-label>
@@ -313,8 +334,10 @@ export class UsersPageComponent implements OnInit {
 
   users: UserRow[] = [];
   companies: CompanyDto[] = [];
+  roles: RoleApiDto[] = [];
   loading = false;
   loadingCompanies = false;
+  loadingRoles = false;
 
   formVisible = false;
   saving = false;
@@ -334,6 +357,7 @@ export class UsersPageComponent implements OnInit {
     username: ['', [Validators.required, Validators.minLength(5), Validators.pattern(/^\S+$/)]],
     email: ['', [Validators.email]],
     madonvi: [''],
+    quyenid: [''],
     phone: ['', [Validators.pattern(/^[0-9+\-\s()]{9,15}$/)]],
     password: ['', [Validators.required, passwordComplexityValidator]],
     active: [true]
@@ -354,19 +378,23 @@ export class UsersPageComponent implements OnInit {
   private loadAll(): void {
     this.loading = true;
     this.loadingCompanies = true;
+    this.loadingRoles = true;
     forkJoin({
       users: this.facade.getUsers(1, 100),
-      companies: this.catalog.getCompanies().pipe(catchError(() => of([] as CompanyDto[])))
+      companies: this.catalog.getCompanies().pipe(catchError(() => of([] as CompanyDto[]))),
+      roles: this.facade.getRoles().pipe(catchError(() => of([] as RoleApiDto[])))
     })
       .pipe(
         finalize(() => {
           this.loading = false;
           this.loadingCompanies = false;
+          this.loadingRoles = false;
         })
       )
       .subscribe({
-        next: ({ users, companies }) => {
+        next: ({ users, companies, roles }) => {
           this.companies = companies ?? [];
+          this.roles = roles ?? [];
           const items = users.items ?? [];
           this.users = items.map((u) => this.mapUser(u));
         },
@@ -397,6 +425,8 @@ export class UsersPageComponent implements OnInit {
       email: u.email ?? undefined,
       phone: u.dienthoai ?? '',
       madonvi: u.madonvi ?? '',
+      quyenid: u.quyenid ?? '',
+      tenquyen: u.tenquyen ?? undefined,
       status: typeof u.trangthai === 'number' ? u.trangthai : 1
     };
   }
@@ -417,6 +447,7 @@ export class UsersPageComponent implements OnInit {
       username: '',
       email: '',
       madonvi: this.companies[0]?.id ?? '',
+      quyenid: this.roles[0]?.id ?? '',
       phone: '',
       password: '',
       active: true
@@ -436,6 +467,7 @@ export class UsersPageComponent implements OnInit {
       username: user.username,
       email: user.email ?? '',
       madonvi: user.madonvi ?? '',
+      quyenid: user.quyenid ?? '',
       phone: user.phone ?? '',
       password: '',
       active: user.status === 1
@@ -470,6 +502,7 @@ export class UsersPageComponent implements OnInit {
     const status = data.active ? 1 : 0;
     // madonvi là Guid? trên backend → bỏ qua khi không chọn
     const madonviGuid = data.madonvi?.trim() ? data.madonvi.trim() : undefined;
+    const quyenidGuid = data.quyenid?.trim() ? data.quyenid.trim() : undefined;
     const hoten = data.hoten.trim();
     const email = data.email?.trim() || undefined;
     const phone = data.phone?.trim() || undefined;
@@ -480,6 +513,7 @@ export class UsersPageComponent implements OnInit {
       const cmd = new UpdateUserCommand({
         id: this.editingUser.id,
         madonvi: madonviGuid,
+        quyenid: quyenidGuid,
         hoten,
         email,
         dienthoai: phone,
@@ -504,6 +538,7 @@ export class UsersPageComponent implements OnInit {
       tendangnhap: data.username.trim(),
       matkhau: data.password,
       madonvi: madonviGuid,
+      quyenid: quyenidGuid,
       hoten,
       email,
       dienthoai: phone,

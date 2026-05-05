@@ -8,7 +8,8 @@ export interface MenuItemDto {
   tenmenu: string;
   duongdan?: string;
   menuchaId?: string;
-  quyenId?: string;
+  icon?: string;
+  stt?: number;
 }
 
 export interface MenuTreeNode {
@@ -96,7 +97,8 @@ export class NavigationService {
       tenmenu: m.tenmenu ?? '',
       duongdan: m.duongdan ?? undefined,
       menuchaId: m.menuchaId ?? undefined,
-      quyenId: m.quyenId ?? undefined
+      icon: m.icon ?? undefined,
+      stt: m.stt
     };
   }
 

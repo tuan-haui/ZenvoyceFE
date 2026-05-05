@@ -25,7 +25,7 @@ export interface PagedUsersDto {
 
 @Injectable({ providedIn: 'root' })
 export class UserRoleFacadeService {
-  constructor(private readonly client: Client) { }
+  constructor(private readonly client: Client) {}
 
   getUsers(pageNumber = 1, pageSize = 50): Observable<PagedUsersDto> {
     return this.client.usersGET(pageNumber, pageSize).pipe(
@@ -67,15 +67,15 @@ export class UserRoleFacadeService {
     return this.client.forRole(roleId).pipe(map((env) => env.data ?? []));
   }
 
-  getAssignedMenuIds(roleId: string, userId: string): Observable<string[]> {
+  getAssignedMenuIds(roleId: string): Observable<string[]> {
     return this.client
-      .assignedMenuIds(roleId, userId)
+      .assignedMenuIds(roleId)
       .pipe(map((env) => (env.data ?? []).map((id) => String(id))));
   }
 
-  assignPermissions(roleId: string, userId: string, menuIds: string[]): Observable<void> {
+  assignPermissions(roleId: string, menuIds: string[]): Observable<void> {
     return this.client
-      .assignPermissions(roleId, new AssignPermissionsRequestDto({ roleId, userId, menuIds }))
+      .assignPermissions(roleId, new AssignPermissionsRequestDto({ roleId, menuIds }))
       .pipe(map(() => void 0));
   }
 }
