@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
@@ -208,6 +209,15 @@ interface LineItemVm {
                   nz-tooltip nzTooltipTitle="Lập hóa đơn điều chỉnh"
                   (click)="startAdjustment(inv)">
                   <nz-icon nzType="diff" nzTheme="outline"></nz-icon>
+                </button>
+
+                <!-- Xem trước PDF -->
+                <button
+                  nz-button nzType="text" nzSize="small"
+                  nz-tooltip nzTooltipTitle="Xem trước PDF"
+                  [nzLoading]="actionLoading === inv.id + '_preview'"
+                  (click)="openPreviewModal(inv)">
+                  <nz-icon nzType="file-pdf" nzTheme="outline"></nz-icon>
                 </button>
 
                 <!-- Lịch sử -->
@@ -423,6 +433,38 @@ interface LineItemVm {
       </ng-container>
     </nz-modal>
 
+    <!-- ===== MODAL: Xem trước PDF ===== -->
+    <nz-modal
+      [(nzVisible)]="previewModalVisible"
+      [nzTitle]="previewTitle"
+      [nzFooter]="previewFooter"
+      nzWidth="1000px"
+      [nzBodyStyle]="{ padding: '0' }"
+      (nzOnCancel)="closePreviewModal()"
+    >
+      <ng-container *nzModalContent>
+        <nz-spin [nzSpinning]="previewLoading" nzTip="Đang render PDF...">
+          <iframe
+            *ngIf="previewSafeUrl"
+            [src]="previewSafeUrl"
+            class="pdf-preview-frame"
+            title="Invoice PDF preview"
+          ></iframe>
+          <div *ngIf="!previewSafeUrl && !previewLoading" class="empty-state" style="padding: 60px">
+            <nz-icon nzType="file-pdf" nzTheme="outline" class="empty-icon"></nz-icon>
+            <p>Chưa có dữ liệu xem trước</p>
+          </div>
+        </nz-spin>
+      </ng-container>
+      <ng-template #previewFooter>
+        <button nz-button (click)="closePreviewModal()">Đóng</button>
+        <button nz-button nzType="primary" [disabled]="!previewBlob" (click)="downloadPreview()">
+          <nz-icon nzType="download" nzTheme="outline"></nz-icon>
+          Tải về PDF
+        </button>
+      </ng-template>
+    </nz-modal>
+
     <!-- ===== MODAL: Lịch sử hóa đơn ===== -->
     <nz-modal
       [(nzVisible)]="historyModalVisible"
@@ -500,6 +542,14 @@ interface LineItemVm {
     }
     .empty-icon { font-size: 48px; }
 
+    .pdf-preview-frame {
+      width: 100%;
+      height: 75vh;
+      border: 0;
+      display: block;
+      background: #525659;
+    }
+
     .form-row { display: flex; gap: 16px; }
     .form-col { flex: 1; }
 
@@ -575,7 +625,7 @@ interface LineItemVm {
     :host-context(html.dark-mode) .history-time { color: rgba(255,255,255,0.45); }
   `]
 })
-export class InvoicesPageComponent implements OnInit {
+export class InvoicesPageComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
 
   // List state
@@ -621,13 +671,23 @@ export class InvoicesPageComponent implements OnInit {
   historyItems: InvoiceHistoryItemDto[] = [];
   historyLoading = false;
 
+  // Preview PDF modal
+  previewModalVisible = false;
+  previewLoading = false;
+  previewBlob: Blob | null = null;
+  previewBlobUrl: string | null = null;
+  previewSafeUrl: SafeResourceUrl | null = null;
+  previewTitle = 'Xem trước hóa đơn (PDF)';
+  previewFilename = 'invoice.pdf';
+
   readonly statusOptions = Object.entries(STATUS_CONFIG).map(([v, c]) => ({ value: v, label: c.label }));
   readonly formatCurrency = (val: number) => `${val?.toLocaleString('vi-VN') ?? 0}`;
 
   constructor(
     private readonly facade: InvoiceFacadeService,
     private readonly apiError: ApiErrorService,
-    private readonly message: NzMessageService
+    private readonly message: NzMessageService,
+    private readonly sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -848,17 +908,83 @@ export class InvoicesPageComponent implements OnInit {
         ? this.facade.createAdjustmentInvoice(this.adjustSourceId, payload)
         : this.facade.createInvoice(payload);
     req$.subscribe({
-      next: () => {
+      next: (result) => {
         this.saving = false;
         this.closeCreateDrawer();
         this.message.success(this.adjustSourceId ? 'Đã tạo hóa đơn điều chỉnh (nháp).' : 'Tạo hóa đơn thành công!');
         this.loadInvoices();
+        if (result?.id) {
+          this.openPreviewModalById(result.id, 'Xem trước hóa đơn vừa tạo (PDF)');
+        }
       },
       error: (e) => {
         this.saving = false;
         this.apiError.show(e);
       }
     });
+  }
+
+  // ---- Preview PDF ----
+
+  openPreviewModal(inv: InvoiceListItemDto): void {
+    const title = inv.sohoadon
+      ? `Xem trước hóa đơn ${inv.sohoadon} (PDF)`
+      : 'Xem trước hóa đơn (PDF)';
+    this.openPreviewModalById(inv.id, title);
+  }
+
+  private openPreviewModalById(invoiceId: string, title: string): void {
+    this.previewTitle = title;
+    this.previewModalVisible = true;
+    this.previewLoading = true;
+    this.releasePreviewBlob();
+    this.actionLoading = invoiceId + '_preview';
+
+    this.facade.previewInvoicePdf(invoiceId).subscribe({
+      next: (blob) => {
+        this.previewBlob = blob;
+        this.previewBlobUrl = URL.createObjectURL(blob);
+        this.previewSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.previewBlobUrl);
+        this.previewFilename = `hoadon-${invoiceId}.pdf`;
+        this.previewLoading = false;
+        this.actionLoading = null;
+      },
+      error: (e) => {
+        this.previewLoading = false;
+        this.actionLoading = null;
+        this.apiError.show(e);
+      }
+    });
+  }
+
+  closePreviewModal(): void {
+    this.previewModalVisible = false;
+    this.releasePreviewBlob();
+  }
+
+  downloadPreview(): void {
+    if (!this.previewBlob || !this.previewBlobUrl) {
+      return;
+    }
+    const link = document.createElement('a');
+    link.href = this.previewBlobUrl;
+    link.download = this.previewFilename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  private releasePreviewBlob(): void {
+    if (this.previewBlobUrl) {
+      URL.revokeObjectURL(this.previewBlobUrl);
+    }
+    this.previewBlob = null;
+    this.previewBlobUrl = null;
+    this.previewSafeUrl = null;
+  }
+
+  ngOnDestroy(): void {
+    this.releasePreviewBlob();
   }
 
   // ---- Actions ----

@@ -111,7 +111,7 @@
         }
       }
     },
-    "/api/companies": {
+    "/api/Companies": {
       "get": {
         "tags": [
           "Companies"
@@ -186,7 +186,7 @@
         }
       }
     },
-    "/api/companies/{id}": {
+    "/api/Companies/{id}": {
       "get": {
         "tags": [
           "Companies"
@@ -283,7 +283,7 @@
         }
       }
     },
-    "/api/companies/{id}/status": {
+    "/api/Companies/{id}/status": {
       "patch": {
         "tags": [
           "Companies"
@@ -342,7 +342,7 @@
         }
       }
     },
-    "/api/companies/{donviId}/customers": {
+    "/api/Customers/getCustomerByCompany/{donviId}": {
       "get": {
         "tags": [
           "Customers"
@@ -389,7 +389,7 @@
         }
       }
     },
-    "/api/customers": {
+    "/api/Customers": {
       "post": {
         "tags": [
           "Customers"
@@ -437,7 +437,7 @@
         }
       }
     },
-    "/api/customers/{id}": {
+    "/api/Customers/{id}": {
       "put": {
         "tags": [
           "Customers"
@@ -534,7 +534,7 @@
         }
       }
     },
-    "/api/invoices": {
+    "/api/Invoices": {
       "post": {
         "tags": [
           "Invoices"
@@ -642,7 +642,7 @@
         }
       }
     },
-    "/api/invoices/{id}/adjust": {
+    "/api/Invoices/{id}/adjust": {
       "post": {
         "tags": [
           "Invoices"
@@ -701,7 +701,7 @@
         }
       }
     },
-    "/api/invoices/{id}/send-email": {
+    "/api/Invoices/{id}/send-email": {
       "post": {
         "tags": [
           "Invoices"
@@ -741,7 +741,7 @@
         }
       }
     },
-    "/api/invoices/reports/sales": {
+    "/api/Invoices/reports/sales": {
       "get": {
         "tags": [
           "Invoices"
@@ -804,7 +804,7 @@
         }
       }
     },
-    "/api/invoices/{id}/forward": {
+    "/api/Invoices/{id}/forward": {
       "post": {
         "tags": [
           "Invoices"
@@ -844,7 +844,7 @@
         }
       }
     },
-    "/api/invoices/{id}/sign": {
+    "/api/Invoices/{id}/sign": {
       "post": {
         "tags": [
           "Invoices"
@@ -884,7 +884,7 @@
         }
       }
     },
-    "/api/invoices/{id}/publish": {
+    "/api/Invoices/{id}/publish": {
       "post": {
         "tags": [
           "Invoices"
@@ -924,7 +924,7 @@
         }
       }
     },
-    "/api/invoices/{id}/cancel": {
+    "/api/Invoices/{id}/cancel": {
       "post": {
         "tags": [
           "Invoices"
@@ -983,7 +983,7 @@
         }
       }
     },
-    "/api/invoices/{id}/history": {
+    "/api/Invoices/{id}/history": {
       "get": {
         "tags": [
           "Invoices"
@@ -1019,6 +1019,29 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/Invoices/{id}/preview-pdf": {
+      "get": {
+        "tags": [
+          "Invoices"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -1140,7 +1163,7 @@
         }
       }
     },
-    "/api/companies/{donviId}/products": {
+    "/api/Products/{donviId}/products": {
       "get": {
         "tags": [
           "Products"
@@ -1187,7 +1210,7 @@
         }
       }
     },
-    "/api/products": {
+    "/api/Products": {
       "post": {
         "tags": [
           "Products"
@@ -1235,7 +1258,7 @@
         }
       }
     },
-    "/api/products/{id}": {
+    "/api/Products/{id}": {
       "put": {
         "tags": [
           "Products"
@@ -1515,7 +1538,7 @@
         }
       }
     },
-    "/api/system/logs": {
+    "/api/System/logs": {
       "get": {
         "tags": [
           "System"
@@ -1595,7 +1618,7 @@
         }
       }
     },
-    "/api/templates/base": {
+    "/api/Templates/base": {
       "get": {
         "tags": [
           "Templates"
@@ -1670,7 +1693,45 @@
         }
       }
     },
-    "/api/templates/base/{id}": {
+    "/api/Templates/base/{id}": {
+      "get": {
+        "tags": [
+          "Templates"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfBaseTemplateDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfBaseTemplateDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfBaseTemplateDto"
+                }
+              }
+            }
+          }
+        }
+      },
       "put": {
         "tags": [
           "Templates"
@@ -1729,7 +1790,7 @@
         }
       }
     },
-    "/api/templates/company/apply": {
+    "/api/Templates/company/apply": {
       "post": {
         "tags": [
           "Templates"
@@ -1777,7 +1838,7 @@
         }
       }
     },
-    "/api/templates/company": {
+    "/api/Templates/company": {
       "get": {
         "tags": [
           "Templates"
@@ -1838,7 +1899,7 @@
         }
       }
     },
-    "/api/templates/company/{id}/notify-tax": {
+    "/api/Templates/notify-tax/{id}": {
       "post": {
         "tags": [
           "Templates"
@@ -3100,6 +3161,10 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -3123,7 +3188,15 @@
             "type": "string",
             "nullable": true
           },
-          "cautrucxml": {
+          "htmlContent": {
+            "type": "string",
+            "nullable": true
+          },
+          "cssContent": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
             "type": "string",
             "nullable": true
           }
@@ -3157,10 +3230,6 @@
             "type": "string",
             "format": "uuid"
           },
-          "oldPassword": {
-            "type": "string",
-            "nullable": true
-          },
           "newPassword": {
             "type": "string",
             "nullable": true
@@ -3188,6 +3257,23 @@
             "nullable": true
           },
           "dienthoai": {
+            "type": "string",
+            "nullable": true
+          },
+          "nguoidaidien": {
+            "type": "string",
+            "nullable": true
+          },
+          "emailcongty": {
+            "type": "string",
+            "nullable": true
+          },
+          "bankId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "bankAccount": {
             "type": "string",
             "nullable": true
           },
@@ -3277,7 +3363,15 @@
             "type": "string",
             "nullable": true
           },
-          "cautrucxml": {
+          "htmlContent": {
+            "type": "string",
+            "nullable": true
+          },
+          "cssContent": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
             "type": "string",
             "nullable": true
           }
@@ -3300,6 +3394,23 @@
             "nullable": true
           },
           "dienthoai": {
+            "type": "string",
+            "nullable": true
+          },
+          "nguoidaidien": {
+            "type": "string",
+            "nullable": true
+          },
+          "emailcongty": {
+            "type": "string",
+            "nullable": true
+          },
+          "bankId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "bankAccount": {
             "type": "string",
             "nullable": true
           }
@@ -3981,7 +4092,15 @@
             "type": "string",
             "nullable": true
           },
-          "cautrucxml": {
+          "htmlContent": {
+            "type": "string",
+            "nullable": true
+          },
+          "cssContent": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
             "type": "string",
             "nullable": true
           }
@@ -4008,6 +4127,23 @@
             "nullable": true
           },
           "dienthoai": {
+            "type": "string",
+            "nullable": true
+          },
+          "nguoidaidien": {
+            "type": "string",
+            "nullable": true
+          },
+          "emailcongty": {
+            "type": "string",
+            "nullable": true
+          },
+          "bankId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "bankAccount": {
             "type": "string",
             "nullable": true
           }
@@ -4148,7 +4284,7 @@
   },
   "security": [
     {
-      "Bearer": []
+      "Bearer": [ ]
     }
   ]
 }

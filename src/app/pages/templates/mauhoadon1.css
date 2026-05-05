@@ -1,0 +1,78 @@
+body {
+    font-family: "Times New Roman", serif;
+    font-size: 13px;
+    margin: 0;
+    padding: 0;
+}
+
+.invoice {
+    width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #000;
+}
+
+.center {
+    text-align: center;
+}
+
+.right {
+    text-align: right;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+table,
+th,
+td {
+    border: 1px solid #000;
+}
+
+th,
+td {
+    padding: 4px;
+    font-size: 12px;
+}
+
+.no-border td {
+    border: none;
+}
+
+.section {
+    margin-top: 10px;
+}
+
+.signature {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.seller-signature {
+    text-align: right;
+}
+
+.signed-badge {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 8px;
+    border: 1px solid #1d39c4;
+    border-radius: 4px;
+    color: #1d39c4;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.signed-meta {
+    margin-top: 3px;
+    font-size: 11px;
+    color: #262626;
+}

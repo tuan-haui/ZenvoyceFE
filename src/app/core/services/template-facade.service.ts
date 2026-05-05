@@ -7,7 +7,9 @@ export interface BaseTemplateVm {
   tenmau: string;
   loaihoadon: string;
   kyhieu: string;
-  thumbnail: 'classic' | 'modern' | 'compact';
+  htmlContent: string;
+  cssContent: string;
+  version?: string;
 }
 
 export interface CompanyTemplateVm {
@@ -21,14 +23,16 @@ export interface CompanyTemplateVm {
   ngaykichhoat: string;
 }
 
-const THUMBS: BaseTemplateVm['thumbnail'][] = ['classic', 'modern', 'compact'];
-
 @Injectable({ providedIn: 'root' })
 export class TemplateFacadeService {
   constructor(private readonly client: Client) {}
 
   getBaseTemplates(): Observable<BaseTemplateVm[]> {
     return this.client.baseGET().pipe(map((res) => (res.data ?? []).map((d) => this.mapBaseTemplate(d))));
+  }
+
+  getBaseTemplateById(id: string): Observable<BaseTemplateVm> {
+    return this.client.baseGET2(id).pipe(map((res) => this.mapBaseTemplate(res.data!)));
   }
 
   getCompanyTemplates(
@@ -51,15 +55,14 @@ export class TemplateFacadeService {
   }
 
   private mapBaseTemplate(d: BaseTemplateDto): BaseTemplateVm {
-    const id = d.id ?? '';
-    let h = 0;
-    for (let i = 0; i < id.length; i++) h += id.charCodeAt(i);
     return {
-      id,
+      id: d.id ?? '',
       tenmau: d.tenmau ?? '',
       loaihoadon: d.loaihoadon ?? '',
       kyhieu: d.kyhieu ?? '',
-      thumbnail: THUMBS[h % THUMBS.length]!
+      htmlContent: d.htmlContent ?? '',
+      cssContent: d.cssContent ?? '',
+      version: d.version ?? undefined
     };
   }
 

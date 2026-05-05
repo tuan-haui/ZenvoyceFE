@@ -1,6 +1,8 @@
-import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Inject, Injectable, Optional } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import {
+  API_BASE_URL,
   CancelInvoiceRequest,
   Client,
   CompanyDto as ApiCompanyDto,
@@ -117,7 +119,15 @@ export interface StringMessageDto {
 
 @Injectable({ providedIn: 'root' })
 export class InvoiceFacadeService {
-  constructor(private readonly client: Client) { }
+  private readonly apiBaseUrl: string;
+
+  constructor(
+    private readonly client: Client,
+    private readonly http: HttpClient,
+    @Optional() @Inject(API_BASE_URL) baseUrl?: string
+  ) {
+    this.apiBaseUrl = baseUrl ?? '';
+  }
 
   getInvoices(filters?: InvoiceFilters): Observable<InvoiceListItemDto[]> {
     return this.client
@@ -163,6 +173,14 @@ export class InvoiceFacadeService {
 
   getInvoiceHistory(id: string): Observable<InvoiceHistoryItemDto[]> {
     return this.client.history(id).pipe(map((res) => (res.data ?? []).map((x) => this.mapHistoryItem(x))));
+  }
+
+  previewInvoicePdf(id: string): Observable<Blob> {
+    const url = `${this.apiBaseUrl}/api/Invoices/${encodeURIComponent(id)}/preview-pdf`;
+    return this.http.get(url, {
+      responseType: 'blob',
+      withCredentials: true
+    });
   }
 
   sendInvoiceEmail(id: string): Observable<{ sent: boolean; message: string }> {

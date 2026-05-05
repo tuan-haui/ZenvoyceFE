@@ -1,0 +1,63 @@
+<div class="invoice">
+    <div class="center bold">HÓA ĐƠN BÁN HÀNG</div>
+
+    <div class="right">
+        Ký hiệu: {{symbol}}<br />
+        Số: {{invoice_number}}
+    </div>
+
+    <div class="section">
+        Ngày: {{issue_date}}
+    </div>
+
+    <div class="section">
+        <b>Người bán:</b> {{seller.name}}<br />
+        MST: {{seller.tax_code}}<br />
+        Địa chỉ: {{seller.address}}
+    </div>
+
+    <div class="section">
+        <b>Người mua:</b> {{buyer.name}}<br />
+        MST: {{buyer.tax_code}}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên hàng</th>
+                <th>Số lượng</th>
+                <th>Đơn giá</th>
+                <th>Thành tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each items}}
+            <tr>
+                <td>{{@index}}</td>
+                <td>{{name}}</td>
+                <td>{{quantity}}</td>
+                <td>{{price}}</td>
+                <td>{{amount}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+
+    <div class="section right">
+        Tổng tiền: {{total_amount}}
+    </div>
+
+    <div class="signature">
+        <div>Người mua</div>
+        <div class="seller-signature">
+            <div>Người bán</div>
+            {{#if is_signed}}
+            <div class="signed-badge">ĐÃ KÝ SỐ</div>
+            <div class="signed-meta">Thời gian ký: {{signed_at}}</div>
+            <div class="signed-meta">Chủ thể ký: {{signer_subject}}</div>
+            <div class="signed-meta">Serial: {{certificate_serial}}</div>
+            {{/if}}
+        </div>
+    </div>
+</div>
