@@ -36,13 +36,13 @@ import {
 type InvoiceStatus = 'Draft' | 'PendingSign' | 'Signed' | 'Issued' | 'Adjusted' | 'Replaced' | 'Cancelled';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  Draft:       { label: 'Nháp',          color: 'default' },
-  PendingSign: { label: 'Chờ ký',        color: 'processing' },
-  Signed:      { label: 'Đã ký',         color: 'blue' },
-  Issued:      { label: 'Đã phát hành',  color: 'success' },
-  Adjusted:    { label: 'Đã điều chỉnh', color: 'warning' },
-  Replaced:    { label: 'Thay thế',      color: 'purple' },
-  Cancelled:   { label: 'Đã hủy',        color: 'error' }
+  Draft: { label: 'Nháp', color: 'default' },
+  PendingSign: { label: 'Chờ ký', color: 'processing' },
+  Signed: { label: 'Đã ký', color: 'blue' },
+  Issued: { label: 'Đã phát hành', color: 'success' },
+  Adjusted: { label: 'Đã điều chỉnh', color: 'warning' },
+  Replaced: { label: 'Thay thế', color: 'purple' },
+  Cancelled: { label: 'Đã hủy', color: 'error' }
 };
 
 interface LineItemVm {
@@ -113,7 +113,7 @@ interface LineItemVm {
 
       <button nz-button (click)="resetFilters()">
         <nz-icon nzType="reload" nzTheme="outline"></nz-icon>
-        Đặt lại
+        Làm mới
       </button>
     </div>
 
@@ -149,7 +149,7 @@ interface LineItemVm {
             </td>
             <td class="mono-text">{{ inv.ngaylap | date:'dd/MM/yyyy' }}</td>
             <td>
-              <span class="customer-name">{{ getCustomerName(inv.khachhangId) }}</span>
+              <span class="customer-name">{{ inv.tenKhachhang || getCustomerName(inv.khachhangId) }}</span>
             </td>
             <td nzAlign="right" class="amount-cell">{{ inv.tongtien | number:'1.0-0' }} đ</td>
             <td nzAlign="right" class="amount-cell tax-cell">{{ inv.tienthue | number:'1.0-0' }} đ</td>
@@ -652,11 +652,11 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
   adjustSourceId: string | null = null;
 
   createForm = this.fb.group({
-    donviId:     ['', Validators.required],
+    donviId: ['', Validators.required],
     khachhangId: ['', Validators.required],
-    mauctyId:    ['', Validators.required],
-    ngaylap:     [new Date(), Validators.required],
-    kyhieu:      [''],
+    mauctyId: ['', Validators.required],
+    ngaylap: [new Date(), Validators.required],
+    kyhieu: [''],
     hanghoas: this.fb.array([this.buildLineGroup()])
   });
 
@@ -688,7 +688,7 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
     private readonly apiError: ApiErrorService,
     private readonly message: NzMessageService,
     private readonly sanitizer: DomSanitizer
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadCompanies();
@@ -735,7 +735,7 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
   loadCompanies(): void {
     this.facade.getCompanies().subscribe({
       next: (data) => { this.companies = data; },
-      error: () => {}
+      error: () => { }
     });
   }
 
@@ -847,9 +847,9 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
   buildLineGroup() {
     return this.fb.group({
       hanghoaId: ['', Validators.required],
-      soluong:   [1, [Validators.required, Validators.min(0.01)]],
-      dongia:    [0, [Validators.required, Validators.min(0)]],
-      thueSuat:  [10]
+      soluong: [1, [Validators.required, Validators.min(0.01)]],
+      dongia: [0, [Validators.required, Validators.min(0)]],
+      thueSuat: [10]
     });
   }
 
@@ -889,16 +889,16 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
 
     const raw = this.createForm.getRawValue();
     const payload = {
-      donviId:     raw.donviId!,
+      donviId: raw.donviId!,
       khachhangId: raw.khachhangId!,
-      mauctyId:    raw.mauctyId!,
-      kyhieu:      raw.kyhieu || undefined,
-      ngaylap:     (raw.ngaylap as Date).toISOString(),
-      hanghoas:    (raw.hanghoas as any[]).map(l => ({
+      mauctyId: raw.mauctyId!,
+      kyhieu: raw.kyhieu || undefined,
+      ngaylap: (raw.ngaylap as Date).toISOString(),
+      hanghoas: (raw.hanghoas as any[]).map(l => ({
         hanghoaId: l.hanghoaId,
-        soluong:   l.soluong,
-        dongia:    l.dongia,
-        thueSuat:  l.thueSuat ?? 0
+        soluong: l.soluong,
+        dongia: l.dongia,
+        thueSuat: l.thueSuat ?? 0
       }))
     };
 

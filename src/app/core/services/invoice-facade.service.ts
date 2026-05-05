@@ -26,6 +26,11 @@ export interface InvoiceListItemDto {
   tienthue: number;
   tongthanhtoan: number;
   trangthai: string;
+  tenKhachhang?: string;
+  maSoThueKhachhang?: string;
+  emailKhachhang?: string;
+  tenDonvi?: string;
+  tenMau?: string;
 }
 
 export interface CreateInvoiceResultDto {
@@ -280,7 +285,12 @@ export class InvoiceFacadeService {
       tongtien: x.tongtien ?? 0,
       tienthue: x.tienthue ?? 0,
       tongthanhtoan: x.tongthanhtoan ?? 0,
-      trangthai: x.trangthai ?? ''
+      trangthai: x.trangthai ?? '',
+      tenKhachhang: x.tenKhachhang,
+      maSoThueKhachhang: x.maSoThueKhachhang,
+      emailKhachhang: x.emailKhachhang,
+      tenDonvi: x.tenDonvi,
+      tenMau: x.tenMau
     };
   }
 
