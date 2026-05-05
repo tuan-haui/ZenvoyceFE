@@ -139,8 +139,14 @@ interface UserRow {
       [nzOkLoading]="pwdSaving"
     >
       <div *nzModalContent class="pwd-modal">
-        <input nz-input type="password" [(ngModel)]="pwdOld" placeholder="Mật khẩu cũ" />
-        <input nz-input type="password" [(ngModel)]="pwdNew" placeholder="Mật khẩu mới" />
+        <input nz-input type="password" [(ngModel)]="pwdNew" placeholder="Mật khẩu mới" autocomplete="new-password" />
+        <input
+          nz-input
+          type="password"
+          [(ngModel)]="pwdConfirm"
+          placeholder="Xác nhận mật khẩu mới"
+          autocomplete="new-password"
+        />
       </div>
     </nz-modal>
 
@@ -317,8 +323,8 @@ export class UsersPageComponent implements OnInit {
   pwdVisible = false;
   pwdSaving = false;
   pwdUser: UserRow | null = null;
-  pwdOld = '';
   pwdNew = '';
+  pwdConfirm = '';
 
   // Form chính: dùng nonNullable để giá trị không bao giờ là null,
   // các validators được khớp với ràng buộc của backend
@@ -532,19 +538,27 @@ export class UsersPageComponent implements OnInit {
 
   changePassword(user: UserRow): void {
     this.pwdUser = user;
-    this.pwdOld = '';
     this.pwdNew = '';
+    this.pwdConfirm = '';
     this.pwdVisible = true;
   }
 
   submitPwd(): void {
-    if (!this.pwdUser || !this.pwdOld || !this.pwdNew) {
-      this.message.warning('Nhập đủ mật khẩu cũ và mới');
+    if (!this.pwdUser || !this.pwdNew || !this.pwdConfirm) {
+      this.message.warning('Vui lòng nhập mật khẩu mới và xác nhận mật khẩu mới');
+      return;
+    }
+    if (this.pwdNew !== this.pwdConfirm) {
+      this.message.warning('Xác nhận mật khẩu mới không khớp');
+      return;
+    }
+    if (passwordComplexityValidator({ value: this.pwdNew } as AbstractControl)) {
+      this.message.warning('Mật khẩu phải có ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt');
       return;
     }
     this.pwdSaving = true;
     this.facade
-      .changePassword(this.pwdUser.id, this.pwdOld, this.pwdNew)
+      .changePassword(this.pwdUser.id, '', this.pwdNew)
       .pipe(finalize(() => (this.pwdSaving = false)))
       .subscribe({
         next: () => {

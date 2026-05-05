@@ -25,7 +25,7 @@ export interface PagedUsersDto {
 
 @Injectable({ providedIn: 'root' })
 export class UserRoleFacadeService {
-  constructor(private readonly client: Client) {}
+  constructor(private readonly client: Client) { }
 
   getUsers(pageNumber = 1, pageSize = 50): Observable<PagedUsersDto> {
     return this.client.usersGET(pageNumber, pageSize).pipe(
@@ -47,7 +47,7 @@ export class UserRoleFacadeService {
 
   changePassword(id: string, oldPassword: string, newPassword: string): Observable<void> {
     return this.client
-      .changePassword(id, new ChangePasswordCommand({ id, oldPassword, newPassword }))
+      .changePassword(id, new ChangePasswordCommand({ id, newPassword }))
       .pipe(map(() => void 0));
   }
 

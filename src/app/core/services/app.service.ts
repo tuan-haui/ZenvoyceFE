@@ -4946,7 +4946,6 @@ export interface IChangeCompanyStatusRequest {
 
 export class ChangePasswordCommand implements IChangePasswordCommand {
     id?: string;
-    oldPassword?: string | undefined;
     newPassword?: string | undefined;
 
     constructor(data?: IChangePasswordCommand) {
@@ -4961,7 +4960,6 @@ export class ChangePasswordCommand implements IChangePasswordCommand {
     init(_data?: any) {
         if (_data) {
             this.id = _data["id"];
-            this.oldPassword = _data["oldPassword"];
             this.newPassword = _data["newPassword"];
         }
     }
@@ -4976,7 +4974,6 @@ export class ChangePasswordCommand implements IChangePasswordCommand {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
-        data["oldPassword"] = this.oldPassword;
         data["newPassword"] = this.newPassword;
         return data;
     }
@@ -4984,7 +4981,6 @@ export class ChangePasswordCommand implements IChangePasswordCommand {
 
 export interface IChangePasswordCommand {
     id?: string;
-    oldPassword?: string | undefined;
     newPassword?: string | undefined;
 }
 
