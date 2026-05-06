@@ -18,8 +18,8 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopoverModule } from 'ng-zorro-antd/popover';
 import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
+import { MarkdownModule } from 'ngx-markdown';
 import { filter, finalize } from 'rxjs';
 import { AiAssistantFacadeService } from '../core/services/ai-assistant-facade.service';
 import { AuthFacadeService } from '../core/services/auth-facade.service';
@@ -41,8 +41,8 @@ import { SessionService } from '../core/services/session.service';
     NzPopoverModule,
     NzModalModule,
     NzInputModule,
-    NzSpinModule,
     NzEmptyModule,
+    MarkdownModule,
     FormsModule
   ],
   template: `
@@ -166,22 +166,32 @@ import { SessionService } from '../core/services/session.service';
             @if (chatMessages.length === 0 && !isAiLoading) {
               <nz-empty nzNotFoundContent="Chưa có cuộc hội thoại nào. Hãy bắt đầu bằng một câu hỏi." />
             } @else {
-              <nz-spin [nzSpinning]="isAiLoading && chatMessages.length === 0" nzTip="Đang phản hồi...">
-                <div class="ant-list ant-list-sm ant-list-split">
-                  <div class="ant-list-items">
-                    @for (item of chatMessages; track $index) {
-                      <div class="ant-list-item">
-                        <div class="chat-row" [class.user]="item.role === 'user'" [class.assistant]="item.role === 'assistant'">
-                          <div class="chat-bubble">
-                            <div class="chat-role">{{ item.role === 'user' ? 'Bạn' : 'Trợ lý AI' }}</div>
-                            <div class="chat-content">{{ item.content }}</div>
-                          </div>
-                        </div>
-                      </div>
-                    }
+              <div class="chat-list">
+                @for (item of chatMessages; track $index) {
+                  <div class="chat-row" [class.user]="item.role === 'user'" [class.assistant]="item.role === 'assistant'">
+                    <div class="chat-bubble">
+                      <div class="chat-role">{{ item.role === 'user' ? 'Bạn' : 'Trợ lý AI' }}</div>
+                      @if (item.role === 'assistant') {
+                        <markdown class="chat-content chat-markdown" [data]="item.content"></markdown>
+                      } @else {
+                        <div class="chat-content chat-text">{{ item.content }}</div>
+                      }
+                    </div>
                   </div>
-                </div>
-              </nz-spin>
+                }
+                @if (isAiLoading) {
+                  <div class="chat-row assistant typing">
+                    <div class="chat-bubble typing">
+                      <div class="chat-role">Trợ lý AI</div>
+                      <div class="chat-typing" aria-label="Trợ lý AI đang trả lời">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
             }
           </div>
 
@@ -449,12 +459,17 @@ import { SessionService } from '../core/services/session.service';
         overflow-y: auto;
         border: 1px solid #f0f0f0;
         border-radius: 8px;
-        padding: 8px 12px;
-        background: #fafafa;
+        padding: 12px;
+        background: #f7f8fa;
+      }
+      .chat-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
       }
       .chat-row {
         display: flex;
-        margin: 4px 0;
+        width: 100%;
       }
       .chat-row.user {
         justify-content: flex-end;
@@ -462,26 +477,148 @@ import { SessionService } from '../core/services/session.service';
       .chat-row.assistant {
         justify-content: flex-start;
       }
+      .chat-row.typing .chat-bubble {
+        max-width: 220px;
+      }
       .chat-bubble {
-        max-width: 82%;
-        padding: 10px 12px;
-        border-radius: 10px;
+        max-width: 78%;
+        padding: 10px 14px;
+        border-radius: 12px;
         background: #ffffff;
-        border: 1px solid #f0f0f0;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
       }
       .chat-row.user .chat-bubble {
         background: #e6f4ff;
         border-color: #bae0ff;
+        box-shadow: 0 2px 10px rgba(2, 132, 199, 0.15);
+      }
+      .chat-row.user .chat-role {
+        text-align: right;
       }
       .chat-role {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 600;
-        margin-bottom: 4px;
         color: #595959;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
       }
       .chat-content {
-        white-space: pre-wrap;
+        font-size: 14px;
+        line-height: 1.5;
         word-break: break-word;
+      }
+      .chat-text {
+        white-space: pre-wrap;
+      }
+      .chat-markdown {
+        display: block;
+      }
+      .chat-typing {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        height: 14px;
+      }
+      .chat-typing span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #8c8c8c;
+        opacity: 0.3;
+        animation: chat-typing 1.1s infinite ease-in-out;
+      }
+      .chat-typing span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .chat-typing span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+      @keyframes chat-typing {
+        0%,
+        80%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.3;
+        }
+        40% {
+          transform: translateY(-4px);
+          opacity: 1;
+        }
+      }
+
+      :host ::ng-deep .chat-markdown > :first-child {
+        margin-top: 0;
+      }
+      :host ::ng-deep .chat-markdown > :last-child {
+        margin-bottom: 0;
+      }
+      :host ::ng-deep .chat-markdown p {
+        margin: 0 0 8px;
+      }
+      :host ::ng-deep .chat-markdown h1 {
+        font-size: 18px;
+        margin: 10px 0 6px;
+      }
+      :host ::ng-deep .chat-markdown h2 {
+        font-size: 16px;
+        margin: 10px 0 6px;
+      }
+      :host ::ng-deep .chat-markdown h3 {
+        font-size: 14px;
+        margin: 10px 0 6px;
+      }
+      :host ::ng-deep .chat-markdown ul,
+      :host ::ng-deep .chat-markdown ol {
+        margin: 6px 0;
+        padding-left: 18px;
+      }
+      :host ::ng-deep .chat-markdown li {
+        margin: 4px 0;
+      }
+      :host ::ng-deep .chat-markdown blockquote {
+        margin: 6px 0;
+        padding-left: 10px;
+        border-left: 3px solid #d9d9d9;
+        color: #595959;
+      }
+      :host ::ng-deep .chat-markdown a {
+        color: #1677ff;
+        text-decoration: underline;
+      }
+      :host ::ng-deep .chat-markdown code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+        background: #f1f5f9;
+        padding: 1px 4px;
+        border-radius: 4px;
+      }
+      :host ::ng-deep .chat-markdown pre {
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 10px 12px;
+        border-radius: 8px;
+        overflow: auto;
+        margin: 8px 0;
+      }
+      :host ::ng-deep .chat-markdown pre code {
+        background: transparent;
+        padding: 0;
+        color: inherit;
+      }
+      :host ::ng-deep .chat-markdown table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0;
+        font-size: 13px;
+      }
+      :host ::ng-deep .chat-markdown th,
+      :host ::ng-deep .chat-markdown td {
+        border: 1px solid #e5e7eb;
+        padding: 6px 8px;
+        text-align: left;
       }
       .ai-composer {
         display: flex;
@@ -560,14 +697,42 @@ import { SessionService } from '../core/services/session.service';
       :host-context(html.dark-mode) .chat-bubble {
         background: #1f1f1f;
         border-color: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
       }
       :host-context(html.dark-mode) .chat-row.user .chat-bubble {
         background: #111b26;
         border-color: #2f4f73;
+        box-shadow: 0 2px 10px rgba(47, 79, 115, 0.4);
       }
       :host-context(html.dark-mode) .chat-role,
-      :host-context(html.dark-mode) .chat-content {
+      :host-context(html.dark-mode) .chat-text {
         color: rgba(255, 255, 255, 0.88);
+      }
+      :host-context(html.dark-mode) .chat-typing span {
+        background: rgba(255, 255, 255, 0.7);
+      }
+      :host-context(html.dark-mode) ::ng-deep .chat-markdown {
+        color: rgba(255, 255, 255, 0.88);
+      }
+      :host-context(html.dark-mode) ::ng-deep .chat-markdown blockquote {
+        color: rgba(255, 255, 255, 0.7);
+        border-left-color: rgba(255, 255, 255, 0.2);
+      }
+      :host-context(html.dark-mode) ::ng-deep .chat-markdown a {
+        color: #69b1ff;
+      }
+      :host-context(html.dark-mode) ::ng-deep .chat-markdown code {
+        background: rgba(255, 255, 255, 0.12);
+        color: rgba(255, 255, 255, 0.92);
+      }
+      :host-context(html.dark-mode) ::ng-deep .chat-markdown pre {
+        background: #0b1220;
+        color: #e2e8f0;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      :host-context(html.dark-mode) ::ng-deep .chat-markdown th,
+      :host-context(html.dark-mode) ::ng-deep .chat-markdown td {
+        border-color: rgba(255, 255, 255, 0.12);
       }
 
       /* Scrollbar in dark */
@@ -693,7 +858,6 @@ export class AdminLayoutComponent implements OnInit {
       .pipe(finalize(() => (this.isAiLoading = false)))
       .subscribe({
         next: (response) => {
-          console.log(response);
           const aiText = this.extractAiText(response);
           this.chatMessages = [
             ...this.chatMessages,

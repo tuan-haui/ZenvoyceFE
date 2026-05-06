@@ -1,4 +1,10 @@
-import { ApplicationConfig, importProvidersFrom, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import {
+  ApplicationConfig,
+  SecurityContext,
+  importProvidersFrom,
+  provideBrowserGlobalErrorListeners,
+  provideZoneChangeDetection
+} from '@angular/core';
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
@@ -13,6 +19,7 @@ import { API_BASE_URL, Client } from './core/services/app.service';
 import { environment } from '../environments/environment';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { SANITIZE, provideMarkdown } from 'ngx-markdown';
 
 registerLocaleData(en);
 
@@ -27,6 +34,9 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([authInterceptor])),
     { provide: API_BASE_URL, useValue: environment.API_TOKEN_URL },
     Client,
-    importProvidersFrom(NzModalModule)
+    importProvidersFrom(NzModalModule),
+    ...provideMarkdown({
+      sanitize: { provide: SANITIZE, useValue: SecurityContext.HTML }
+    })
   ]
 };
