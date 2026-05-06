@@ -31,6 +31,63 @@ export class Client {
      * @param body (optional) 
      * @return OK
      */
+    chat(body: ChatWithVertexAiCommand | undefined): Observable<ApiResponseOfAiChatResponseDto> {
+        let url_ = this.baseUrl + "/api/Ai/chat";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            withCredentials: true,
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_: any) => {
+            return this.processChat(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processChat(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponseOfAiChatResponseDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponseOfAiChatResponseDto>;
+        }));
+    }
+
+    protected processChat(response: HttpResponseBase): Observable<ApiResponseOfAiChatResponseDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+                (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); } }
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+                let result200: any = null;
+                let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = ApiResponseOfAiChatResponseDto.fromJS(resultData200);
+                return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+                return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
     login(body: LoginCommand | undefined): Observable<ApiResponseOfLoginResponseDto> {
         let url_ = this.baseUrl + "/api/Auth/login";
         url_ = url_.replace(/[?&]$/, "");
@@ -2811,6 +2868,158 @@ export class Client {
     }
 }
 
+export class AiChatResponseDto implements IAiChatResponseDto {
+    text?: string | undefined;
+    model?: string | undefined;
+    finishReason?: string | undefined;
+    usage?: AiUsageDto;
+
+    constructor(data?: IAiChatResponseDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.text = _data["text"];
+            this.model = _data["model"];
+            this.finishReason = _data["finishReason"];
+            this.usage = _data["usage"] ? AiUsageDto.fromJS(_data["usage"]) : undefined as any;
+        }
+    }
+
+    static fromJS(data: any): AiChatResponseDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new AiChatResponseDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["text"] = this.text;
+        data["model"] = this.model;
+        data["finishReason"] = this.finishReason;
+        data["usage"] = this.usage ? this.usage.toJSON() : undefined as any;
+        return data;
+    }
+}
+
+export interface IAiChatResponseDto {
+    text?: string | undefined;
+    model?: string | undefined;
+    finishReason?: string | undefined;
+    usage?: AiUsageDto;
+}
+
+export class AiUsageDto implements IAiUsageDto {
+    promptTokens?: number | undefined;
+    completionTokens?: number | undefined;
+    totalTokens?: number | undefined;
+
+    constructor(data?: IAiUsageDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.promptTokens = _data["promptTokens"];
+            this.completionTokens = _data["completionTokens"];
+            this.totalTokens = _data["totalTokens"];
+        }
+    }
+
+    static fromJS(data: any): AiUsageDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new AiUsageDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["promptTokens"] = this.promptTokens;
+        data["completionTokens"] = this.completionTokens;
+        data["totalTokens"] = this.totalTokens;
+        return data;
+    }
+}
+
+export interface IAiUsageDto {
+    promptTokens?: number | undefined;
+    completionTokens?: number | undefined;
+    totalTokens?: number | undefined;
+}
+
+export class ApiResponseOfAiChatResponseDto implements IApiResponseOfAiChatResponseDto {
+    success?: boolean;
+    data?: AiChatResponseDto;
+    message?: string | undefined;
+    errors?: { [key: string]: string[]; } | undefined;
+
+    constructor(data?: IApiResponseOfAiChatResponseDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            this.data = _data["data"] ? AiChatResponseDto.fromJS(_data["data"]) : undefined as any;
+            this.message = _data["message"];
+            if (_data["errors"]) {
+                this.errors = {} as any;
+                for (let key in _data["errors"]) {
+                    if (_data["errors"].hasOwnProperty(key))
+                        (this.errors as any)![key] = _data["errors"][key] !== undefined ? _data["errors"][key] : [];
+                }
+            }
+        }
+    }
+
+    static fromJS(data: any): ApiResponseOfAiChatResponseDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ApiResponseOfAiChatResponseDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        data["data"] = this.data ? this.data.toJSON() : undefined as any;
+        data["message"] = this.message;
+        if (this.errors) {
+            data["errors"] = {};
+            for (let key in this.errors) {
+                if (this.errors.hasOwnProperty(key))
+                    (data["errors"] as any)[key] = (this.errors as any)[key];
+            }
+        }
+        return data;
+    }
+}
+
+export interface IApiResponseOfAiChatResponseDto {
+    success?: boolean;
+    data?: AiChatResponseDto;
+    message?: string | undefined;
+    errors?: { [key: string]: string[]; } | undefined;
+}
+
 export class ApiResponseOfArrayOfBaseTemplateDto implements IApiResponseOfArrayOfBaseTemplateDto {
     success?: boolean;
     data?: BaseTemplateDto[] | undefined;
@@ -5089,6 +5298,42 @@ export class ChangePasswordCommand implements IChangePasswordCommand {
 export interface IChangePasswordCommand {
     id?: string;
     newPassword?: string | undefined;
+}
+
+export class ChatWithVertexAiCommand implements IChatWithVertexAiCommand {
+    message?: string | undefined;
+
+    constructor(data?: IChatWithVertexAiCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.message = _data["message"];
+        }
+    }
+
+    static fromJS(data: any): ChatWithVertexAiCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new ChatWithVertexAiCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["message"] = this.message;
+        return data;
+    }
+}
+
+export interface IChatWithVertexAiCommand {
+    message?: string | undefined;
 }
 
 export class CompanyDto implements ICompanyDto {
