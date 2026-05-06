@@ -1,11 +1,21 @@
-import { Component, OnInit, computed, inject } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ActivatedRouteSnapshot,
+  NavigationEnd,
+  PRIMARY_OUTLET,
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet
+} from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzPopoverModule } from 'ng-zorro-antd/popover';
+import { filter } from 'rxjs';
 import { AuthFacadeService } from '../core/services/auth-facade.service';
 import { COLOR_OPTIONS, ThemeColor, ThemeService } from '../core/services/theme.service';
 import { MenuTreeNode, NavigationService } from '../core/services/navigation.service';
@@ -18,6 +28,7 @@ import { SessionService } from '../core/services/session.service';
     RouterLink,
     RouterLinkActive,
     NzLayoutModule,
+    NzBreadCrumbModule,
     NzMenuModule,
     NzIconModule,
     NzButtonModule,
@@ -100,9 +111,22 @@ import { SessionService } from '../core/services/session.service';
       <!-- ===================== MAIN LAYOUT ===================== -->
       <nz-layout>
         <nz-header class="header">
-          <button nz-button nzType="text" (click)="isCollapsed = !isCollapsed">
-            <nz-icon [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'" />
-          </button>
+          <div class="header-left">
+            <button class="header-toggle-btn" nz-button nzType="text" (click)="isCollapsed = !isCollapsed">
+              <nz-icon [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'" />
+            </button>
+            <nz-breadcrumb class="header-breadcrumb">
+              @for (item of breadcrumbs(); track item.path) {
+                <nz-breadcrumb-item>
+                  @if (item.linkable) {
+                    <a [routerLink]="item.path">{{ item.label }}</a>
+                  } @else {
+                    <span>{{ item.label }}</span>
+                  }
+                </nz-breadcrumb-item>
+              }
+            </nz-breadcrumb>
+          </div>
         </nz-header>
 
         <nz-content class="content">
@@ -301,6 +325,28 @@ import { SessionService } from '../core/services/session.service';
         align-items: center;
         box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
       }
+      .header-left {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .header-toggle-btn {
+        flex-shrink: 0;
+      }
+      .header-breadcrumb {
+        min-width: 0;
+      }
+      :host ::ng-deep .header-breadcrumb .ant-breadcrumb {
+        line-height: 1;
+      }
+      :host ::ng-deep .header-breadcrumb a {
+        color: #595959;
+      }
+      :host ::ng-deep .header-breadcrumb li:last-child {
+        color: #262626;
+        font-weight: 500;
+      }
 
       /* ── Content ── */
       .content {
@@ -357,6 +403,15 @@ import { SessionService } from '../core/services/session.service';
         background: #1f1f1f;
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
       }
+      :host-context(html.dark-mode) ::ng-deep .header-breadcrumb a {
+        color: rgba(255, 255, 255, 0.65);
+      }
+      :host-context(html.dark-mode) ::ng-deep .header-breadcrumb li:last-child {
+        color: rgba(255, 255, 255, 0.88);
+      }
+      :host-context(html.dark-mode) ::ng-deep .header-breadcrumb .ant-breadcrumb-separator {
+        color: rgba(255, 255, 255, 0.38);
+      }
 
       /* Scrollbar in dark */
       :host-context(html.dark-mode) .sidebar-menu-wrapper::-webkit-scrollbar-thumb {
@@ -366,22 +421,29 @@ import { SessionService } from '../core/services/session.service';
   ]
 })
 export class AdminLayoutComponent implements OnInit {
-  private readonly navigation    = inject(NavigationService);
+  private readonly navigation = inject(NavigationService);
   private readonly sessionService = inject(SessionService);
-  private readonly themeService  = inject(ThemeService);
+  private readonly themeService = inject(ThemeService);
+  private readonly router = inject(Router);
+  constructor(
+    private readonly authFacade: AuthFacadeService,
+    private readonly message: NzMessageService
+  ) { }
 
-  isCollapsed  = false;
+  isCollapsed = false;
   profileVisible = false;
 
   readonly colorOptions = COLOR_OPTIONS;
-  readonly activeColor  = this.themeService.activeColor;
-  readonly isDark       = () => this.themeService.mode() === 'dark';
+  readonly activeColor = this.themeService.activeColor;
+  readonly isDark = () => this.themeService.mode() === 'dark';
 
   readonly menuItems = computed<MenuTreeNode[]>(() => {
     const tree = this.navigation.tree();
     if (tree && tree.length > 0) return tree;
     return [{ key: 'dashboard', title: 'Dashboard', link: '/admin/dashboard', icon: 'dashboard' }];
   });
+  private readonly currentPath = signal(this.normalizePath(this.router.url));
+  readonly breadcrumbs = computed(() => this.buildBreadcrumbs(this.currentPath()));
 
   get username(): string {
     return this.sessionService.getUsername();
@@ -391,17 +453,20 @@ export class AdminLayoutComponent implements OnInit {
     return this.username.charAt(0).toUpperCase();
   }
 
-  constructor(
-    private readonly authFacade: AuthFacadeService,
-    private readonly message: NzMessageService,
-    private readonly router: Router
-  ) {}
-
   ngOnInit(): void {
     this.themeService.init();
     if (!this.navigation.loaded()) {
-      this.navigation.refresh().subscribe({ error: () => void 0 });
+      this.navigation.refresh().subscribe({
+        next: () => this.currentPath.set(this.normalizePath(this.router.url)),
+        error: () => void 0
+      });
     }
+    this.currentPath.set(this.normalizePath(this.router.url));
+    this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe((event) => {
+        this.currentPath.set(this.normalizePath(event.urlAfterRedirects));
+      });
   }
 
   setThemeColor(color: ThemeColor): void {
@@ -424,5 +489,98 @@ export class AdminLayoutComponent implements OnInit {
         void this.router.navigate(['/auth/login']);
       }
     });
+  }
+
+  private buildBreadcrumbs(currentPath: string): Array<{ path: string; label: string; linkable: boolean }> {
+    if (!currentPath.startsWith('/admin')) {
+      return [];
+    }
+    const menuPath = this.findBestMenuPath(this.menuItems(), currentPath);
+    if (menuPath.length > 0) {
+      return menuPath.map((node, idx) => ({
+        path: node.link ? this.normalizePath(node.link) : `group-${node.key}-${idx}`,
+        label: node.title,
+        linkable: Boolean(node.link) && idx < menuPath.length - 1
+      }));
+    }
+    return this.buildFallbackBreadcrumbs(currentPath);
+  }
+
+  private collectRouteDataLabels(): Map<string, string> {
+    const labels = new Map<string, string>();
+    let node: ActivatedRouteSnapshot | null = this.router.routerState.snapshot.root;
+    const segments: string[] = [];
+
+    while (node) {
+      if (node.url.length > 0) {
+        segments.push(...node.url.map((u) => u.path));
+        const breadcrumb = node.data?.['breadcrumb'];
+        if (typeof breadcrumb === 'string' && breadcrumb.trim().length > 0) {
+          labels.set('/' + segments.join('/'), breadcrumb.trim());
+        }
+      }
+      node = node.children.find((child) => child.outlet === PRIMARY_OUTLET) ?? null;
+    }
+
+    return labels;
+  }
+
+  private findBestMenuPath(nodes: MenuTreeNode[], currentPath: string): MenuTreeNode[] {
+    const normalizedCurrentPath = this.normalizePath(currentPath);
+    const candidates: { chain: MenuTreeNode[]; score: number }[] = [];
+    const visit = (items: MenuTreeNode[], chain: MenuTreeNode[]) => {
+      for (const item of items) {
+        const nextChain = [...chain, item];
+        if (item.link) {
+          const normalizedLink = this.normalizePath(item.link);
+          if (
+            normalizedCurrentPath === normalizedLink ||
+            normalizedCurrentPath.startsWith(normalizedLink + '/')
+          ) {
+            const score = normalizedCurrentPath === normalizedLink ? 10_000 + normalizedLink.length : normalizedLink.length;
+            candidates.push({ chain: nextChain, score });
+          }
+        }
+        if (item.children?.length) {
+          visit(item.children, nextChain);
+        }
+      }
+    };
+    visit(nodes, []);
+    if (candidates.length === 0) {
+      return [];
+    }
+    candidates.sort((a, b) => b.score - a.score);
+    return candidates[0].chain;
+  }
+
+  private buildFallbackBreadcrumbs(currentPath: string): Array<{ path: string; label: string; linkable: boolean }> {
+    const segments = currentPath.split('/').filter(Boolean);
+    const routeLabels = this.collectRouteDataLabels();
+    const fallbackSegments = segments.filter((segment, idx) => !(idx === 0 && segment === 'admin'));
+    const paths = fallbackSegments.map((_, idx) => '/admin/' + fallbackSegments.slice(0, idx + 1).join('/'));
+    return paths.map((path, idx) => {
+      const segment = fallbackSegments[idx];
+      const label = routeLabels.get(path) ?? this.segmentToTitle(segment);
+      return {
+        path,
+        label,
+        linkable: idx < paths.length - 1
+      };
+    });
+  }
+
+  private normalizePath(url: string): string {
+    const raw = (url || '').split('?')[0].split('#')[0] || '/';
+    if (raw.length > 1 && raw.endsWith('/')) {
+      return raw.slice(0, -1);
+    }
+    return raw;
+  }
+
+  private segmentToTitle(segment: string): string {
+    const normalized = segment.replace(/[-_]+/g, ' ').trim();
+    if (!normalized) return segment;
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1);
   }
 }
