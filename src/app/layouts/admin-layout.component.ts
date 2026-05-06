@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import {
   ActivatedRouteSnapshot,
   NavigationEnd,
@@ -14,8 +15,13 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopoverModule } from 'ng-zorro-antd/popover';
-import { filter } from 'rxjs';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzEmptyModule } from 'ng-zorro-antd/empty';
+import { filter, finalize } from 'rxjs';
+import { AiAssistantFacadeService } from '../core/services/ai-assistant-facade.service';
 import { AuthFacadeService } from '../core/services/auth-facade.service';
 import { COLOR_OPTIONS, ThemeColor, ThemeService } from '../core/services/theme.service';
 import { MenuTreeNode, NavigationService } from '../core/services/navigation.service';
@@ -33,6 +39,11 @@ import { SessionService } from '../core/services/session.service';
     NzIconModule,
     NzButtonModule,
     NzPopoverModule,
+    NzModalModule,
+    NzInputModule,
+    NzSpinModule,
+    NzEmptyModule,
+    FormsModule
   ],
   template: `
     <nz-layout class="admin-layout">
@@ -127,6 +138,12 @@ import { SessionService } from '../core/services/session.service';
               }
             </nz-breadcrumb>
           </div>
+          <div class="header-right">
+            <button nz-button nzType="default" (click)="openAiAssistant()">
+              <nz-icon nzType="robot" />
+              <span>Trợ lý AI</span>
+            </button>
+          </div>
         </nz-header>
 
         <nz-content class="content">
@@ -134,6 +151,68 @@ import { SessionService } from '../core/services/session.service';
         </nz-content>
       </nz-layout>
     </nz-layout>
+
+    <nz-modal
+      [(nzVisible)]="aiModalVisible"
+      nzTitle="Trợ lý AI"
+      [nzFooter]="null"
+      [nzWidth]="700"
+      [nzCentered]="true"
+      (nzOnCancel)="closeAiAssistant()"
+    >
+      <ng-container *nzModalContent>
+        <div class="ai-chat-modal">
+          <div class="ai-chat-list-wrapper">
+            @if (chatMessages.length === 0 && !isAiLoading) {
+              <nz-empty nzNotFoundContent="Chưa có cuộc hội thoại nào. Hãy bắt đầu bằng một câu hỏi." />
+            } @else {
+              <nz-spin [nzSpinning]="isAiLoading && chatMessages.length === 0" nzTip="Đang phản hồi...">
+                <div class="ant-list ant-list-sm ant-list-split">
+                  <div class="ant-list-items">
+                    @for (item of chatMessages; track $index) {
+                      <div class="ant-list-item">
+                        <div class="chat-row" [class.user]="item.role === 'user'" [class.assistant]="item.role === 'assistant'">
+                          <div class="chat-bubble">
+                            <div class="chat-role">{{ item.role === 'user' ? 'Bạn' : 'Trợ lý AI' }}</div>
+                            <div class="chat-content">{{ item.content }}</div>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </nz-spin>
+            }
+          </div>
+
+          <form class="ai-composer" (ngSubmit)="sendAiMessage()">
+            <textarea
+              nz-input
+              [(ngModel)]="aiInput"
+              name="aiInput"
+              rows="3"
+              placeholder="Nhập nội dung bạn muốn hỏi..."
+              [disabled]="isAiLoading"
+              (keydown)="onAiComposerKeydown($event)"
+            ></textarea>
+            <div class="ai-composer-actions">
+              <button nz-button nzType="default" type="button" [disabled]="isAiLoading" (click)="clearAiInput()">
+                Xóa
+              </button>
+              <button
+                nz-button
+                nzType="primary"
+                type="submit"
+                [disabled]="!canSendAiMessage()"
+                [nzLoading]="isAiLoading"
+              >
+                Gửi
+              </button>
+            </div>
+          </form>
+        </div>
+      </ng-container>
+    </nz-modal>
 
     <!-- =================== Profile Popup Template =================== -->
     <ng-template #profileTpl>
@@ -323,6 +402,7 @@ import { SessionService } from '../core/services/session.service';
         padding: 0 16px;
         display: flex;
         align-items: center;
+        justify-content: space-between;
         box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
       }
       .header-left {
@@ -336,6 +416,12 @@ import { SessionService } from '../core/services/session.service';
       }
       .header-breadcrumb {
         min-width: 0;
+      }
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: 16px;
       }
       :host ::ng-deep .header-breadcrumb .ant-breadcrumb {
         line-height: 1;
@@ -351,6 +437,61 @@ import { SessionService } from '../core/services/session.service';
       /* ── Content ── */
       .content {
         margin: 20px;
+      }
+
+      .ai-chat-modal {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .ai-chat-list-wrapper {
+        max-height: 420px;
+        overflow-y: auto;
+        border: 1px solid #f0f0f0;
+        border-radius: 8px;
+        padding: 8px 12px;
+        background: #fafafa;
+      }
+      .chat-row {
+        display: flex;
+        margin: 4px 0;
+      }
+      .chat-row.user {
+        justify-content: flex-end;
+      }
+      .chat-row.assistant {
+        justify-content: flex-start;
+      }
+      .chat-bubble {
+        max-width: 82%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: #ffffff;
+        border: 1px solid #f0f0f0;
+      }
+      .chat-row.user .chat-bubble {
+        background: #e6f4ff;
+        border-color: #bae0ff;
+      }
+      .chat-role {
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #595959;
+      }
+      .chat-content {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .ai-composer {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .ai-composer-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
       }
 
       /* ──────────── Dark mode: Sidebar shell ──────────── */
@@ -412,6 +553,22 @@ import { SessionService } from '../core/services/session.service';
       :host-context(html.dark-mode) ::ng-deep .header-breadcrumb .ant-breadcrumb-separator {
         color: rgba(255, 255, 255, 0.38);
       }
+      :host-context(html.dark-mode) .ai-chat-list-wrapper {
+        background: #141414;
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+      :host-context(html.dark-mode) .chat-bubble {
+        background: #1f1f1f;
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+      :host-context(html.dark-mode) .chat-row.user .chat-bubble {
+        background: #111b26;
+        border-color: #2f4f73;
+      }
+      :host-context(html.dark-mode) .chat-role,
+      :host-context(html.dark-mode) .chat-content {
+        color: rgba(255, 255, 255, 0.88);
+      }
 
       /* Scrollbar in dark */
       :host-context(html.dark-mode) .sidebar-menu-wrapper::-webkit-scrollbar-thumb {
@@ -427,11 +584,16 @@ export class AdminLayoutComponent implements OnInit {
   private readonly router = inject(Router);
   constructor(
     private readonly authFacade: AuthFacadeService,
+    private readonly aiAssistantFacade: AiAssistantFacadeService,
     private readonly message: NzMessageService
   ) { }
 
   isCollapsed = false;
   profileVisible = false;
+  aiModalVisible = false;
+  isAiLoading = false;
+  aiInput = '';
+  chatMessages: { role: 'user' | 'assistant'; content: string }[] = [];
 
   readonly colorOptions = COLOR_OPTIONS;
   readonly activeColor = this.themeService.activeColor;
@@ -489,6 +651,69 @@ export class AdminLayoutComponent implements OnInit {
         void this.router.navigate(['/auth/login']);
       }
     });
+  }
+
+  openAiAssistant(): void {
+    this.aiModalVisible = true;
+  }
+
+  closeAiAssistant(): void {
+    this.aiModalVisible = false;
+  }
+
+  clearAiInput(): void {
+    this.aiInput = '';
+  }
+
+  canSendAiMessage(): boolean {
+    return !this.isAiLoading && this.aiInput.trim().length > 0;
+  }
+
+  onAiComposerKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      if (this.canSendAiMessage()) {
+        this.sendAiMessage();
+      }
+    }
+  }
+
+  sendAiMessage(): void {
+    const message = this.aiInput.trim();
+    if (!message || this.isAiLoading) {
+      return;
+    }
+
+    this.chatMessages = [...this.chatMessages, { role: 'user', content: message }];
+    this.aiInput = '';
+    this.isAiLoading = true;
+
+    this.aiAssistantFacade
+      .chat(message)
+      .pipe(finalize(() => (this.isAiLoading = false)))
+      .subscribe({
+        next: (response) => {
+          console.log(response);
+          const aiText = this.extractAiText(response);
+          this.chatMessages = [
+            ...this.chatMessages,
+            {
+              role: 'assistant',
+              content: aiText ?? 'Mình chưa nhận được nội dung trả lời từ AI.'
+            }
+          ];
+        },
+        error: () => {
+          this.chatMessages = [
+            ...this.chatMessages,
+            {
+              role: 'assistant',
+              content: 'Hiện chưa thể phản hồi. Vui lòng thử lại sau.'
+            }
+          ];
+          this.message.error('Gọi Trợ lý AI thất bại.');
+        }
+      });
   }
 
   private buildBreadcrumbs(currentPath: string): Array<{ path: string; label: string; linkable: boolean }> {
@@ -568,6 +793,16 @@ export class AdminLayoutComponent implements OnInit {
         linkable: idx < paths.length - 1
       };
     });
+  }
+
+  private extractAiText(response: unknown): string | null {
+    const rawText =
+      (response as { text?: unknown })?.text ?? (response as { data?: { text?: unknown } })?.data?.text;
+    if (typeof rawText !== 'string') {
+      return null;
+    }
+    const trimmed = rawText.trim();
+    return trimmed.length > 0 ? trimmed : null;
   }
 
   private normalizePath(url: string): string {
