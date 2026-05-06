@@ -172,6 +172,11 @@ import { SessionService } from '../core/services/session.service';
       .menu-sidebar {
         background: #ffffff;
         box-shadow: 2px 0 8px rgba(15, 23, 42, 0.08);
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        align-self: flex-start;
+        overflow: hidden;
       }
       :host ::ng-deep .menu-sidebar.ant-layout-sider {
         background: #ffffff;
