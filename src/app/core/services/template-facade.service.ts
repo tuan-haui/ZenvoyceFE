@@ -54,6 +54,10 @@ export class TemplateFacadeService {
     return this.client.basePOST(payload).pipe(map((res) => this.mapBaseTemplate(res.data!)));
   }
 
+  deleteBaseTemplate(id: string): Observable<void> {
+    return this.client.baseDELETE(id).pipe(map(() => void 0));
+  }
+
   notifyTax(id: string): Observable<void> {
     return this.client.notifyTax(id).pipe(map(() => void 0));
   }

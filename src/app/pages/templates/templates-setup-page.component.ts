@@ -9,6 +9,7 @@ import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSegmentedModule } from 'ng-zorro-antd/segmented';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTagModule } from 'ng-zorro-antd/tag';
@@ -76,7 +77,8 @@ const SAMPLE_DATA: SampleInvoiceData = {
     NzTagModule,
     NzSpinModule,
     NzEmptyModule,
-    NzSegmentedModule
+    NzSegmentedModule,
+    NzPopconfirmModule
   ],
   template: `
     <div class="setup-layout">
@@ -98,12 +100,15 @@ const SAMPLE_DATA: SampleInvoiceData = {
             <nz-empty *ngIf="!loading && templates.length === 0" nzNotFoundContent="Chưa có mẫu hoá đơn nào trong hệ thống"></nz-empty>
 
             <div class="template-list">
-              <button
+              <div
                 *ngFor="let t of templates; let i = index"
                 class="template-row"
                 [class.selected]="selectedId === t.id"
                 (click)="selectTemplate(t)"
-                type="button"
+                role="button"
+                tabindex="0"
+                (keydown.enter)="selectTemplate(t)"
+                (keydown.space)="selectTemplate(t); $event.preventDefault()"
               >
                 <div class="template-icon">
                   <nz-icon nzType="file-text" nzTheme="outline"></nz-icon>
@@ -116,13 +121,29 @@ const SAMPLE_DATA: SampleInvoiceData = {
                     <nz-tag nzColor="default" *ngIf="t.version">v{{ t.version }}</nz-tag>
                   </div>
                 </div>
-                <nz-icon
-                  *ngIf="selectedId === t.id"
-                  nzType="check-circle"
-                  nzTheme="fill"
-                  class="check-icon"
-                ></nz-icon>
-              </button>
+                <div class="template-actions">
+                  <button
+                    nz-button
+                    nzType="text"
+                    nz-popconfirm
+                    nzPopconfirmTitle="Bạn có chắc muốn xóa mẫu này?"
+                    nzPopconfirmPlacement="left"
+                    (nzOnConfirm)="deleteTemplate(t)"
+                    (click)="$event.stopPropagation()"
+                    class="template-action template-action-danger"
+                    nz-tooltip
+                    nzTooltipTitle="Xóa"
+                  >
+                    <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
+                  </button>
+                  <nz-icon
+                    *ngIf="selectedId === t.id"
+                    nzType="check-circle"
+                    nzTheme="fill"
+                    class="check-icon"
+                  ></nz-icon>
+                </div>
+              </div>
             </div>
           </nz-spin>
 
@@ -261,6 +282,11 @@ const SAMPLE_DATA: SampleInvoiceData = {
       text-align: left;
       transition: border-color 0.15s, box-shadow 0.15s;
     }
+    .template-row:focus {
+      border-color: var(--app-primary, #1677ff);
+      box-shadow: 0 0 0 2px rgba(22,119,255,0.15);
+      outline: none;
+    }
     .template-row:hover {
       border-color: var(--app-primary, #1677ff);
     }
@@ -291,6 +317,14 @@ const SAMPLE_DATA: SampleInvoiceData = {
       flex-wrap: wrap;
     }
     .template-kyhieu { font-size: 12px; color: #8c8c8c; }
+    .template-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+    }
+    .template-action { display: inline-flex; align-items: center; justify-content: center; }
+    .template-action-danger { color: #ff4d4f; }
     .check-icon { color: var(--app-primary, #1677ff); font-size: 18px; flex-shrink: 0; }
 
     .section-title {
@@ -542,6 +576,24 @@ export class TemplatesSetupPageComponent implements OnInit {
     });
   }
 
+  deleteTemplate(t: BaseTemplateVm): void {
+    this.facade.deleteBaseTemplate(t.id).subscribe({
+      next: () => {
+        const remaining = this.templates.filter((x) => x.id !== t.id);
+        this.templates = remaining;
+        if (this.selectedId === t.id) {
+          if (remaining.length > 0) {
+            this.selectTemplate(remaining[0]);
+          } else {
+            this.clearSelection();
+          }
+        }
+        this.message.success('Đã xóa mẫu hóa đơn');
+      },
+      error: (e) => this.apiError.show(e)
+    });
+  }
+
   saveAsNewTemplate(): void {
     if (!this.selectedTemplate) {
       return;
@@ -652,6 +704,14 @@ export class TemplatesSetupPageComponent implements OnInit {
 
   private escapeRegExp(value: string): string {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  private clearSelection(): void {
+    this.selectedId = '';
+    this.selectedTemplate = null;
+    this.draftHtml = '';
+    this.draftCss = '';
+    this.releasePreviewUrl();
   }
 
   private releasePreviewUrl(): void {
