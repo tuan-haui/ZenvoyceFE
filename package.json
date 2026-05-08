@@ -4,8 +4,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "prebuild": "node --experimental-strip-types ./set-env.ts",
-    "build": "ts-node ./set-env.ts && ng build",
+    "prebuild": "node --experimental-strip-types set-env.ts",
+    "build": "ts-node set-env.ts && ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "generate-api": "pwsh -NoProfile -File scripts/generate-api-client.ps1"
