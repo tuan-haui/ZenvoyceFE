@@ -35,6 +35,7 @@
     "@google-cloud/vertexai": "^1.12.0",
     "echarts": "^6.0.0",
     "marked": "^16.0.0",
+    "monaco-editor": "^0.52.2",
     "ng-zorro-antd": "^20.4.4",
     "ngx-echarts": "^20.0.2",
     "ngx-markdown": "^20.0.0",

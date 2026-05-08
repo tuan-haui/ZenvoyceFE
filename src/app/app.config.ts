@@ -19,6 +19,7 @@ import { API_BASE_URL, Client } from './core/services/app.service';
 import { environment } from '../environments/environment';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { provideNzConfig } from 'ng-zorro-antd/core/config';
 import { SANITIZE, provideMarkdown } from 'ngx-markdown';
 
 registerLocaleData(en);
@@ -35,6 +36,11 @@ export const appConfig: ApplicationConfig = {
     { provide: API_BASE_URL, useValue: environment.API_TOKEN_URL },
     Client,
     importProvidersFrom(NzModalModule),
+    provideNzConfig({
+      codeEditor: {
+        assetsRoot: 'assets/monaco-editor/min'
+      }
+    }),
     ...provideMarkdown({
       sanitize: { provide: SANITIZE, useValue: SecurityContext.HTML }
     })

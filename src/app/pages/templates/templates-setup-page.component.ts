@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzCodeEditorModule } from 'ng-zorro-antd/code-editor';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -12,7 +13,7 @@ import { NzSegmentedModule } from 'ng-zorro-antd/segmented';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
-import { ApplyTemplateCommand } from '../../core/services/app.service';
+import { ApplyTemplateCommand, CreateBaseTemplateCommand } from '../../core/services/app.service';
 import { ApiErrorService } from '../../core/services/api-error.service';
 import { InvoiceFacadeService } from '../../core/services/invoice-facade.service';
 import { BaseTemplateVm, TemplateFacadeService } from '../../core/services/template-facade.service';
@@ -69,6 +70,7 @@ const SAMPLE_DATA: SampleInvoiceData = {
     FormsModule,
     NzButtonModule,
     NzIconModule,
+    NzCodeEditorModule,
     NzDividerModule,
     NzToolTipModule,
     NzTagModule,
@@ -132,12 +134,16 @@ const SAMPLE_DATA: SampleInvoiceData = {
             <button
               nz-button nzType="primary" nzSize="large" class="full-width"
               [nzLoading]="saving"
-              [disabled]="!companyId"
+              [disabled]="!companyId || hasDraftChanges"
               (click)="applyTemplate()"
             >
               <nz-icon nzType="check-circle" nzTheme="outline"></nz-icon>
               Lưu và Áp dụng cho công ty
             </button>
+            <p *ngIf="hasDraftChanges" class="warning-text">
+              <nz-icon nzType="warning" nzTheme="outline"></nz-icon>
+              Có thay đổi HTML/CSS chưa lưu. Vui lòng lưu mẫu mới trước khi áp dụng.
+            </p>
             <p *ngIf="!companyId" class="warning-text">
               <nz-icon nzType="warning" nzTheme="outline"></nz-icon>
               Chưa có công ty. Khai báo công ty trước khi áp dụng mẫu.
@@ -150,14 +156,27 @@ const SAMPLE_DATA: SampleInvoiceData = {
       <div class="preview-panel">
         <div class="preview-toolbar">
           <span class="preview-label">XEM TRƯỚC MẪU</span>
-          <nz-segmented
-            [nzOptions]="viewModeOptions"
-            [(ngModel)]="viewMode"
-            (ngModelChange)="onViewModeChange()"
-          ></nz-segmented>
+          <div class="preview-actions">
+            <nz-tag *ngIf="hasDraftChanges" nzColor="orange">Chưa lưu</nz-tag>
+            <button
+              nz-button
+              nzType="primary"
+              [disabled]="!canSaveTemplate"
+              [nzLoading]="savingTemplate"
+              (click)="saveAsNewTemplate()"
+            >
+              <nz-icon nzType="save" nzTheme="outline"></nz-icon>
+              Lưu mẫu mới
+            </button>
+            <nz-segmented
+              [nzOptions]="viewModeOptions"
+              [(ngModel)]="viewMode"
+              (ngModelChange)="onViewModeChange()"
+            ></nz-segmented>
+          </div>
         </div>
 
-        <div class="paper-container" *ngIf="selectedTemplate">
+        <div class="paper-container" *ngIf="selectedTemplate" [class.code-mode]="viewMode !== 'preview'">
           <ng-container *ngIf="viewMode === 'preview'">
             <iframe
               *ngIf="previewSafeUrl"
@@ -169,11 +188,19 @@ const SAMPLE_DATA: SampleInvoiceData = {
           </ng-container>
 
           <ng-container *ngIf="viewMode === 'html'">
-            <pre class="code-block">{{ selectedTemplate.htmlContent }}</pre>
+            <nz-code-editor
+              class="code-editor"
+              [(ngModel)]="draftHtml"
+              [nzEditorOption]="htmlEditorOption"
+            ></nz-code-editor>
           </ng-container>
 
           <ng-container *ngIf="viewMode === 'css'">
-            <pre class="code-block">{{ selectedTemplate.cssContent }}</pre>
+            <nz-code-editor
+              class="code-editor"
+              [(ngModel)]="draftCss"
+              [nzEditorOption]="cssEditorOption"
+            ></nz-code-editor>
           </ng-container>
         </div>
 
@@ -296,10 +323,17 @@ const SAMPLE_DATA: SampleInvoiceData = {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
       padding: 10px 20px;
       background: #fff;
       border-bottom: 1px solid #f0f0f0;
       flex-shrink: 0;
+    }
+    .preview-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     .preview-label {
       font-size: 11px;
@@ -315,6 +349,10 @@ const SAMPLE_DATA: SampleInvoiceData = {
       display: flex;
       justify-content: center;
     }
+    .paper-container.code-mode {
+      justify-content: stretch;
+      align-items: stretch;
+    }
     .preview-frame {
       width: 100%;
       max-width: 900px;
@@ -324,20 +362,14 @@ const SAMPLE_DATA: SampleInvoiceData = {
       box-shadow: 0 4px 24px rgba(0,0,0,0.06);
       border-radius: 4px;
     }
-    .code-block {
+    .code-editor {
       width: 100%;
-      max-width: 900px;
-      margin: 0;
-      padding: 16px 20px;
-      background: #1f1f1f;
-      color: #d4d4d4;
-      font-family: 'SFMono-Regular', Consolas, monospace;
-      font-size: 12px;
-      line-height: 1.6;
+      height: 100%;
+      min-height: 520px;
+      border: 1px solid #e8e8e8;
       border-radius: 4px;
-      overflow: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
+      overflow: hidden;
+      background: #1e1e1e;
     }
 
     :host-context(html.dark-mode) .config-panel { background: #1f1f1f; border-right-color: rgba(255,255,255,0.1); }
@@ -351,12 +383,17 @@ const SAMPLE_DATA: SampleInvoiceData = {
     :host-context(html.dark-mode) .template-name { color: rgba(255,255,255,0.85); }
     :host-context(html.dark-mode) .preview-panel { background: #0f0f0f; }
     :host-context(html.dark-mode) .preview-toolbar { background: #1f1f1f; border-bottom-color: rgba(255,255,255,0.1); }
+    :host-context(html.dark-mode) .code-editor { border-color: rgba(255,255,255,0.1); }
   `]
 })
 export class TemplatesSetupPageComponent implements OnInit {
   templates: BaseTemplateVm[] = [];
   selectedId = '';
   selectedTemplate: BaseTemplateVm | null = null;
+
+  draftHtml = '';
+  draftCss = '';
+  savingTemplate = false;
 
   loading = false;
   saving = false;
@@ -369,8 +406,33 @@ export class TemplatesSetupPageComponent implements OnInit {
     { label: 'CSS', value: 'css', icon: 'bg-colors' }
   ];
 
+  readonly htmlEditorOption = {
+    language: 'html',
+    minimap: { enabled: false },
+    automaticLayout: true,
+    wordWrap: 'on' as const
+  };
+
+  readonly cssEditorOption = {
+    language: 'css',
+    minimap: { enabled: false },
+    automaticLayout: true,
+    wordWrap: 'on' as const
+  };
+
   previewSafeUrl: SafeResourceUrl | null = null;
   private previewBlobUrl: string | null = null;
+
+  get hasDraftChanges(): boolean {
+    if (!this.selectedTemplate) {
+      return false;
+    }
+    return this.draftHtml !== this.selectedTemplate.htmlContent || this.draftCss !== this.selectedTemplate.cssContent;
+  }
+
+  get canSaveTemplate(): boolean {
+    return !!this.selectedTemplate && this.hasDraftChanges && this.isHtmlValid() && !this.savingTemplate;
+  }
 
   constructor(
     private readonly facade: TemplateFacadeService,
@@ -409,6 +471,8 @@ export class TemplatesSetupPageComponent implements OnInit {
   selectTemplate(t: BaseTemplateVm): void {
     this.selectedId = t.id;
     this.selectedTemplate = t;
+    this.draftHtml = t.htmlContent ?? '';
+    this.draftCss = t.cssContent ?? '';
     this.refreshPreview();
   }
 
@@ -424,13 +488,15 @@ export class TemplatesSetupPageComponent implements OnInit {
     }
     this.releasePreviewUrl();
 
-    const renderedBody = renderHandlebars(this.selectedTemplate.htmlContent || '', SAMPLE_DATA as unknown as Record<string, unknown>);
+    const html = this.draftHtml;
+    const css = this.draftCss;
+    const renderedBody = renderHandlebars(html, SAMPLE_DATA as unknown as Record<string, unknown>);
     const fullHtml = `<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="utf-8" />
 <title>Preview</title>
-<style>${this.selectedTemplate.cssContent || ''}</style>
+  <style>${css}</style>
 </head>
 <body>${renderedBody}</body>
 </html>`;
@@ -441,6 +507,10 @@ export class TemplatesSetupPageComponent implements OnInit {
   }
 
   applyTemplate(): void {
+    if (this.hasDraftChanges) {
+      this.message.warning('Vui lòng lưu thay đổi HTML/CSS trước khi áp dụng.');
+      return;
+    }
     if (!this.companyId) {
       this.message.warning('Chưa có công ty. Vui lòng khai báo công ty trước.');
       return;
@@ -470,6 +540,118 @@ export class TemplatesSetupPageComponent implements OnInit {
         this.apiError.show(e);
       }
     });
+  }
+
+  saveAsNewTemplate(): void {
+    if (!this.selectedTemplate) {
+      return;
+    }
+    if (!this.isHtmlValid()) {
+      this.message.warning('HTML phải có ít nhất 10 ký tự.');
+      return;
+    }
+    if (!this.hasDraftChanges) {
+      this.message.info('Chưa có thay đổi để lưu.');
+      return;
+    }
+
+    const identity = this.buildNextTemplateIdentity();
+    const payload = new CreateBaseTemplateCommand({
+      tenmau: identity.name,
+      loaihoadon: this.selectedTemplate.loaihoadon || 'GTGT',
+      kyhieu: identity.code,
+      htmlContent: this.draftHtml,
+      cssContent: this.draftCss,
+      version: identity.version
+    });
+
+    this.savingTemplate = true;
+    this.facade.createBaseTemplate(payload).subscribe({
+      next: (created) => {
+        this.savingTemplate = false;
+        this.templates = [created, ...this.templates];
+        this.selectTemplate(created);
+        this.message.success('Đã lưu mẫu mới');
+      },
+      error: (e) => {
+        this.savingTemplate = false;
+        this.apiError.show(e);
+      }
+    });
+  }
+
+  private isHtmlValid(): boolean {
+    return this.draftHtml.trim().length >= 10;
+  }
+
+  private buildNextTemplateIdentity(): { name: string; code: string; version: string } {
+    const nameBase = this.stripNameVersion(this.selectedTemplate?.tenmau ?? 'Mẫu');
+    const codeBase = this.stripCodeVersion(this.selectedTemplate?.kyhieu ?? 'MAU');
+    const nextVersion = this.getNextVersionNumber(nameBase, codeBase);
+    const name = this.buildVersionedName(nameBase, nextVersion);
+    const code = this.buildVersionedCode(codeBase, nextVersion);
+    return { name, code, version: String(nextVersion) };
+  }
+
+  private getNextVersionNumber(nameBase: string, codeBase: string): number {
+    const nameRegex = new RegExp(`^${this.escapeRegExp(nameBase)}\\s+v(\\d+)$`, 'i');
+    const codeRegex = new RegExp(`^${this.escapeRegExp(codeBase)}-v(\\d+)$`, 'i');
+    let maxVersion = 1;
+
+    for (const t of this.templates) {
+      if (t.tenmau) {
+        if (t.tenmau.toLowerCase() === nameBase.toLowerCase()) {
+          maxVersion = Math.max(maxVersion, 1);
+        }
+        const match = t.tenmau.match(nameRegex);
+        if (match) {
+          const parsed = Number.parseInt(match[1], 10);
+          if (!Number.isNaN(parsed)) {
+            maxVersion = Math.max(maxVersion, parsed);
+          }
+        }
+      }
+
+      if (t.kyhieu) {
+        if (t.kyhieu.toLowerCase() === codeBase.toLowerCase()) {
+          maxVersion = Math.max(maxVersion, 1);
+        }
+        const match = t.kyhieu.match(codeRegex);
+        if (match) {
+          const parsed = Number.parseInt(match[1], 10);
+          if (!Number.isNaN(parsed)) {
+            maxVersion = Math.max(maxVersion, parsed);
+          }
+        }
+      }
+    }
+
+    return maxVersion + 1;
+  }
+
+  private buildVersionedName(base: string, version: number): string {
+    const name = `${base} v${version}`.trim();
+    return name.length > 255 ? name.slice(0, 255) : name;
+  }
+
+  private buildVersionedCode(base: string, version: number): string {
+    const suffix = `-V${version}`;
+    const maxBaseLength = 50 - suffix.length;
+    const trimmed = base.trim();
+    const safeBase = trimmed.length > maxBaseLength ? trimmed.slice(0, maxBaseLength) : trimmed;
+    return `${safeBase}${suffix}`;
+  }
+
+  private stripNameVersion(value: string): string {
+    return value.replace(/\s+v\d+$/i, '').trim();
+  }
+
+  private stripCodeVersion(value: string): string {
+    return value.replace(/-v\d+$/i, '').trim();
+  }
+
+  private escapeRegExp(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   private releasePreviewUrl(): void {
