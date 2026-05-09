@@ -62,7 +62,6 @@ export interface CreateInvoicePayload {
   donviId: string;
   khachhangId: string;
   mauctyId: string;
-  kyhieu?: string;
   ngaylap: string;
   hanghoas: InvoiceLineRequestDto[];
   thamChieuHoadonId?: string;
@@ -256,7 +255,6 @@ export class InvoiceFacadeService {
       donviId: payload.donviId,
       khachhangId: payload.khachhangId,
       mauctyId: payload.mauctyId,
-      kyhieu: payload.kyhieu,
       ngaylap: payload.ngaylap,
       hanghoas: payload.hanghoas,
       thamChieuHoadonId: payload.thamChieuHoadonId

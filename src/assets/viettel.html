@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mẫu hóa đơn điện tử A4</title>
+    <style>
+        :root {
+            --red: #d81f26;
+            --red-dark: #b9151b;
+            --text: #2d2d2d;
+            --muted: #7b4c4c;
+            --line: rgba(216, 31, 38, 0.65);
+            --paper: #fffdfd;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background: #e9e9e9;
+            font-family: "Times New Roman", Times, serif;
+            color: var(--text);
+        }
+
+        /* A4 page */
+        .page {
+            width: 210mm;
+            height: 297mm;
+            margin: 12px auto;
+            position: relative;
+            background: var(--paper);
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+            border: 1px solid rgba(216, 31, 38, 0.55);
+        }
+
+        /* Decorative border */
+        .page::before {
+            content: "";
+            position: absolute;
+            inset: 4mm;
+            border: 2px solid var(--red);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .page::after {
+            content: "";
+            position: absolute;
+            inset: 6mm;
+            border: 1px solid rgba(216, 31, 38, 0.45);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Watermark background */
+        .watermark {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .watermark::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 180mm;
+            height: 180mm;
+            transform: translate(-50%, -42%) scale(1.15);
+            background-image: url("src/assets/trongdong.png");
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: contain;
+            opacity: 0.08;
+            filter: blur(1px);
+        }
+
+        .watermark::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 50% 40%, rgba(216, 31, 38, 0.03), transparent 32%),
+                radial-gradient(circle at 50% 60%, rgba(216, 31, 38, 0.025), transparent 42%);
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            height: 100%;
+            padding: 10mm 10mm 8mm 10mm;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top {
+            display: grid;
+            grid-template-columns: 1.05fr 1.4fr 1fr;
+            align-items: start;
+            gap: 6mm;
+            padding-bottom: 2mm;
+            border-bottom: 1.5px solid var(--line);
+        }
+
+        .brand {
+            display: flex;
+            align-items: flex-start;
+            gap: 4mm;
+            min-height: 20mm;
+        }
+
+        .brand-mark {
+            font-size: 9mm;
+            line-height: 1;
+            font-weight: 700;
+            color: var(--red);
+            letter-spacing: -1px;
+            font-family: Arial, Helvetica, sans-serif;
+            text-transform: lowercase;
+            margin-top: 0.5mm;
+        }
+
+        .title-block {
+            text-align: center;
+            color: var(--red-dark);
+            padding-top: 0.5mm;
+        }
+
+        .title-block h1 {
+            margin: 0;
+            font-size: 5.25mm;
+            line-height: 1.05;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .title-block .subtitle {
+            margin-top: 1mm;
+            font-size: 3mm;
+            font-weight: 700;
+        }
+
+        .title-block .date {
+            margin-top: 1.2mm;
+            font-size: 3mm;
+        }
+
+        .invoice-meta {
+            justify-self: end;
+            width: 100%;
+            max-width: 58mm;
+            color: var(--red-dark);
+            font-size: 3mm;
+            font-weight: 700;
+            line-height: 1.5;
+        }
+
+        .invoice-meta .row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 2mm;
+        }
+
+        .invoice-meta .value {
+            min-width: 24mm;
+            text-align: right;
+        }
+
+        .section {
+            padding-top: 1.7mm;
+            padding-bottom: 1.6mm;
+            border-bottom: 1px solid var(--line);
+            font-size: 3mm;
+            line-height: 1.35;
+        }
+
+        .seller,
+        .buyer {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1mm;
+        }
+
+        .seller .name,
+        .buyer .name {
+            color: var(--red-dark);
+            font-weight: 700;
+        }
+
+        .kv {
+            display: grid;
+            grid-template-columns: 33mm 1fr;
+            gap: 2mm;
+            align-items: baseline;
+            margin: 0.5mm 0;
+        }
+
+        .kv .k {
+            color: var(--red-dark);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .kv .v {
+            color: var(--text);
+        }
+
+        .buyer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4mm 8mm;
+        }
+
+        .buyer-grid .full {
+            grid-column: 1 / -1;
+        }
+
+        .table-wrap {
+            padding-top: 0.8mm;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            font-size: 3mm;
+        }
+
+        thead th {
+            color: var(--red-dark);
+            font-weight: 700;
+            text-align: center;
+            border: 1px solid var(--line);
+            padding: 1.2mm 1mm;
+            line-height: 1.15;
+        }
+
+        tbody td {
+            border: 1px solid var(--line);
+            padding: 1.15mm 1mm;
+            vertical-align: middle;
+            line-height: 1.2;
+        }
+
+        .c-center {
+            text-align: center;
+        }
+
+        .c-right {
+            text-align: right;
+        }
+
+        .c-left {
+            text-align: left;
+        }
+
+        .items tbody tr {
+            height: 8mm;
+        }
+
+        .empty-row td {
+            height: 7.3mm;
+        }
+
+        .summary {
+            margin-top: auto;
+            border-top: none;
+            font-size: 3mm;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1.35fr 1fr;
+            gap: 4mm;
+            align-items: start;
+            padding-top: 1mm;
+        }
+
+        .left-note {
+            color: var(--red-dark);
+            font-weight: 700;
+        }
+
+        .totals {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 2.175mm;
+        }
+
+        .totals td {
+            padding: 0.7mm 0;
+        }
+
+        .totals .label {
+            text-align: right;
+            color: var(--red-dark);
+            font-weight: 700;
+            padding-right: 2mm;
+            white-space: nowrap;
+        }
+
+        .totals .value {
+            text-align: right;
+            color: var(--text);
+            width: 34mm;
+            white-space: nowrap;
+        }
+
+        .amount-words {
+            margin-top: 1.6mm;
+            padding-top: 1.2mm;
+            border-top: 1px solid var(--line);
+            display: grid;
+            grid-template-columns: 36mm 1fr;
+            gap: 2mm;
+            align-items: start;
+            font-size: 2.1mm;
+        }
+
+        .amount-words .label {
+            color: var(--red-dark);
+            font-weight: 700;
+        }
+
+        .signatures {
+            margin-top: 3.5mm;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10mm;
+            align-items: start;
+            min-height: 32mm;
+        }
+
+        .sig-box {
+            text-align: center;
+            font-size: 2.15mm;
+            line-height: 1.35;
+        }
+
+        .sig-title {
+            color: var(--red-dark);
+            font-weight: 700;
+            margin-bottom: 10mm;
+        }
+
+        .sig-name {
+            color: var(--red-dark);
+            font-weight: 700;
+            white-space: pre-line;
+            margin-top: 1mm;
+        }
+
+        .sig-note {
+            color: #666;
+            font-style: italic;
+            margin-top: 0.8mm;
+        }
+
+        .footer {
+            position: absolute;
+            left: 10mm;
+            right: 10mm;
+            bottom: 6mm;
+            z-index: 1;
+            text-align: center;
+            color: var(--red-dark);
+            font-size: 1.6mm;
+            line-height: 1.4;
+            border-top: 1px dotted rgba(216, 31, 38, 0.65);
+            padding-top: 1.2mm;
+        }
+
+        .footer .code {
+            position: absolute;
+            right: 0;
+            bottom: 9mm;
+            font-size: 3mm;
+            font-weight: 700;
+        }
+
+        @media print {
+
+            html,
+            body {
+                width: 210mm;
+                height: 297mm;
+                background: white;
+            }
+
+            .page {
+                width: 210mm;
+                height: 297mm;
+                margin: 0;
+                box-shadow: none;
+                border: none;
+            }
+
+            .page::before,
+            .page::after {
+                inset: 0;
+            }
+
+            .watermark::before {
+                opacity: 0.06;
+                filter: blur(1.3px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <div class="watermark"></div>
+
+        <div class="content">
+            <header class="top">
+                <div class="brand">
+                    <div class="brand-mark">viettel</div>
+                </div>
+
+                <div class="title-block">
+                    <h1>HÓA ĐƠN GIÁ TRỊ GIA TĂNG</h1>
+                    <div class="subtitle">Bản thể hiện của hóa đơn điện tử</div>
+                    <div class="date">Ngày 18 tháng 03 năm 2021</div>
+                </div>
+
+                <div class="invoice-meta">
+                    <div class="row"><span>Mẫu số:</span><span class="value">01GTKT0/001</span></div>
+                    <div class="row"><span>Ký hiệu:</span><span class="value">AA/21E</span></div>
+                    <div class="row"><span>Số:</span><span class="value">0000000</span></div>
+                </div>
+            </header>
+
+            <section class="section seller">
+                <div class="kv">
+                    <div class="k">Đơn vị bán hàng</div>
+                    <div class="v name">: TẬP ĐOÀN CÔNG NGHIỆP - VIỄN THÔNG QUÂN ĐỘI</div>
+                </div>
+                <div class="kv">
+                    <div class="k">Mã số thuế</div>
+                    <div class="v">: 0100109106</div>
+                </div>
+                <div class="kv">
+                    <div class="k">Địa chỉ</div>
+                    <div class="v">: Số 1 đường Trần Hữu Dực, Phường Mỹ Đình 2, Quận Nam Từ Liêm, Hà Nội</div>
+                </div>
+                <div class="buyer-grid">
+                    <div class="kv">
+                        <div class="k">Điện thoại</div>
+                        <div class="v">: 0866 531 668</div>
+                    </div>
+                    <div class="kv">
+                        <div class="k">Email</div>
+                        <div class="v">: cskh@sinvoice.vn</div>
+                    </div>
+                    <div class="kv">
+                        <div class="k">Số tài khoản</div>
+                        <div class="v">: 0514100062201</div>
+                    </div>
+                    <div class="kv">
+                        <div class="k"></div>
+                        <div class="v">Tại Ngân Hàng TMCP Quân Đội Chi Nhánh Điện Biên Phủ</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section buyer">
+                <div class="kv">
+                    <div class="k">Họ tên người mua hàng</div>
+                    <div class="v name">: Lê Văn Tài</div>
+                </div>
+                <div class="kv">
+                    <div class="k">Tên đơn vị</div>
+                    <div class="v">: Công ty TNHH Đo đạc - Thiết kế - Xây dựng Phúc Khang</div>
+                </div>
+                <div class="kv">
+                    <div class="k">Mã số thuế</div>
+                    <div class="v">: 3603462095</div>
+                </div>
+                <div class="kv">
+                    <div class="k">Địa chỉ</div>
+                    <div class="v">: L8-25, Đường D1, Thị trấn Dầu Giây, Huyện Thống Nhất, Tỉnh Đồng Nai</div>
+                </div>
+                <div class="buyer-grid">
+                    <div class="kv">
+                        <div class="k">Hình thức thanh toán</div>
+                        <div class="v">: TM/CK</div>
+                    </div>
+                    <div class="kv">
+                        <div class="k">Số tài khoản</div>
+                        <div class="v">: 0601 3845 XXXX tại Ngân hàng Sacombank - Chi nhánh Quận 8</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="table-wrap">
+                <table class="items">
+                    <colgroup>
+                        <col style="width: 7%">
+                        <col style="width: 45%">
+                        <col style="width: 10%">
+                        <col style="width: 10%">
+                        <col style="width: 13%">
+                        <col style="width: 15%">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên hàng hóa, dịch vụ</th>
+                            <th>DVT</th>
+                            <th>Số lượng</th>
+                            <th>Đơn giá</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                        <tr>
+                            <th>A</th>
+                            <th>B</th>
+                            <th>C</th>
+                            <th>1</th>
+                            <th>2</th>
+                            <th>3 = 1 x 2</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="c-center">1</td>
+                            <td class="c-left">SAMSUNG Galaxy Note 10 Plus</td>
+                            <td class="c-center">Chiếc</td>
+                            <td class="c-center">4</td>
+                            <td class="c-right">18.990.000</td>
+                            <td class="c-right">75.960.000</td>
+                        </tr>
+                        <tr>
+                            <td class="c-center">2</td>
+                            <td class="c-left">SAMSUNG Galaxy S7 Edge</td>
+                            <td class="c-center">Chiếc</td>
+                            <td class="c-center">6</td>
+                            <td class="c-right">18.490.000</td>
+                            <td class="c-right">110.940.000</td>
+                        </tr>
+                        <!-- các dòng trống để giữ bố cục giống mẫu -->
+                        <tr class="empty-row">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="empty-row">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="empty-row">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="empty-row">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="empty-row">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="empty-row">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="empty-row">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="empty-row">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="summary">
+                    <div class="summary-grid">
+                        <div class="left-note">Thuế suất GTGT: 10 %</div>
+                        <div>
+                            <table class="totals">
+                                <tr>
+                                    <td class="label">Cộng tiền hàng hóa, dịch vụ:</td>
+                                    <td class="value">186.900.000</td>
+                                </tr>
+                                <tr>
+                                    <td class="label">Tiền thuế GTGT:</td>
+                                    <td class="value">18.690.000</td>
+                                </tr>
+                                <tr>
+                                    <td class="label">Tổng cộng tiền thanh toán:</td>
+                                    <td class="value">205.590.000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="amount-words">
+                        <div class="label">Số tiền viết bằng chữ:</div>
+                        <div>Hai trăm lẻ năm triệu năm trăm chín mươi nghìn đồng chẵn</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="signatures">
+                <div class="sig-box">
+                    <div class="sig-title">Người mua hàng</div>
+                </div>
+                <div class="sig-box">
+                    <div class="sig-title">Người bán hàng</div>
+                    <div class="sig-note">Signature valid</div>
+                    <div class="sig-name">Ký bởi TẬP ĐOÀN CÔNG NGHIỆP<br />- VIỄN THÔNG QUÂN ĐỘI<br />Ký ngày 18/03/2021
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="footer">
+            <div class="code">Mẫu số: 033R020</div>
+            Đơn vị cung cấp dịch vụ Hóa đơn điện tử: Tập đoàn Công nghiệp - Viễn thông Quân đội (Viettel), MST:
+            0100109106<br />
+            Tra cứu hóa đơn điện tử tại Website: https://sinvoice.viettel.vn/tracuhoadon . Mã số bí mật:
+        </div>
+    </div>
+</body>
+
+</html>

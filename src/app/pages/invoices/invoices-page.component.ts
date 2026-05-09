@@ -301,12 +301,6 @@ interface LineItemVm {
               </nz-form-item>
             </div>
 
-            <nz-form-item>
-              <nz-form-label>Ký hiệu hóa đơn (tùy chọn)</nz-form-label>
-              <nz-form-control>
-                <input nz-input formControlName="kyhieu" placeholder="VD: C22TAA" />
-              </nz-form-control>
-            </nz-form-item>
 
             <nz-divider nzText="Danh sách hàng hóa / dịch vụ"></nz-divider>
 
@@ -656,7 +650,6 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
     khachhangId: ['', Validators.required],
     mauctyId: ['', Validators.required],
     ngaylap: [new Date(), Validators.required],
-    kyhieu: [''],
     hanghoas: this.fb.array([this.buildLineGroup()])
   });
 
@@ -812,7 +805,7 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
     this.adjustSourceId = null;
     this.createForm.reset({
       donviId: '', khachhangId: '', mauctyId: '',
-      ngaylap: new Date(), kyhieu: ''
+      ngaylap: new Date()
     });
     while (this.hanghoasArray.length > 1) this.hanghoasArray.removeAt(this.hanghoasArray.length - 1);
     this.hanghoasArray.at(0).reset({ hanghoaId: '', soluong: 1, dongia: 0, thueSuat: 10 });
@@ -834,8 +827,7 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
       donviId: inv.donviId,
       khachhangId: inv.khachhangId,
       mauctyId: inv.mauctyId,
-      ngaylap: new Date(),
-      kyhieu: inv.kyhieu ?? ''
+      ngaylap: new Date()
     });
     while (this.hanghoasArray.length > 1) this.hanghoasArray.removeAt(this.hanghoasArray.length - 1);
     this.hanghoasArray.at(0).reset({ hanghoaId: '', soluong: 1, dongia: 0, thueSuat: 10 });
@@ -892,7 +884,6 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
       donviId: raw.donviId!,
       khachhangId: raw.khachhangId!,
       mauctyId: raw.mauctyId!,
-      kyhieu: raw.kyhieu || undefined,
       ngaylap: (raw.ngaylap as Date).toISOString(),
       hanghoas: (raw.hanghoas as any[]).map(l => ({
         hanghoaId: l.hanghoaId,
