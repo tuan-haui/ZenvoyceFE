@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable, forkJoin, of } from 'rxjs';
-import { catchError, finalize } from 'rxjs/operators';
+import { catchError, finalize, map, switchMap } from 'rxjs/operators';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -14,7 +14,6 @@ import {
   TransferChange,
   TransferDirection,
   TransferItem,
-  TransferSelectChange,
   TransferCanMove
 } from 'ng-zorro-antd/transfer';
 import { ApiErrorService } from '../../core/services/api-error.service';
@@ -63,39 +62,33 @@ interface MenuTransferItem extends TransferItem {
 
     <nz-transfer
       [nzDataSource]="transferDataSource"
-      [nzTargetKeys]="targetKeys"
-      [nzSelectedKeys]="selectedKeys"
+      [nzShowSelectAll]="false"
       [nzTitles]="['Menu chưa phân', 'Menu đã phân']"
-      [nzOperations]="['Phân quyền', 'Thu hồi']"
       [nzRenderList]="[leftTree, rightTree]"
-      [nzCanMove]="handleCanMove"
       [nzDisabled]="loadingMatrix"
-      (nzSelectChange)="onTransferSelectChange($event)"
       (nzChange)="onTransferChange($event)"
     >
     </nz-transfer>
 
-    <ng-template #leftTree let-onItemSelect="onItemSelect">
+    <ng-template #leftTree let-items let-onItemSelect="onItemSelect">
       <nz-tree
         class="menu-tree"
         nzBlockNode
         [nzData]="leftTreeNodes"
-        [nzCheckedKeys]="leftCheckedKeys"
-        [nzCheckable]="true"
-        [nzCheckStrictly]="true"
-        (nzCheckBoxChange)="onTreeCheck($any($event), onItemSelect, 'left')"
+        nzCheckable
+        nzCheckStrictly
+        (nzCheckboxChange)="onTreeCheck($any($event), onItemSelect, 'left')"
       ></nz-tree>
     </ng-template>
 
-    <ng-template #rightTree let-onItemSelect="onItemSelect">
+    <ng-template #rightTree let-items let-onItemSelect="onItemSelect">
       <nz-tree
         class="menu-tree"
         nzBlockNode
         [nzData]="rightTreeNodes"
-        [nzCheckedKeys]="rightCheckedKeys"
-        [nzCheckable]="true"
-        [nzCheckStrictly]="true"
-        (nzCheckBoxChange)="onTreeCheck($any($event), onItemSelect, 'right')"
+        nzCheckable
+        nzCheckStrictly
+        (nzCheckboxChange)="onTreeCheck($any($event), onItemSelect, 'right')"
       ></nz-tree>
     </ng-template>
 
@@ -136,9 +129,6 @@ export class RolesPageComponent implements OnInit {
   selectedRoleId = '';
   transferDataSource: MenuTransferItem[] = [];
   targetKeys: string[] = [];
-  selectedKeys: string[] = [];
-  leftCheckedKeys: string[] = [];
-  rightCheckedKeys: string[] = [];
   leftTreeNodes: NzTreeNodeOptions[] = [];
   rightTreeNodes: NzTreeNodeOptions[] = [];
   loadingMatrix = false;
@@ -181,20 +171,22 @@ export class RolesPageComponent implements OnInit {
       return;
     }
     const normalizedDescription = description?.trim() ?? '';
-    this.facade.createRole(normalizedName, normalizedDescription).subscribe({
-      next: (createdRole) => {
+    this.facade.createRole(normalizedName, normalizedDescription).pipe(
+      switchMap((createdRole) => {
         this.roleForm.reset({ name: '', description: '' });
         this.message.success('Thêm vai trò thành công');
-        this.facade.getRoles().subscribe({
-          next: (r) => {
-            this.roles = r;
-            const createdRoleId = createdRole?.id ?? '';
-            this.selectedRoleId =
-              (createdRoleId && r.find((x) => x.id === createdRoleId)?.id) || r[r.length - 1]?.id || '';
-            this.onRoleChange();
-          },
-          error: (e) => this.apiError.show(e)
-        });
+
+        // Chuyển sang gọi getRoles()
+        return this.facade.getRoles().pipe(
+          map(roles => ({ roles, createdRole })) // Pass data xuống dưới
+        );
+      })
+    ).subscribe({
+      next: ({ roles, createdRole }) => {
+        this.roles = roles;
+        const createdRoleId = createdRole?.id ?? '';
+        this.selectedRoleId = (createdRoleId && roles.find((x) => x.id === createdRoleId)?.id) || roles[roles.length - 1]?.id || '';
+        this.onRoleChange();
       },
       error: (e) => this.apiError.show(e)
     });
@@ -204,8 +196,7 @@ export class RolesPageComponent implements OnInit {
     if (!this.selectedRoleId) {
       this.transferDataSource = [];
       this.targetKeys = [];
-      this.selectedKeys = [];
-      this.syncTreeState();
+      this.rebuildTrees();
       return;
     }
     this.loadingMatrix = true;
@@ -240,53 +231,51 @@ export class RolesPageComponent implements OnInit {
       });
   }
 
-  onTransferSelectChange(event: TransferSelectChange): void {
-    this.selectedKeys = event.list
-      .filter((item) => item.checked)
-      .map((item) => String(item['key']));
-    this.syncTreeState();
+  /**
+   * Khi user click nút chuyển (→ hoặc ←) của Transfer.
+   * Cập nhật targetKeys rồi rebuild cả 2 tree.
+   */
+  onTransferChange(event: TransferChange): void {
+    const movedKeys = event.list.map(item => String(item['key']));
+    if (event.to === 'right') {
+      const targetSet = new Set(this.targetKeys);
+      movedKeys.forEach(key => targetSet.add(key));
+      this.targetKeys = [...targetSet];
+    } else {
+      const removeSet = new Set(movedKeys);
+      this.targetKeys = this.targetKeys.filter(key => !removeSet.has(key));
+    }
+    this.rebuildTrees();
   }
 
-  onTransferChange(_: TransferChange): void {
-    this.selectedKeys = [];
-    this.syncTreeState();
-  }
-
+  /**
+   * Khi user check/uncheck node trong tree.
+   * Gọi onItemSelect để thông báo cho Transfer biết item nào được chọn.
+   * Cũng cascade xuống toàn bộ node con.
+   */
   onTreeCheck(event: NzFormatEmitEvent, onItemSelect: (item: TransferItem) => void, direction: TransferDirection): void {
-    const key = String(event.node?.key ?? '');
-    if (!key) {
-      return;
-    }
-    const item = this.menuById.get(key);
-    if (!item) {
-      return;
-    }
-    const inLeftSide = !this.targetKeys.includes(key);
-    if ((direction === 'left' && !inLeftSide) || (direction === 'right' && inLeftSide)) {
-      return;
-    }
-    onItemSelect(item);
-    this.syncTreeState();
-  }
+    const node = event.node;
+    if (!node || !node.key) return;
 
-  handleCanMove = (arg: TransferCanMove): Observable<TransferItem[]> => {
-    const expanded = new Map<string, MenuTransferItem>();
-    for (const item of arg.list) {
-      const key = String(item['key']);
-      const current = this.menuById.get(key);
-      if (!current) {
-        continue;
+    // Lấy node hiện tại + toàn bộ node con
+    const affectedKeys = [node.key, ...this.collectDescendantKeys(node.key)];
+
+    // Lọc chỉ giữ các key thuộc đúng cột đang thao tác
+    const targetSet = new Set(this.targetKeys);
+    const validKeys = affectedKeys.filter(key => {
+      const inLeft = !targetSet.has(key);
+      return direction === 'left' ? inLeft : !inLeft;
+    });
+
+    // Gọi onItemSelect cho từng item → Transfer sẽ toggle item.checked
+    // và cập nhật nút chuyển (→/←)
+    validKeys.forEach(key => {
+      const item = this.menuById.get(key);
+      if (item) {
+        onItemSelect(item);
       }
-      expanded.set(current.key, current);
-      for (const childKey of this.collectDescendantKeys(current.key)) {
-        const child = this.menuById.get(childKey);
-        if (child) {
-          expanded.set(child.key, child);
-        }
-      }
-    }
-    return of(Array.from(expanded.values()));
-  };
+    });
+  }
 
   private setupTransferData(menus: MenuApiDto[], assigned: string[]): void {
     const normalizedAssigned = new Set(assigned.map((id) => String(id)));
@@ -308,7 +297,6 @@ export class RolesPageComponent implements OnInit {
 
     this.transferDataSource = items;
     this.targetKeys = items.filter((x) => normalizedAssigned.has(x.key)).map((x) => x.key);
-    this.selectedKeys = [];
 
     this.menuById = new Map(items.map((item) => [item.key, item]));
     this.childrenByParent = new Map<string, string[]>();
@@ -321,20 +309,21 @@ export class RolesPageComponent implements OnInit {
       list.push(item.key);
       this.childrenByParent.set(parent, list);
     }
-    this.syncTreeState();
+    this.rebuildTrees();
   }
 
-  private syncTreeState(): void {
+  /**
+   * Chỉ rebuild tree nodes khi data thực sự thay đổi
+   * (load data, hoặc di chuyển item giữa 2 cột).
+   * KHÔNG gọi khi user đang check/uncheck node.
+   */
+  private rebuildTrees(): void {
     const targetSet = new Set(this.targetKeys);
-    const leftKeys = this.transferDataSource.filter((item) => !targetSet.has(item.key)).map((item) => item.key);
-    const rightKeys = this.transferDataSource.filter((item) => targetSet.has(item.key)).map((item) => item.key);
-    const leftSet = new Set(leftKeys);
-    const rightSet = new Set(rightKeys);
+    const leftSet = new Set(this.transferDataSource.filter((item) => !targetSet.has(item.key)).map((item) => item.key));
+    const rightSet = new Set(this.transferDataSource.filter((item) => targetSet.has(item.key)).map((item) => item.key));
 
     this.leftTreeNodes = this.buildTreeNodes(leftSet);
     this.rightTreeNodes = this.buildTreeNodes(rightSet);
-    this.leftCheckedKeys = this.selectedKeys.filter((key) => leftSet.has(key));
-    this.rightCheckedKeys = this.selectedKeys.filter((key) => rightSet.has(key));
   }
 
   private buildTreeNodes(allowedKeys: Set<string>): NzTreeNodeOptions[] {
