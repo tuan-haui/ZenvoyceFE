@@ -26,7 +26,8 @@ const STATUS_MAP: Record<number, TrangthaiLabel> = {
   0: { color: 'default', text: 'Chưa phát hành' },
   1: { color: 'processing', text: 'Đang chờ CQT' },
   2: { color: 'success', text: 'Đã chấp nhận' },
-  3: { color: 'error', text: 'Từ chối' }
+  3: { color: 'error', text: 'Từ chối' },
+  4: { color: 'default', text: 'Đã hủy' }
 };
 
 @Component({
@@ -84,6 +85,7 @@ const STATUS_MAP: Record<number, TrangthaiLabel> = {
           <nz-option [nzValue]="1" nzLabel="Đang chờ CQT"></nz-option>
           <nz-option [nzValue]="2" nzLabel="Đã chấp nhận"></nz-option>
           <nz-option [nzValue]="3" nzLabel="Từ chối"></nz-option>
+          <nz-option [nzValue]="4" nzLabel="Đã hủy"></nz-option>
         </nz-select>
       </div>
       <div class="toolbar-right">
@@ -150,11 +152,12 @@ const STATUS_MAP: Record<number, TrangthaiLabel> = {
                 <nz-icon nzType="eye" nzTheme="outline"></nz-icon>
                 Chi tiết
               </button>
+
               <button
+                *ngIf="canNotify(t.trangthaiPhatHanh)"
                 nz-button
                 [nzType]="t.trangthaiPhatHanh === 3 ? 'default' : 'primary'"
                 nzSize="small"
-                [disabled]="!canNotify(t.trangthaiPhatHanh)"
                 [nzLoading]="notifyingId === t.id"
                 (click)="notifyTax(t)"
                 class="action-btn"
@@ -185,7 +188,7 @@ const STATUS_MAP: Record<number, TrangthaiLabel> = {
       [(nzVisible)]="detailVisible"
       [nzTitle]="detailTitle"
       (nzOnCancel)="detailVisible = false"
-      [nzFooter]="null"
+      [nzFooter]="modalFooter"
       nzWidth="600px"
     >
       <ng-container *nzModalContent>
@@ -238,6 +241,24 @@ const STATUS_MAP: Record<number, TrangthaiLabel> = {
         </ng-container>
       </ng-container>
     </nz-modal>
+
+    <ng-template #modalFooter>
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <button
+          *ngIf="selectedTemplate && canCancel(selectedTemplate.trangthaiPhatHanh)"
+          nz-button
+          nzType="default"
+          nzDanger
+          [nzLoading]="cancelingId === selectedTemplate.id"
+          (click)="cancelTemplate(selectedTemplate)"
+        >
+          <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
+          Hủy mẫu phát hành
+        </button>
+        <div style="flex: 1;"></div>
+        <button nz-button nzType="default" (click)="detailVisible = false">Đóng</button>
+      </div>
+    </ng-template>
   `,
   styles: [`
     .page-header {
@@ -414,6 +435,7 @@ export class TemplatesWarehousePageComponent implements OnInit {
   pageIndex = 1;
   pageSize = 8;
   notifyingId: string | null = null;
+  cancelingId: string | null = null;
   detailVisible = false;
   selectedTemplate: CompanyTemplateVm | null = null;
   private search$ = new Subject<string>();
@@ -427,6 +449,7 @@ export class TemplatesWarehousePageComponent implements OnInit {
     private readonly invoiceFacade: InvoiceFacadeService,
     private readonly apiError: ApiErrorService,
     private readonly message: NzMessageService,
+    private readonly modal: NzModalService,
     private readonly router: Router
   ) {}
 
@@ -505,6 +528,38 @@ export class TemplatesWarehousePageComponent implements OnInit {
 
   canNotify(status: number): boolean {
     return status === 0 || status === 3;
+  }
+
+  canCancel(status: number): boolean {
+    return status === 0 || status === 2 || status === 3;
+  }
+
+  cancelTemplate(t: CompanyTemplateVm): void {
+    if (!this.canCancel(t.trangthaiPhatHanh)) return;
+    
+    // Add confirmation dialog
+    this.modal.confirm({
+      nzTitle: 'Xác nhận hủy mẫu',
+      nzContent: `Bạn có chắc chắn muốn hủy mẫu <b>${t.kyhieu}</b> không?`,
+      nzOkText: 'Hủy mẫu',
+      nzOkDanger: true,
+      nzOnOk: () => {
+        this.cancelingId = t.id;
+        this.facade.cancel(t.id).subscribe({
+          next: () => {
+            t.trangthaiPhatHanh = 4;
+            this.cancelingId = null;
+            this.message.success(`Đã hủy mẫu ${t.kyhieu}`);
+            this.applyFilter(this.searchKeyword);
+          },
+          error: (e) => {
+            this.cancelingId = null;
+            this.apiError.show(e);
+          }
+        });
+      },
+      nzCancelText: 'Bỏ qua'
+    });
   }
 
   getNotifyTooltip(status: number): string {

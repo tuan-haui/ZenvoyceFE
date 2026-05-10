@@ -62,6 +62,10 @@ export class TemplateFacadeService {
     return this.client.notifyTax(id).pipe(map(() => void 0));
   }
 
+  cancel(id: string): Observable<void> {
+    return this.client.cancel2(id).pipe(map(() => void 0));
+  }
+
   private mapBaseTemplate(d: BaseTemplateDto): BaseTemplateVm {
     return {
       id: d.id ?? '',
