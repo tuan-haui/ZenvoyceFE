@@ -1,0 +1,167 @@
+<div class="invoice-box">
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-left">
+            TÊN CỤC THUẾ: <br>
+            {{tax_department}}
+        </div>
+        <div class="header-center">
+            <h1>HÓA ĐƠN GIÁ TRỊ GIA TĂNG</h1>
+            <!-- <div class="lien">Liên 1: Lưu</div> -->
+            <div class="date">Ngày {{issue_day}} tháng {{issue_month}} năm {{issue_year}}</div>
+        </div>
+        <div class="header-right">
+            <div>Mẫu số: {{form_number}}</div>
+            <div>Ký hiệu: {{symbol}}</div>
+            <div>Số: <strong style="color: red; font-size: 16px;">{{invoice_number}}</strong></div>
+        </div>
+    </div>
+
+    <!-- THÔNG TIN NGƯỜI BÁN -->
+    <div class="info-section">
+        <div class="info-row">
+            <div class="label">Tên người bán:</div>
+            <div class="value">{{seller.name}}</div>
+        </div>
+        <div class="info-row">
+            <div class="label">Mã số thuế:</div>
+            <div class="value mst-value">{{seller.tax_code}}</div>
+        </div>
+        <div class="info-row">
+            <div class="label">Địa chỉ:</div>
+            <div class="value">{{seller.address}}</div>
+        </div>
+        <div class="split-row">
+            <div class="info-row" style="width: 48%;">
+                <div class="label">Điện thoại:</div>
+                <div class="value">{{seller.phone}}</div>
+            </div>
+            <div class="info-row" style="width: 48%;">
+                <div class="label">Số tài khoản:</div>
+                <div class="value">{{seller.bank_account}}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- THÔNG TIN NGƯỜI MUA -->
+    <div class="info-section">
+        <div class="info-row">
+            <div class="label">Tên người mua:</div>
+            <div class="value">{{buyer.name}}</div>
+        </div>
+        <div class="info-row">
+            <div class="label">Mã số thuế:</div>
+            <div class="value mst-value">{{buyer.tax_code}}</div>
+        </div>
+        <div class="info-row">
+            <div class="label">Địa chỉ:</div>
+            <div class="value">{{buyer.address}}</div>
+        </div>
+        <div class="info-row">
+            <div class="label">Số tài khoản:</div>
+            <div class="value">{{buyer.bank_account}}</div>
+        </div>
+    </div>
+
+    <!-- BẢNG HÀNG HÓA DỊCH VỤ -->
+    <table class="invoice-table">
+        <thead>
+            <tr>
+                <th class="col-stt">STT</th>
+                <th class="col-name">Tên hàng hóa, dịch vụ</th>
+                <th class="col-unit">Đơn vị tính</th>
+                <th class="col-qty">Số lượng</th>
+                <th class="col-price">Đơn giá</th>
+                <th class="col-amount">Thành tiền</th>
+            </tr>
+            <tr style="font-style: italic; font-size: 12px; background-color: #f9f9f9;">
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+                <td>4</td>
+                <td>5</td>
+                <td>6=4x5</td>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Vòng lặp Handlebars cho danh sách mặt hàng -->
+            {{#each items}}
+            <tr>
+                <td>{{@index}}</td> <!-- Hoặc {{this.stt}} tùy dữ liệu -->
+                <td class="text-left">{{name}}</td>
+                <td>{{unit}}</td>
+                <td>{{quantity}}</td>
+                <td class="text-right">{{price}}</td>
+                <td class="text-right">{{amount}}</td>
+            </tr>
+            {{/each}}
+
+            <!-- Dòng trống dự phòng (Có thể bỏ nếu dữ liệu động lấp đầy) -->
+            {{#if show_empty_rows}}
+            <tr>
+                <td>&nbsp;</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            {{/if}}
+        </tbody>
+    </table>
+
+    <!-- TỔNG KẾT TIỀN THUẾ -->
+    <div class="summary-section">
+        <div class="summary-row">
+            <div class="label">Cộng tiền hàng:</div>
+            <div class="value">{{subtotal}}</div>
+        </div>
+        <div class="summary-row summary-split">
+            <div class="tax-rate-box">
+                Thuế suất GTGT: <span
+                    style="font-weight: bold; border-bottom: 1px dotted #ccc; padding: 0 10px;">{{vat_rate}}</span> %
+            </div>
+            <div class="tax-amount-box">
+                <div class="label">Tiền thuế GTGT:</div>
+                <div class="value">{{vat_amount}}</div>
+            </div>
+        </div>
+        <div class="summary-row">
+            <div class="label">Tổng cộng tiền thanh toán:</div>
+            <div class="value">{{total_amount}}</div>
+        </div>
+        <div class="summary-row">
+            <div class="label">Số tiền viết bằng chữ:</div>
+            <div class="value" style="font-style: italic; text-align: left;">{{amount_in_words}}</div>
+        </div>
+    </div>
+
+    <!-- CHỮ KÝ -->
+    <div class="signature-section">
+        <div class="signature-box">
+            <div class="signature-title">NGƯỜI MUA HÀNG</div>
+            <div class="signature-note">(Ký, ghi rõ họ, tên)</div>
+            <!-- Vị trí chữ ký điện tử hoặc ký tay -->
+            <div class="signature-name" style="font-weight: bold;">{{buyer.representative}}</div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-title">NGƯỜI BÁN HÀNG</div>
+            <div class="signature-note">(Ký, đóng dấu, ghi rõ họ, tên)</div>
+            <!-- Vị trí chữ ký điện tử hoặc ký tay -->
+            <div class="signature-name" style="font-weight: bold;">{{seller.representative}}</div>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        (Cần kiểm tra, đối chiếu khi lập, giao, nhận hóa đơn)
+    </div>
+
+</div>

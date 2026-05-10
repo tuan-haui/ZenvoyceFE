@@ -14,7 +14,10 @@ import { NzSegmentedModule } from 'ng-zorro-antd/segmented';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
-import { ApplyTemplateCommand, CreateBaseTemplateCommand } from '../../core/services/app.service';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzMenuModule } from 'ng-zorro-antd/menu';
+import { ApplyTemplateCommand, CreateBaseTemplateCommand, UpdateBaseTemplateCommand } from '../../core/services/app.service';
 import { ApiErrorService } from '../../core/services/api-error.service';
 import { InvoiceFacadeService } from '../../core/services/invoice-facade.service';
 import { BaseTemplateVm, TemplateFacadeService } from '../../core/services/template-facade.service';
@@ -78,7 +81,10 @@ const SAMPLE_DATA: SampleInvoiceData = {
     NzSpinModule,
     NzEmptyModule,
     NzSegmentedModule,
-    NzPopconfirmModule
+    NzPopconfirmModule,
+    NzDropDownModule,
+    NzInputModule,
+    NzMenuModule
   ],
   template: `
     <div class="setup-layout">
@@ -113,7 +119,7 @@ const SAMPLE_DATA: SampleInvoiceData = {
                 <div class="template-icon">
                   <nz-icon nzType="file-text" nzTheme="outline"></nz-icon>
                 </div>
-                <div class="template-info">
+                <div class="template-info" *ngIf="editingId !== t.id">
                   <div class="template-name">{{ t.tenmau }}</div>
                   <div class="template-meta">
                     <span class="template-kyhieu mono">{{ t.kyhieu }}</span>
@@ -121,21 +127,27 @@ const SAMPLE_DATA: SampleInvoiceData = {
                     <nz-tag nzColor="default" *ngIf="t.version">v{{ t.version }}</nz-tag>
                   </div>
                 </div>
-                <div class="template-actions">
-                  <button
-                    nz-button
-                    nzType="text"
-                    nz-popconfirm
-                    nzPopconfirmTitle="Bạn có chắc muốn xóa mẫu này?"
-                    nzPopconfirmPlacement="left"
-                    (nzOnConfirm)="deleteTemplate(t)"
-                    (click)="$event.stopPropagation()"
-                    class="template-action template-action-danger"
-                    nz-tooltip
-                    nzTooltipTitle="Xóa"
-                  >
-                    <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
+                
+                <div class="template-info editing" *ngIf="editingId === t.id" (click)="$event.stopPropagation()">
+                  <input nz-input nzSize="small" [(ngModel)]="editForm.tenmau" placeholder="Tên mẫu" style="margin-bottom: 4px;" />
+                  <input nz-input nzSize="small" [(ngModel)]="editForm.kyhieu" placeholder="Ký hiệu" />
+                </div>
+
+                <div class="template-actions" *ngIf="editingId !== t.id">
+                  <button nz-button nzType="text" nz-dropdown nzTrigger="click" [nzDropdownMenu]="menu" (click)="$event.stopPropagation()">
+                    <nz-icon nzType="ellipsis" nzTheme="outline"></nz-icon>
                   </button>
+                  <nz-dropdown-menu #menu="nzDropdownMenu">
+                    <ul nz-menu>
+                      <li nz-menu-item (click)="startEdit(t); $event.stopPropagation()">
+                        <nz-icon nzType="edit" nzTheme="outline"></nz-icon> Sửa
+                      </li>
+                      <li nz-menu-item nzDanger nz-popconfirm nzPopconfirmTitle="Bạn có chắc muốn xóa mẫu này?" nzPopconfirmPlacement="left" (nzOnConfirm)="deleteTemplate(t)">
+                        <nz-icon nzType="delete" nzTheme="outline"></nz-icon> Xóa
+                      </li>
+                    </ul>
+                  </nz-dropdown-menu>
+
                   <nz-icon
                     *ngIf="selectedId === t.id"
                     nzType="check-circle"
@@ -143,8 +155,21 @@ const SAMPLE_DATA: SampleInvoiceData = {
                     class="check-icon"
                   ></nz-icon>
                 </div>
+
+                <div class="template-actions" *ngIf="editingId === t.id" (click)="$event.stopPropagation()">
+                   <button nz-button nzType="text" nzSize="small" class="template-action" (click)="saveEdit(t)" [nzLoading]="savingEdit">
+                     <nz-icon nzType="check" nzTheme="outline" style="color: #52c41a;"></nz-icon>
+                   </button>
+                   <button nz-button nzType="text" nzSize="small" class="template-action" (click)="cancelEdit()">
+                     <nz-icon nzType="close" nzTheme="outline" style="color: #ff4d4f;"></nz-icon>
+                   </button>
+                </div>
               </div>
             </div>
+            
+            <button nz-button nzType="dashed" class="full-width" style="margin-top: 12px;" (click)="addNewBlankTemplate()" [nzLoading]="addingBlank">
+              <nz-icon nzType="plus" nzTheme="outline"></nz-icon> Thêm mẫu mới
+            </button>
           </nz-spin>
 
           <nz-divider></nz-divider>
@@ -425,6 +450,11 @@ export class TemplatesSetupPageComponent implements OnInit {
   selectedId = '';
   selectedTemplate: BaseTemplateVm | null = null;
 
+  editingId: string | null = null;
+  savingEdit = false;
+  addingBlank = false;
+  editForm = { tenmau: '', kyhieu: '' };
+
   draftHtml = '';
   draftCss = '';
   savingTemplate = false;
@@ -508,6 +538,70 @@ export class TemplatesSetupPageComponent implements OnInit {
     this.draftHtml = t.htmlContent ?? '';
     this.draftCss = t.cssContent ?? '';
     this.refreshPreview();
+  }
+
+  startEdit(t: BaseTemplateVm): void {
+    this.editingId = t.id;
+    this.editForm = { tenmau: t.tenmau || '', kyhieu: t.kyhieu || '' };
+  }
+
+  cancelEdit(): void {
+    this.editingId = null;
+  }
+
+  saveEdit(t: BaseTemplateVm): void {
+    if (!this.editForm.tenmau || !this.editForm.kyhieu) {
+      this.message.warning('Vui lòng nhập tên mẫu và ký hiệu');
+      return;
+    }
+    this.savingEdit = true;
+    const payload = new UpdateBaseTemplateCommand({
+      id: t.id,
+      tenmau: this.editForm.tenmau,
+      kyhieu: this.editForm.kyhieu,
+      loaihoadon: t.loaihoadon,
+      htmlContent: t.htmlContent,
+      cssContent: t.cssContent,
+      version: t.version
+    });
+    this.facade.updateBaseTemplate(t.id, payload).subscribe({
+      next: (res) => {
+        this.savingEdit = false;
+        t.tenmau = res.tenmau;
+        t.kyhieu = res.kyhieu;
+        this.editingId = null;
+        this.message.success('Đã cập nhật mẫu');
+      },
+      error: (e) => {
+        this.savingEdit = false;
+        this.apiError.show(e);
+      }
+    });
+  }
+
+  addNewBlankTemplate(): void {
+    this.addingBlank = true;
+    const payload = new CreateBaseTemplateCommand({
+      tenmau: 'Mẫu hóa đơn mới',
+      loaihoadon: 'GTGT',
+      kyhieu: 'MAU-MOI',
+      htmlContent: '<div style="padding: 20px;">\n  <h1>HÓA ĐƠN GTGT</h1>\n  <p>Đây là mẫu hóa đơn mới. Hãy chỉnh sửa lại HTML/CSS bên phải để tạo mẫu của bạn.</p>\n</div>',
+      cssContent: '* { box-sizing: border-box; }\nbody { font-family: Arial, sans-serif; }',
+      version: '1'
+    });
+    this.facade.createBaseTemplate(payload).subscribe({
+      next: (created) => {
+        this.addingBlank = false;
+        this.templates = [...this.templates, created];
+        this.selectTemplate(created);
+        this.startEdit(created);
+        this.message.success('Đã thêm mẫu mới');
+      },
+      error: (e) => {
+        this.addingBlank = false;
+        this.apiError.show(e);
+      }
+    });
   }
 
   onViewModeChange(): void {

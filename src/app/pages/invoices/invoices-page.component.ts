@@ -163,8 +163,11 @@ interface LineItemVm {
                 <button *ngIf="inv.trangthai === 'Draft'"
                   nz-button nzType="default" nzSize="small"
                   nz-tooltip nzTooltipTitle="Gửi chờ ký"
-                  [nzLoading]="actionLoading === inv.id + '_forward'"
-                  (click)="forward(inv)">
+                  nz-popconfirm
+                  nzPopconfirmTitle="Bạn có chắc chắn muốn gửi chờ ký hóa đơn này?"
+                  nzPopconfirmPlacement="top"
+                  (nzOnConfirm)="forward(inv)"
+                  [nzLoading]="actionLoading === inv.id + '_forward'">
                   <nz-icon nzType="send" nzTheme="outline"></nz-icon>
                 </button>
 
@@ -172,8 +175,11 @@ interface LineItemVm {
                 <button *ngIf="inv.trangthai === 'Draft' || inv.trangthai === 'PendingSign'"
                   nz-button nzType="primary" nzSize="small"
                   nz-tooltip nzTooltipTitle="Ký số hóa đơn"
-                  [nzLoading]="actionLoading === inv.id + '_sign'"
-                  (click)="sign(inv)">
+                  nz-popconfirm
+                  nzPopconfirmTitle="Bạn có chắc chắn muốn ký số hóa đơn này?"
+                  nzPopconfirmPlacement="top"
+                  (nzOnConfirm)="sign(inv)"
+                  [nzLoading]="actionLoading === inv.id + '_sign'">
                   <nz-icon nzType="audit" nzTheme="outline"></nz-icon>
                 </button>
 
@@ -181,8 +187,11 @@ interface LineItemVm {
                 <button *ngIf="inv.trangthai === 'Signed'"
                   nz-button nzType="primary" nzSize="small"
                   nz-tooltip nzTooltipTitle="Phát hành hóa đơn"
-                  [nzLoading]="actionLoading === inv.id + '_publish'"
-                  (click)="publish(inv)">
+                  nz-popconfirm
+                  nzPopconfirmTitle="Bạn có chắc chắn muốn phát hành hóa đơn này?"
+                  nzPopconfirmPlacement="top"
+                  (nzOnConfirm)="publish(inv)"
+                  [nzLoading]="actionLoading === inv.id + '_publish'">
                   <nz-icon nzType="cloud-upload" nzTheme="outline"></nz-icon>
                 </button>
 
@@ -198,8 +207,11 @@ interface LineItemVm {
                 <button *ngIf="inv.trangthai === 'Issued'"
                   nz-button nzType="default" nzSize="small"
                   nz-tooltip nzTooltipTitle="Gửi email cho khách"
-                  [nzLoading]="actionLoading === inv.id + '_email'"
-                  (click)="sendEmail(inv)">
+                  nz-popconfirm
+                  nzPopconfirmTitle="Bạn có chắc chắn muốn gửi email hóa đơn này cho khách?"
+                  nzPopconfirmPlacement="top"
+                  (nzOnConfirm)="sendEmail(inv)"
+                  [nzLoading]="actionLoading === inv.id + '_email'">
                   <nz-icon nzType="mail" nzTheme="outline"></nz-icon>
                 </button>
 

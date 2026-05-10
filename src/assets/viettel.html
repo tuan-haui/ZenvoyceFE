@@ -434,45 +434,45 @@
                 <div class="title-block">
                     <h1>HÓA ĐƠN GIÁ TRỊ GIA TĂNG</h1>
                     <div class="subtitle">Bản thể hiện của hóa đơn điện tử</div>
-                    <div class="date">Ngày 18 tháng 03 năm 2021</div>
+                    <div class="date">Ngày {{issue_day}} tháng {{issue_month}} năm {{issue_year}}</div>
                 </div>
 
                 <div class="invoice-meta">
-                    <div class="row"><span>Mẫu số:</span><span class="value">01GTKT0/001</span></div>
-                    <div class="row"><span>Ký hiệu:</span><span class="value">AA/21E</span></div>
-                    <div class="row"><span>Số:</span><span class="value">0000000</span></div>
+                    <div class="row"><span>Mẫu số:</span><span class="value">{{form_number}}</span></div>
+                    <div class="row"><span>Ký hiệu:</span><span class="value">{{symbol}}</span></div>
+                    <div class="row"><span>Số:</span><span class="value">{{invoice_number}}</span></div>
                 </div>
             </header>
 
             <section class="section seller">
                 <div class="kv">
                     <div class="k">Đơn vị bán hàng</div>
-                    <div class="v name">: TẬP ĐOÀN CÔNG NGHIỆP - VIỄN THÔNG QUÂN ĐỘI</div>
+                    <div class="v name">: {{seller.name}}</div>
                 </div>
                 <div class="kv">
                     <div class="k">Mã số thuế</div>
-                    <div class="v">: 0100109106</div>
+                    <div class="v">: {{seller.tax_code}}</div>
                 </div>
                 <div class="kv">
                     <div class="k">Địa chỉ</div>
-                    <div class="v">: Số 1 đường Trần Hữu Dực, Phường Mỹ Đình 2, Quận Nam Từ Liêm, Hà Nội</div>
+                    <div class="v">: {{seller.address}}</div>
                 </div>
                 <div class="buyer-grid">
                     <div class="kv">
                         <div class="k">Điện thoại</div>
-                        <div class="v">: 0866 531 668</div>
+                        <div class="v">: {{seller.phone}}</div>
                     </div>
                     <div class="kv">
                         <div class="k">Email</div>
-                        <div class="v">: cskh@sinvoice.vn</div>
+                        <div class="v">: {{seller.email}}</div>
                     </div>
                     <div class="kv">
                         <div class="k">Số tài khoản</div>
-                        <div class="v">: 0514100062201</div>
+                        <div class="v">: {{seller.bank_account}}</div>
                     </div>
                     <div class="kv">
                         <div class="k"></div>
-                        <div class="v">Tại Ngân Hàng TMCP Quân Đội Chi Nhánh Điện Biên Phủ</div>
+                        <div class="v">{{seller.bank_name}}</div>
                     </div>
                 </div>
             </section>
@@ -480,28 +480,28 @@
             <section class="section buyer">
                 <div class="kv">
                     <div class="k">Họ tên người mua hàng</div>
-                    <div class="v name">: Lê Văn Tài</div>
+                    <div class="v name">: {{buyer.representative}}</div>
                 </div>
                 <div class="kv">
                     <div class="k">Tên đơn vị</div>
-                    <div class="v">: Công ty TNHH Đo đạc - Thiết kế - Xây dựng Phúc Khang</div>
+                    <div class="v">: {{buyer.name}}</div>
                 </div>
                 <div class="kv">
                     <div class="k">Mã số thuế</div>
-                    <div class="v">: 3603462095</div>
+                    <div class="v">: {{buyer.tax_code}}</div>
                 </div>
                 <div class="kv">
                     <div class="k">Địa chỉ</div>
-                    <div class="v">: L8-25, Đường D1, Thị trấn Dầu Giây, Huyện Thống Nhất, Tỉnh Đồng Nai</div>
+                    <div class="v">: {{buyer.address}}</div>
                 </div>
                 <div class="buyer-grid">
                     <div class="kv">
                         <div class="k">Hình thức thanh toán</div>
-                        <div class="v">: TM/CK</div>
+                        <div class="v">: {{payment_method}}</div>
                     </div>
                     <div class="kv">
                         <div class="k">Số tài khoản</div>
-                        <div class="v">: 0601 3845 XXXX tại Ngân hàng Sacombank - Chi nhánh Quận 8</div>
+                        <div class="v">: {{buyer.bank_account}}</div>
                     </div>
                 </div>
             </section>
@@ -535,23 +535,18 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {{#each items}}
                         <tr>
-                            <td class="c-center">1</td>
-                            <td class="c-left">SAMSUNG Galaxy Note 10 Plus</td>
-                            <td class="c-center">Chiếc</td>
-                            <td class="c-center">4</td>
-                            <td class="c-right">18.990.000</td>
-                            <td class="c-right">75.960.000</td>
+                            <td class="c-center">{{@index}}</td>
+                            <td class="c-left">{{name}}</td>
+                            <td class="c-center">{{unit}}</td>
+                            <td class="c-center">{{quantity}}</td>
+                            <td class="c-right">{{price}}</td>
+                            <td class="c-right">{{amount}}</td>
                         </tr>
-                        <tr>
-                            <td class="c-center">2</td>
-                            <td class="c-left">SAMSUNG Galaxy S7 Edge</td>
-                            <td class="c-center">Chiếc</td>
-                            <td class="c-center">6</td>
-                            <td class="c-right">18.490.000</td>
-                            <td class="c-right">110.940.000</td>
-                        </tr>
+                        {{/each}}
                         <!-- các dòng trống để giữ bố cục giống mẫu -->
+                        {{#if show_empty_rows}}
                         <tr class="empty-row">
                             <td></td>
                             <td></td>
@@ -616,25 +611,26 @@
                             <td></td>
                             <td></td>
                         </tr>
+                        {{/if}}
                     </tbody>
                 </table>
 
                 <div class="summary">
                     <div class="summary-grid">
-                        <div class="left-note">Thuế suất GTGT: 10 %</div>
+                        <div class="left-note">Thuế suất GTGT: {{vat_rate}} %</div>
                         <div>
                             <table class="totals">
                                 <tr>
                                     <td class="label">Cộng tiền hàng hóa, dịch vụ:</td>
-                                    <td class="value">186.900.000</td>
+                                    <td class="value">{{subtotal}}</td>
                                 </tr>
                                 <tr>
                                     <td class="label">Tiền thuế GTGT:</td>
-                                    <td class="value">18.690.000</td>
+                                    <td class="value">{{vat_amount}}</td>
                                 </tr>
                                 <tr>
                                     <td class="label">Tổng cộng tiền thanh toán:</td>
-                                    <td class="value">205.590.000</td>
+                                    <td class="value">{{total_amount}}</td>
                                 </tr>
                             </table>
                         </div>
@@ -642,7 +638,7 @@
 
                     <div class="amount-words">
                         <div class="label">Số tiền viết bằng chữ:</div>
-                        <div>Hai trăm lẻ năm triệu năm trăm chín mươi nghìn đồng chẵn</div>
+                        <div>{{amount_in_words}}</div>
                     </div>
                 </div>
             </section>
@@ -650,12 +646,16 @@
             <section class="signatures">
                 <div class="sig-box">
                     <div class="sig-title">Người mua hàng</div>
+                    <div class="sig-name" style="font-weight: bold; margin-top: 10mm;">{{buyer.representative}}</div>
                 </div>
                 <div class="sig-box">
                     <div class="sig-title">Người bán hàng</div>
+                    {{#if is_signed}}
                     <div class="sig-note">Signature valid</div>
-                    <div class="sig-name">Ký bởi TẬP ĐOÀN CÔNG NGHIỆP<br />- VIỄN THÔNG QUÂN ĐỘI<br />Ký ngày 18/03/2021
-                    </div>
+                    <div class="sig-name">Ký bởi {{seller.name}}<br />Ký ngày {{signed_at}}</div>
+                    {{else}}
+                    <div class="sig-name" style="color: #999; margin-top: 5mm;">(Chưa ký)</div>
+                    {{/if}}
                 </div>
             </section>
         </div>

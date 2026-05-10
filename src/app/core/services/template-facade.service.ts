@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { ApplyTemplateCommand, BaseTemplateDto, Client, CompanyTemplateDto, CreateBaseTemplateCommand } from './app.service';
+import { ApplyTemplateCommand, BaseTemplateDto, Client, CompanyTemplateDto, CreateBaseTemplateCommand, UpdateBaseTemplateCommand } from './app.service';
 
 export interface BaseTemplateVm {
   id: string;
@@ -52,6 +52,10 @@ export class TemplateFacadeService {
 
   createBaseTemplate(payload: CreateBaseTemplateCommand): Observable<BaseTemplateVm> {
     return this.client.basePOST(payload).pipe(map((res) => this.mapBaseTemplate(res.data!)));
+  }
+
+  updateBaseTemplate(id: string, payload: UpdateBaseTemplateCommand): Observable<BaseTemplateVm> {
+    return this.client.basePUT(id, payload).pipe(map((res) => this.mapBaseTemplate(res.data!)));
   }
 
   deleteBaseTemplate(id: string): Observable<void> {
