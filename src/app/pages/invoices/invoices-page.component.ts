@@ -406,6 +406,10 @@ interface LineItemVm {
       <ng-template #createFooter>
         <div class="drawer-footer">
           <button nz-button nzType="default" (click)="closeCreateDrawer()">Hủy</button>
+          <button nz-button nzType="default" (click)="previewBeforeCreate()" [nzLoading]="previewLoading && createDrawerVisible">
+            <nz-icon nzType="eye" nzTheme="outline"></nz-icon>
+            Xem trước
+          </button>
           <button nz-button nzType="primary" (click)="submitCreate()" [nzLoading]="saving">
             Tạo hóa đơn
           </button>
@@ -755,7 +759,10 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
     this.facade.getCustomers(donviId).subscribe({ next: (d) => { this.customers = d; this.buildCustomerMap(); } });
     this.facade.getProducts(donviId).subscribe({ next: (d) => { this.products = d; } });
     this.facade.getTemplates(donviId).subscribe({
-      next: (d) => { this.templates = d; this.loadingLookup = false; },
+      next: (d) => {
+        this.templates = d.filter(t => t.trangthaiPhatHanh === 2);
+        this.loadingLookup = false;
+      },
       error: () => { this.loadingLookup = false; }
     });
   }
@@ -874,6 +881,56 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
   }
 
   recalcLine(_i: number): void { /* auto-computed via getLineTotal */ }
+
+  previewBeforeCreate(): void {
+    if (this.createForm.invalid) {
+      Object.values(this.createForm.controls).forEach(c => {
+        c.markAsDirty();
+        c.updateValueAndValidity({ onlySelf: true });
+      });
+      this.hanghoasArray.controls.forEach(g => {
+        Object.values((g as any).controls).forEach((c: any) => {
+          c.markAsDirty();
+          c.updateValueAndValidity({ onlySelf: true });
+        });
+      });
+      this.message.warning('Vui lòng điền đầy đủ thông tin.');
+      return;
+    }
+
+    const raw = this.createForm.getRawValue();
+    const payload = {
+      donviId: raw.donviId!,
+      khachhangId: raw.khachhangId!,
+      mauctyId: raw.mauctyId!,
+      ngaylap: (raw.ngaylap as Date).toISOString(),
+      hanghoas: (raw.hanghoas as any[]).map(l => ({
+        hanghoaId: l.hanghoaId,
+        soluong: l.soluong,
+        dongia: l.dongia,
+        thueSuat: l.thueSuat ?? 0
+      }))
+    };
+
+    this.previewTitle = 'Xem trước hóa đơn dự kiến (PDF)';
+    this.previewModalVisible = true;
+    this.previewLoading = true;
+    this.releasePreviewBlob();
+
+    this.facade.previewInvoicePdfFromData(payload).subscribe({
+      next: (blob) => {
+        this.previewBlob = blob;
+        this.previewBlobUrl = URL.createObjectURL(blob);
+        this.previewSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.previewBlobUrl);
+        this.previewFilename = `hoadon-preview.pdf`;
+        this.previewLoading = false;
+      },
+      error: (e) => {
+        this.previewLoading = false;
+        this.apiError.show(e);
+      }
+    });
+  }
 
   submitCreate(): void {
     if (this.createForm.invalid) {

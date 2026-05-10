@@ -1469,6 +1469,59 @@ export class Client {
     }
 
     /**
+     * @param body (optional) 
+     * @return OK
+     */
+    previewPdfFromData(body: PreviewInvoicePdfFromDataQuery | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/Invoices/preview-pdf-from-data";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            withCredentials: true,
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_: any) => {
+            return this.processPreviewPdfFromData(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processPreviewPdfFromData(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processPreviewPdfFromData(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+                (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); } }
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+                return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+                return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @return OK
      */
     forRole(roleId: string): Observable<ApiResponseOfArrayOfMenuDto> {
@@ -6983,6 +7036,70 @@ export interface IPagedResultOfUserDto {
     pageNumber?: number;
     pageSize?: number;
     totalCount?: number;
+}
+
+export class PreviewInvoicePdfFromDataQuery implements IPreviewInvoicePdfFromDataQuery {
+    donviId?: string;
+    khachhangId?: string;
+    mauctyId?: string;
+    ngaylap?: Date;
+    hanghoas?: InvoiceLineRequestDto[] | undefined;
+    thamChieuHoadonId?: string | undefined;
+
+    constructor(data?: IPreviewInvoicePdfFromDataQuery) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.donviId = _data["donviId"];
+            this.khachhangId = _data["khachhangId"];
+            this.mauctyId = _data["mauctyId"];
+            this.ngaylap = _data["ngaylap"] ? new Date(_data["ngaylap"].toString()) : undefined as any;
+            if (Array.isArray(_data["hanghoas"])) {
+                this.hanghoas = [] as any;
+                for (let item of _data["hanghoas"])
+                    this.hanghoas!.push(InvoiceLineRequestDto.fromJS(item));
+            }
+            this.thamChieuHoadonId = _data["thamChieuHoadonId"];
+        }
+    }
+
+    static fromJS(data: any): PreviewInvoicePdfFromDataQuery {
+        data = typeof data === 'object' ? data : {};
+        let result = new PreviewInvoicePdfFromDataQuery();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["donviId"] = this.donviId;
+        data["khachhangId"] = this.khachhangId;
+        data["mauctyId"] = this.mauctyId;
+        data["ngaylap"] = this.ngaylap ? this.ngaylap.toISOString() : undefined as any;
+        if (Array.isArray(this.hanghoas)) {
+            data["hanghoas"] = [];
+            for (let item of this.hanghoas)
+                data["hanghoas"].push(item ? item.toJSON() : undefined as any);
+        }
+        data["thamChieuHoadonId"] = this.thamChieuHoadonId;
+        return data;
+    }
+}
+
+export interface IPreviewInvoicePdfFromDataQuery {
+    donviId?: string;
+    khachhangId?: string;
+    mauctyId?: string;
+    ngaylap?: Date;
+    hanghoas?: InvoiceLineRequestDto[] | undefined;
+    thamChieuHoadonId?: string | undefined;
 }
 
 export class ProductDto implements IProductDto {

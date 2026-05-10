@@ -187,6 +187,14 @@ export class InvoiceFacadeService {
     });
   }
 
+  previewInvoicePdfFromData(payload: CreateInvoicePayload): Observable<Blob> {
+    const url = `${this.apiBaseUrl}/api/Invoices/preview-pdf-from-data`;
+    return this.http.post(url, this.toCreateCommand(payload), {
+      responseType: 'blob',
+      withCredentials: true
+    });
+  }
+
   sendInvoiceEmail(id: string): Observable<{ sent: boolean; message: string }> {
     return this.client.sendEmail(id).pipe(
       map((res) => ({
