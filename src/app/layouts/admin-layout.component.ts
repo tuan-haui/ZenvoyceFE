@@ -168,25 +168,32 @@ import { SessionService } from '../core/services/session.service';
             } @else {
               <div class="chat-list">
                 @for (item of chatMessages; track $index) {
-                  <div class="chat-row" [class.user]="item.role === 'user'" [class.assistant]="item.role === 'assistant'">
-                    <div class="chat-bubble">
-                      <div class="chat-role">{{ item.role === 'user' ? 'Bạn' : 'Trợ lý AI' }}</div>
-                      @if (item.role === 'assistant') {
-                        <markdown class="chat-content chat-markdown" [data]="item.content"></markdown>
-                      } @else {
-                        <div class="chat-content chat-text">{{ item.content }}</div>
-                      }
+                  @if (item.content || item.role === 'user') {
+                    <div class="chat-row" [class.user]="item.role === 'user'" [class.assistant]="item.role === 'assistant'">
+                      <div class="chat-bubble">
+                        <div class="chat-role">{{ item.role === 'user' ? 'Bạn' : 'Trợ lý AI' }}</div>
+                        @if (item.role === 'assistant') {
+                          <markdown class="chat-content chat-markdown" [data]="item.content"></markdown>
+                        } @else {
+                          <div class="chat-content chat-text">{{ item.content }}</div>
+                        }
+                      </div>
                     </div>
-                  </div>
+                  }
                 }
-                @if (isAiLoading) {
+
+
+                @if (isAiLoading && (!chatMessages.length || chatMessages[chatMessages.length-1].role !== 'assistant' || !chatMessages[chatMessages.length-1].content)) {
                   <div class="chat-row assistant typing">
                     <div class="chat-bubble typing">
                       <div class="chat-role">Trợ lý AI</div>
-                      <div class="chat-typing" aria-label="Trợ lý AI đang trả lời">
-                        <span></span>
-                        <span></span>
-                        <span></span>
+                      <div class="chat-thinking-wrapper">
+                        <div class="chat-typing" aria-label="Trợ lý AI đang trả lời">
+                          <span></span>
+                          <span></span>
+                          <span></span>
+                        </div>
+                        <span class="thinking-text">Đang suy nghĩ...</span>
                       </div>
                     </div>
                   </div>
@@ -523,6 +530,26 @@ import { SessionService } from '../core/services/session.service';
         gap: 4px;
         height: 14px;
       }
+      .chat-thinking-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 2px;
+      }
+      .thinking-text {
+        font-size: 13px;
+        color: #8c8c8c;
+        font-style: italic;
+        background: linear-gradient(90deg, #8c8c8c 0%, #e5e7eb 50%, #8c8c8c 100%);
+        background-size: 200% 100%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: shimmer 2s infinite linear;
+      }
+      @keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
       .chat-typing span {
         width: 6px;
         height: 6px;
@@ -711,6 +738,12 @@ import { SessionService } from '../core/services/session.service';
       :host-context(html.dark-mode) .chat-typing span {
         background: rgba(255, 255, 255, 0.7);
       }
+      :host-context(html.dark-mode) .thinking-text {
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0.4) 100%);
+        background-size: 200% 100%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
       :host-context(html.dark-mode) ::ng-deep .chat-markdown {
         color: rgba(255, 255, 255, 0.88);
       }
@@ -843,42 +876,108 @@ export class AdminLayoutComponent implements OnInit {
     }
   }
 
+  private typingInterval: any;
+  private pendingBuffer = '';
+
   sendAiMessage(): void {
     const message = this.aiInput.trim();
     if (!message || this.isAiLoading) {
       return;
     }
 
+    // 1. Add user message
     this.chatMessages = [...this.chatMessages, { role: 'user', content: message }];
     this.aiInput = '';
     this.isAiLoading = true;
+    this.pendingBuffer = '';
 
-    this.aiAssistantFacade
-      .chat(message)
-      .pipe(finalize(() => (this.isAiLoading = false)))
+    // 2. Add placeholder assistant message for streaming
+    const assistantMessageIndex = this.chatMessages.length;
+    this.chatMessages = [
+      ...this.chatMessages,
+      { role: 'assistant', content: '' }
+    ];
+
+    this.forceScrollToBottom();
+
+    // 3. Start streaming
+    this.aiAssistantFacade.chatStream(message)
+      .pipe(finalize(() => {
+        this.isAiLoading = false;
+        // The typing effect will stop itself when buffer is empty and isAiLoading is false
+      }))
       .subscribe({
-        next: (response) => {
-          const aiText = this.extractAiText(response);
-          this.chatMessages = [
-            ...this.chatMessages,
-            {
-              role: 'assistant',
-              content: aiText ?? 'Mình chưa nhận được nội dung trả lời từ AI.'
-            }
-          ];
+        next: (chunk) => {
+          // Add chunk to buffer and ensure typing effect is running
+          this.pendingBuffer += chunk;
+          this.processTypingEffect(assistantMessageIndex);
         },
-        error: () => {
-          this.chatMessages = [
-            ...this.chatMessages,
-            {
-              role: 'assistant',
-              content: 'Hiện chưa thể phản hồi. Vui lòng thử lại sau.'
-            }
-          ];
+        error: (err) => {
+          console.error('AI Stream Error:', err);
+          this.isAiLoading = false;
+          const currentMessages = [...this.chatMessages];
+          currentMessages[assistantMessageIndex] = {
+            role: 'assistant',
+            content: currentMessages[assistantMessageIndex].content || 'Hiện chưa thể phản hồi. Vui lòng thử lại sau.'
+          };
+          this.chatMessages = currentMessages;
           this.message.error('Gọi Trợ lý AI thất bại.');
+          this.forceScrollToBottom();
         }
       });
   }
+
+  private processTypingEffect(index: number): void {
+    if (this.typingInterval) return;
+
+    this.typingInterval = setInterval(() => {
+      if (this.pendingBuffer.length > 0) {
+        // "Fast typing" speed: take a small random number of characters
+        const charsToTake = Math.floor(Math.random() * 3) + 2; 
+        const chunk = this.pendingBuffer.substring(0, charsToTake);
+        this.pendingBuffer = this.pendingBuffer.substring(charsToTake);
+
+        const currentMessages = [...this.chatMessages];
+        if (currentMessages[index]) {
+          currentMessages[index] = {
+            ...currentMessages[index],
+            content: currentMessages[index].content + chunk
+          };
+          this.chatMessages = currentMessages;
+          this.scrollToBottom();
+        }
+      } else if (!this.isAiLoading) {
+        clearInterval(this.typingInterval);
+        this.typingInterval = null;
+      }
+    }, 20); // Very fast interval (20ms) for a smooth "typing" feel
+  }
+
+  private scrollToBottom(): void {
+    setTimeout(() => {
+      const wrapper = document.querySelector('.ai-chat-list-wrapper');
+      if (wrapper) {
+        // Only scroll to bottom if the user is already near the bottom (threshold: 100px)
+        const threshold = 100;
+        const isNearBottom = (wrapper.scrollHeight - wrapper.scrollTop - wrapper.clientHeight) < threshold;
+        
+        if (isNearBottom) {
+          wrapper.scrollTop = wrapper.scrollHeight;
+        }
+      }
+    }, 50);
+  }
+
+  /** Force scroll to bottom (used when sending a new message) */
+  private forceScrollToBottom(): void {
+    setTimeout(() => {
+      const wrapper = document.querySelector('.ai-chat-list-wrapper');
+      if (wrapper) {
+        wrapper.scrollTop = wrapper.scrollHeight;
+      }
+    }, 50);
+  }
+
 
   private buildBreadcrumbs(currentPath: string): Array<{ path: string; label: string; linkable: boolean }> {
     if (!currentPath.startsWith('/admin')) {
