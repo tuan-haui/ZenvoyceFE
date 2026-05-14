@@ -19,6 +19,7 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopoverModule } from 'ng-zorro-antd/popover';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { MarkdownModule } from 'ngx-markdown';
 import { filter, finalize } from 'rxjs';
 import { AiAssistantFacadeService } from '../core/services/ai-assistant-facade.service';
@@ -42,6 +43,7 @@ import { SessionService } from '../core/services/session.service';
     NzModalModule,
     NzInputModule,
     NzEmptyModule,
+    NzToolTipModule,
     MarkdownModule,
     FormsModule
   ],
@@ -154,17 +156,37 @@ import { SessionService } from '../core/services/session.service';
 
     <nz-modal
       [(nzVisible)]="aiModalVisible"
-      nzTitle="Trợ lý AI"
+      [nzTitle]="aiModalTitle"
       [nzFooter]="null"
       [nzWidth]="700"
       [nzCentered]="true"
       (nzOnCancel)="closeAiAssistant()"
     >
+      <ng-template #aiModalTitle>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-right:40px">
+          <span style="font-weight:600">🤖 Trợ lý AI</span>
+          <button
+            nz-button
+            nzType="text"
+            nzSize="small"
+            nzDanger
+            nz-tooltip
+            nzTooltipTitle="Xóa lịch sử hội thoại"
+            [disabled]="isAiLoading || chatMessages.length === 0"
+            (click)="clearChatHistory()"
+            style="font-size:12px;gap:4px;display:flex;align-items:center"
+          >
+            <nz-icon nzType="delete" />
+            Xóa hội thoại
+          </button>
+        </div>
+      </ng-template>
       <ng-container *nzModalContent>
+
         <div class="ai-chat-modal">
           <div class="ai-chat-list-wrapper">
             @if (chatMessages.length === 0 && !isAiLoading) {
-              <nz-empty nzNotFoundContent="Chưa có cuộc hội thoại nào. Hãy bắt đầu bằng một câu hỏi." />
+            <nz-empty nzNotFoundContent="Chưa có cuộc hội thoại nào. Hãy hỏi bất kỳ điều gì về hóa đơn, khách hàng, doanh thu..." />
             } @else {
               <div class="chat-list">
                 @for (item of chatMessages; track $index) {
@@ -793,6 +815,11 @@ export class AdminLayoutComponent implements OnInit {
   aiInput = '';
   chatMessages: { role: 'user' | 'assistant'; content: string }[] = [];
 
+  /** Session ID duy nhất cho mỗi user, gắn với username để cách ly giữa các user */
+  private get aiSessionId(): string {
+    return `session-${this.sessionService.getUsername()}`;
+  }
+
   readonly colorOptions = COLOR_OPTIONS;
   readonly activeColor = this.themeService.activeColor;
   readonly isDark = () => this.themeService.mode() === 'dark';
@@ -859,6 +886,20 @@ export class AdminLayoutComponent implements OnInit {
     this.aiModalVisible = false;
   }
 
+  /** Xóa lịch sử chat local và gọi API clear session trên server */
+  clearChatHistory(): void {
+    this.chatMessages = [];
+    this.pendingBuffer = '';
+    if (this.typingInterval) {
+      clearInterval(this.typingInterval);
+      this.typingInterval = null;
+    }
+    this.aiAssistantFacade.clearSession(this.aiSessionId).subscribe({
+      error: () => void 0 // Silent — session có thể đã hết hạn
+    });
+    this.message.success('Đã xóa lịch sử hội thoại.');
+  }
+
   clearAiInput(): void {
     this.aiInput = '';
   }
@@ -900,15 +941,13 @@ export class AdminLayoutComponent implements OnInit {
 
     this.forceScrollToBottom();
 
-    // 3. Start streaming
-    this.aiAssistantFacade.chatStream(message)
+    // 3. Start streaming với memory + function calling
+    this.aiAssistantFacade.chatStreamWithMemory(this.aiSessionId, message)
       .pipe(finalize(() => {
         this.isAiLoading = false;
-        // The typing effect will stop itself when buffer is empty and isAiLoading is false
       }))
       .subscribe({
         next: (chunk) => {
-          // Add chunk to buffer and ensure typing effect is running
           this.pendingBuffer += chunk;
           this.processTypingEffect(assistantMessageIndex);
         },

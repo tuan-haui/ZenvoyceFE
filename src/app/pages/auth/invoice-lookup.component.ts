@@ -80,8 +80,8 @@ import { InvoiceFacadeService, InvoiceListItemDto, VerifyInvoiceXmlSignatureResu
                       <input nz-input formControlName="soHoadon" placeholder="Ví dụ: HD01-14052026" />
                     </div>
                     <div>
-                      <label class="field-label">Mã số thuế bên bán</label>
-                      <input nz-input formControlName="maSoThue" placeholder="Mã số thuế doanh nghiệp" />
+                      <label class="field-label">Mã số thuế khách hàng</label>
+                      <input nz-input formControlName="maSoThue" placeholder="Mã số thuế khách hàng" />
                     </div>
                   </div>
 
