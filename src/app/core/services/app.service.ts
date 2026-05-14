@@ -1575,6 +1575,141 @@ export class Client {
     }
 
     /**
+     * @param soHoadon (optional) 
+     * @param maSoThue (optional) 
+     * @return OK
+     */
+    lookup(soHoadon: string | undefined, maSoThue: string | undefined): Observable<ApiResponseOfArrayOfInvoiceListItemDto> {
+        let url_ = this.baseUrl + "/api/Invoices/lookup?";
+        if (soHoadon === null)
+            throw new globalThis.Error("The parameter 'soHoadon' cannot be null.");
+        else if (soHoadon !== undefined)
+            url_ += "soHoadon=" + encodeURIComponent("" + soHoadon) + "&";
+        if (maSoThue === null)
+            throw new globalThis.Error("The parameter 'maSoThue' cannot be null.");
+        else if (maSoThue !== undefined)
+            url_ += "maSoThue=" + encodeURIComponent("" + maSoThue) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: any = {
+            observe: "response",
+            responseType: "blob",
+            withCredentials: true,
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_: any) => {
+            return this.processLookup(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processLookup(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponseOfArrayOfInvoiceListItemDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponseOfArrayOfInvoiceListItemDto>;
+        }));
+    }
+
+    protected processLookup(response: HttpResponseBase): Observable<ApiResponseOfArrayOfInvoiceListItemDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+                (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); } }
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+                let result200: any = null;
+                let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = ApiResponseOfArrayOfInvoiceListItemDto.fromJS(resultData200);
+                return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+                return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param id (optional) 
+     * @param soHoadon (optional) 
+     * @param kyHieu (optional) 
+     * @param maSoThue (optional) 
+     * @param ngayLap (optional) 
+     * @return OK
+     */
+    signedXml(id: string | undefined, soHoadon: string | undefined, kyHieu: string | undefined, maSoThue: string | undefined, ngayLap: Date | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/Invoices/signed-xml?";
+        if (id === null)
+            throw new globalThis.Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
+        if (soHoadon === null)
+            throw new globalThis.Error("The parameter 'soHoadon' cannot be null.");
+        else if (soHoadon !== undefined)
+            url_ += "soHoadon=" + encodeURIComponent("" + soHoadon) + "&";
+        if (kyHieu === null)
+            throw new globalThis.Error("The parameter 'kyHieu' cannot be null.");
+        else if (kyHieu !== undefined)
+            url_ += "kyHieu=" + encodeURIComponent("" + kyHieu) + "&";
+        if (maSoThue === null)
+            throw new globalThis.Error("The parameter 'maSoThue' cannot be null.");
+        else if (maSoThue !== undefined)
+            url_ += "maSoThue=" + encodeURIComponent("" + maSoThue) + "&";
+        if (ngayLap === null)
+            throw new globalThis.Error("The parameter 'ngayLap' cannot be null.");
+        else if (ngayLap !== undefined)
+            url_ += "ngayLap=" + encodeURIComponent(ngayLap ? "" + ngayLap.toISOString() : "") + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: any = {
+            observe: "response",
+            responseType: "blob",
+            withCredentials: true,
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_: any) => {
+            return this.processSignedXml(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processSignedXml(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processSignedXml(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+                (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); } }
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+                return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+                return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @return OK
      */
     forRole(roleId: string): Observable<ApiResponseOfArrayOfMenuDto> {

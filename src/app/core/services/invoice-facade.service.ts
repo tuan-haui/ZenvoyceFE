@@ -11,7 +11,8 @@ import {
   CustomerDto as ApiCustomerDto,
   InvoiceHistoryItemDto as ApiInvoiceHistoryItemDto,
   InvoiceListItemDto as ApiInvoiceListItemDto,
-  ProductDto as ApiProductDto
+  ProductDto as ApiProductDto,
+  VerifyInvoiceXmlSignatureResultDto as ApiVerifyInvoiceXmlSignatureResultDto
 } from './app.service';
 
 export interface InvoiceListItemDto {
@@ -117,6 +118,15 @@ export interface SalesReportRowDto {
   tongThanhToan: number;
 }
 
+export interface VerifyInvoiceXmlSignatureResultDto {
+  isValid: boolean;
+  message?: string;
+  signerSubject?: string;
+  certificateSerialNumber?: string;
+  signedAtUtc?: string;
+  errors?: string[];
+}
+
 export interface StringMessageDto {
   message?: string;
 }
@@ -185,6 +195,39 @@ export class InvoiceFacadeService {
       responseType: 'blob',
       withCredentials: true
     });
+  }
+
+  lookupInvoices(soHoadon: string, maSoThue: string): Observable<InvoiceListItemDto[]> {
+    return this.client.lookup(soHoadon, maSoThue).pipe(
+      map(res => (res.data ?? []).map(x => this.mapInvoiceListItem(x)))
+    );
+  }
+
+  verifyXmlSignature(file: File): Observable<VerifyInvoiceXmlSignatureResultDto> {
+    return this.client.verifySignatureXml({ data: file, fileName: file.name }).pipe(
+      map(res => {
+        const d = res.data!;
+        return {
+          isValid: d.isValid ?? false,
+          message: d.message,
+          signerSubject: d.signerSubject,
+          certificateSerialNumber: d.certificateSerialNumber,
+          signedAtUtc: d.signedAtUtc ? d.signedAtUtc.toISOString() : undefined,
+          errors: d.errors
+        };
+      })
+    );
+  }
+
+  downloadSignedXmlBlob(inv: InvoiceListItemDto): Observable<Blob> {
+    let url = `${this.apiBaseUrl}/api/Invoices/signed-xml?`;
+    if (inv.id) url += `id=${encodeURIComponent(inv.id)}&`;
+    if (inv.sohoadon) url += `soHoadon=${encodeURIComponent(inv.sohoadon)}&`;
+    if (inv.kyhieu) url += `kyHieu=${encodeURIComponent(inv.kyhieu)}&`;
+    if (inv.maSoThueKhachhang) url += `maSoThue=${encodeURIComponent(inv.maSoThueKhachhang)}&`;
+    if (inv.ngaylap) url += `ngayLap=${encodeURIComponent(new Date(inv.ngaylap).toISOString())}&`;
+    url = url.replace(/[?&]$/, '');
+    return this.http.get(url, { responseType: 'blob', withCredentials: true });
   }
 
   previewInvoicePdfFromData(payload: CreateInvoicePayload): Observable<Blob> {

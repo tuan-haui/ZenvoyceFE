@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -23,7 +23,8 @@ import { ApiErrorService } from '../../core/services/api-error.service';
     NzCheckboxModule,
     NzButtonModule,
     NzModalModule,
-    NzIconModule
+    NzIconModule,
+    RouterLink
   ],
   template: `
     <nz-card class="login-card">
@@ -70,6 +71,10 @@ import { ApiErrorService } from '../../core/services/api-error.service';
           <button nz-button nzType="link" type="button" (click)="openForgotPassword()">Quên mật khẩu?</button>
         </div>
       </form>
+
+      <div class="lookup-footer">
+        Bạn là khách hàng? <a routerLink="/lookup">Tra cứu hóa đơn tại đây</a>
+      </div>
     </nz-card>
   `,
   styles: [`
@@ -78,6 +83,8 @@ import { ApiErrorService } from '../../core/services/api-error.service';
     h2 { margin-bottom: 18px; }
     .actions { margin-top: 16px; display: flex; justify-content: space-between; align-items: center; }
     .version { font-size: 12px; color: #999; margin-left: 8px; }
+    .lookup-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0; text-align: center; color: #8c8c8c; }
+    .lookup-footer a { font-weight: 500; color: #005daa; }
   `]
 })
 export class LoginPageComponent {

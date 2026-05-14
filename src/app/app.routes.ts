@@ -14,6 +14,10 @@ export const routes: Routes = [
     ]
   },
   {
+    path: 'lookup',
+    loadComponent: () => import('./pages/auth/invoice-lookup.component').then((m) => m.InvoiceLookupComponent)
+  },
+  {
     path: 'admin',
     canActivate: [authGuard, permissionGuard],
     data: { breadcrumb: 'Quản trị' },
