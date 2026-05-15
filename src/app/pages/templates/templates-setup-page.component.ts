@@ -221,10 +221,10 @@ function buildDefaultNewTemplateMeta(): { tenmau: string; kyhieu: string } {
               nzType="primary"
               [disabled]="!canSaveTemplate"
               [nzLoading]="savingTemplate"
-              (click)="saveAsNewTemplate()"
+              (click)="saveTemplateChanges()"
             >
               <nz-icon nzType="save" nzTheme="outline"></nz-icon>
-              Lưu mẫu mới
+              Lưu thay đổi
             </button>
             <nz-segmented
               [nzOptions]="viewModeOptions"
@@ -701,7 +701,7 @@ export class TemplatesSetupPageComponent implements OnInit {
     });
   }
 
-  saveAsNewTemplate(): void {
+  saveTemplateChanges(): void {
     if (!this.selectedTemplate) {
       return;
     }
@@ -714,23 +714,28 @@ export class TemplatesSetupPageComponent implements OnInit {
       return;
     }
 
-    const identity = this.buildNextTemplateIdentity();
-    const payload = new CreateBaseTemplateCommand({
-      tenmau: identity.name,
-      loaihoadon: this.selectedTemplate.loaihoadon || 'GTGT',
-      kyhieu: identity.code,
+    const payload = new UpdateBaseTemplateCommand({
+      id: this.selectedTemplate.id,
+      tenmau: this.selectedTemplate.tenmau,
+      loaihoadon: this.selectedTemplate.loaihoadon,
+      kyhieu: this.selectedTemplate.kyhieu,
       htmlContent: this.draftHtml,
       cssContent: this.draftCss,
-      version: identity.version
+      version: this.selectedTemplate.version
     });
 
     this.savingTemplate = true;
-    this.facade.createBaseTemplate(payload).subscribe({
-      next: (created) => {
+    this.facade.updateBaseTemplate(this.selectedTemplate.id, payload).subscribe({
+      next: (res) => {
         this.savingTemplate = false;
-        this.templates = [created, ...this.templates];
-        this.selectTemplate(created);
-        this.message.success('Đã lưu mẫu mới');
+        if (this.selectedTemplate) {
+          this.selectedTemplate.htmlContent = res.htmlContent;
+          this.selectedTemplate.cssContent = res.cssContent;
+          this.selectedTemplate.tenmau = res.tenmau;
+          this.selectedTemplate.kyhieu = res.kyhieu;
+          this.selectedTemplate.version = res.version;
+        }
+        this.message.success('Đã lưu thay đổi nội dung mẫu');
       },
       error: (e) => {
         this.savingTemplate = false;
@@ -741,76 +746,6 @@ export class TemplatesSetupPageComponent implements OnInit {
 
   private isHtmlValid(): boolean {
     return this.draftHtml.trim().length >= 10;
-  }
-
-  private buildNextTemplateIdentity(): { name: string; code: string; version: string } {
-    const nameBase = this.stripNameVersion(this.selectedTemplate?.tenmau ?? 'Mẫu');
-    const codeBase = this.stripCodeVersion(this.selectedTemplate?.kyhieu ?? 'MAU');
-    const nextVersion = this.getNextVersionNumber(nameBase, codeBase);
-    const name = this.buildVersionedName(nameBase, nextVersion);
-    const code = this.buildVersionedCode(codeBase, nextVersion);
-    return { name, code, version: String(nextVersion) };
-  }
-
-  private getNextVersionNumber(nameBase: string, codeBase: string): number {
-    const nameRegex = new RegExp(`^${this.escapeRegExp(nameBase)}\\s+v(\\d+)$`, 'i');
-    const codeRegex = new RegExp(`^${this.escapeRegExp(codeBase)}-v(\\d+)$`, 'i');
-    let maxVersion = 1;
-
-    for (const t of this.templates) {
-      if (t.tenmau) {
-        if (t.tenmau.toLowerCase() === nameBase.toLowerCase()) {
-          maxVersion = Math.max(maxVersion, 1);
-        }
-        const match = t.tenmau.match(nameRegex);
-        if (match) {
-          const parsed = Number.parseInt(match[1], 10);
-          if (!Number.isNaN(parsed)) {
-            maxVersion = Math.max(maxVersion, parsed);
-          }
-        }
-      }
-
-      if (t.kyhieu) {
-        if (t.kyhieu.toLowerCase() === codeBase.toLowerCase()) {
-          maxVersion = Math.max(maxVersion, 1);
-        }
-        const match = t.kyhieu.match(codeRegex);
-        if (match) {
-          const parsed = Number.parseInt(match[1], 10);
-          if (!Number.isNaN(parsed)) {
-            maxVersion = Math.max(maxVersion, parsed);
-          }
-        }
-      }
-    }
-
-    return maxVersion + 1;
-  }
-
-  private buildVersionedName(base: string, version: number): string {
-    const name = `${base} v${version}`.trim();
-    return name.length > 255 ? name.slice(0, 255) : name;
-  }
-
-  private buildVersionedCode(base: string, version: number): string {
-    const suffix = `-V${version}`;
-    const maxBaseLength = 50 - suffix.length;
-    const trimmed = base.trim();
-    const safeBase = trimmed.length > maxBaseLength ? trimmed.slice(0, maxBaseLength) : trimmed;
-    return `${safeBase}${suffix}`;
-  }
-
-  private stripNameVersion(value: string): string {
-    return value.replace(/\s+v\d+$/i, '').trim();
-  }
-
-  private stripCodeVersion(value: string): string {
-    return value.replace(/-v\d+$/i, '').trim();
-  }
-
-  private escapeRegExp(value: string): string {
-    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   private clearSelection(): void {
