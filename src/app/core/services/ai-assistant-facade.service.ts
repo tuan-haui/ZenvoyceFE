@@ -24,8 +24,11 @@ export class AiAssistantFacadeService {
     return this.client.chat(payload).pipe(map((env) => env.data));
   }
 
+  /** Stream qua `/api/Ai/chat-stream` (AI nghiệp vụ, không session server). */
   chatStream(message: string): Observable<string> {
-    return this._sseStream(`${this.baseUrl}/api/Ai/chat-stream?message=${encodeURIComponent(message.trim())}`);
+    const token = this.sessionService.getAccessToken();
+    const url = `${this.baseUrl}/api/Ai/chat-stream?message=${encodeURIComponent(message.trim())}`;
+    return this._sseStream(url, token ?? undefined);
   }
 
   // ─── Endpoint mới: Memory + Function Calling ────────────────────────────────

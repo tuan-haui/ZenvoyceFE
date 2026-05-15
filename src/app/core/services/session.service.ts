@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { decodeJwtPayload, JWT_CLAIMS } from '../utils/jwt-claims.util';
 import { LoginUserInfoDto } from './app.service';
 
 const AUTH_KEY = 'zenvoyce.authenticated';
@@ -51,6 +52,40 @@ export class SessionService {
     } catch {
       return null;
     }
+  }
+
+  /** Đọc claim từ JWT (ưu tiên token, fallback userInfo đã lưu khi đăng nhập). */
+  getTokenClaims() {
+    return decodeJwtPayload(this.getAccessToken());
+  }
+
+  getCompanyId(): string | null {
+    const claims = this.getTokenClaims();
+    if (claims?.[JWT_CLAIMS.companyId]) return claims[JWT_CLAIMS.companyId]!;
+    return this.getUserInfo()?.madonvi ?? null;
+  }
+
+  getRoleId(): string | null {
+    const claims = this.getTokenClaims();
+    if (claims?.[JWT_CLAIMS.roleId]) return claims[JWT_CLAIMS.roleId]!;
+    return this.getUserInfo()?.quyenid ?? null;
+  }
+
+  getRoleName(): string | null {
+    const claims = this.getTokenClaims();
+    if (claims?.[JWT_CLAIMS.roleName]) return claims[JWT_CLAIMS.roleName]!;
+    return this.getUserInfo()?.tenquyen ?? null;
+  }
+
+  getDisplayName(): string {
+    const claims = this.getTokenClaims();
+    return (
+      claims?.[JWT_CLAIMS.name] ??
+      this.getUserInfo()?.hoten ??
+      claims?.[JWT_CLAIMS.username] ??
+      claims?.[JWT_CLAIMS.uniqueName] ??
+      this.getUsername()
+    );
   }
 
   isTokenExpired(): boolean {

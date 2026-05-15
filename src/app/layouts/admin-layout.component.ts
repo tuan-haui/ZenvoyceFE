@@ -20,6 +20,7 @@ import { NzPopoverModule } from 'ng-zorro-antd/popover';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { MarkdownModule } from 'ngx-markdown';
 import { filter, finalize } from 'rxjs';
 import { AiAssistantFacadeService } from '../core/services/ai-assistant-facade.service';
@@ -44,6 +45,7 @@ import { SessionService } from '../core/services/session.service';
     NzInputModule,
     NzEmptyModule,
     NzToolTipModule,
+    NzDropDownModule,
     MarkdownModule,
     FormsModule
   ],
@@ -142,7 +144,6 @@ import { SessionService } from '../core/services/session.service';
           </div>
           <div class="header-right">
             <button nz-button nzType="default" (click)="openAiAssistant()">
-              <nz-icon nzType="robot" />
               <span>Trợ lý AI</span>
             </button>
           </div>
@@ -163,8 +164,23 @@ import { SessionService } from '../core/services/session.service';
       (nzOnCancel)="closeAiAssistant()"
     >
       <ng-template #aiModalTitle>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding-right:40px">
-          <span style="font-weight:600">🤖 Trợ lý AI</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-right:40px;gap:12px;width:100%">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0">
+            <span style="font-weight:600">Trợ lý AI</span>
+            <button
+              type="button"
+              nz-button
+              nzType="default"
+              nzSize="small"
+              nz-dropdown
+              nzTrigger="click"
+              [nzDropdownMenu]="aiModeMenu"
+              [disabled]="isAiLoading"
+            >
+              {{ aiChatModeLabel }}
+              <nz-icon nzType="down" />
+            </button>
+          </div>
           <button
             nz-button
             nzType="text"
@@ -174,19 +190,29 @@ import { SessionService } from '../core/services/session.service';
             nzTooltipTitle="Xóa lịch sử hội thoại"
             [disabled]="isAiLoading || chatMessages.length === 0"
             (click)="clearChatHistory()"
-            style="font-size:12px;gap:4px;display:flex;align-items:center"
+            style="font-size:12px;gap:4px;display:flex;align-items:center;flex-shrink:0"
           >
             <nz-icon nzType="delete" />
             Xóa hội thoại
           </button>
         </div>
       </ng-template>
+      <nz-dropdown-menu #aiModeMenu="nzDropdownMenu">
+        <ul nz-menu nzSelectable>
+          <li nz-menu-item [nzSelected]="aiChatMode === 'query'" (click)="setAiChatMode('query')">
+            AI truy vấn
+          </li>
+          <li nz-menu-item [nzSelected]="aiChatMode === 'business'" (click)="setAiChatMode('business')">
+            AI nghiệp vụ
+          </li>
+        </ul>
+      </nz-dropdown-menu>
       <ng-container *nzModalContent>
 
         <div class="ai-chat-modal">
           <div class="ai-chat-list-wrapper">
             @if (chatMessages.length === 0 && !isAiLoading) {
-            <nz-empty nzNotFoundContent="Chưa có cuộc hội thoại nào. Hãy hỏi bất kỳ điều gì về hóa đơn, khách hàng, doanh thu..." />
+            <nz-empty [nzNotFoundContent]="aiChatEmptyHint" />
             } @else {
               <div class="chat-list">
                 @for (item of chatMessages; track $index) {
@@ -235,9 +261,9 @@ import { SessionService } from '../core/services/session.service';
               (keydown)="onAiComposerKeydown($event)"
             ></textarea>
             <div class="ai-composer-actions">
-              <button nz-button nzType="default" type="button" [disabled]="isAiLoading" (click)="clearAiInput()">
+              <!-- <button nz-button nzType="default" type="button" [disabled]="isAiLoading" (click)="clearAiInput()">
                 Xóa
-              </button>
+              </button> -->
               <button
                 nz-button
                 nzType="primary"
@@ -814,6 +840,8 @@ export class AdminLayoutComponent implements OnInit {
   isAiLoading = false;
   aiInput = '';
   chatMessages: { role: 'user' | 'assistant'; content: string }[] = [];
+  /** `query`: stream có memory + function calling (`/api/Ai/stream`). `business`: stream nghiệp vụ (`/api/Ai/chat-stream`). */
+  aiChatMode: 'query' | 'business' = 'query';
 
   /** Session ID duy nhất cho mỗi user, gắn với username để cách ly giữa các user */
   private get aiSessionId(): string {
@@ -838,6 +866,23 @@ export class AdminLayoutComponent implements OnInit {
 
   get userInitial(): string {
     return this.username.charAt(0).toUpperCase();
+  }
+
+  get aiChatModeLabel(): string {
+    return this.aiChatMode === 'query' ? 'AI truy vấn' : 'AI nghiệp vụ';
+  }
+
+  get aiChatEmptyHint(): string {
+    return this.aiChatMode === 'query'
+      ? 'Chế độ AI truy vấn: hãy hỏi về hóa đơn, khách hàng, doanh thu…'
+      : 'Chế độ AI nghiệp vụ: hỏi theo ngữ cảnh nghiệp vụ.';
+  }
+
+  setAiChatMode(mode: 'query' | 'business'): void {
+    if (this.isAiLoading || mode === this.aiChatMode) {
+      return;
+    }
+    this.aiChatMode = mode;
   }
 
   ngOnInit(): void {
@@ -894,9 +939,11 @@ export class AdminLayoutComponent implements OnInit {
       clearInterval(this.typingInterval);
       this.typingInterval = null;
     }
-    this.aiAssistantFacade.clearSession(this.aiSessionId).subscribe({
-      error: () => void 0 // Silent — session có thể đã hết hạn
-    });
+    if (this.aiChatMode === 'query') {
+      this.aiAssistantFacade.clearSession(this.aiSessionId).subscribe({
+        error: () => void 0 // Silent — session có thể đã hết hạn
+      });
+    }
     this.message.success('Đã xóa lịch sử hội thoại.');
   }
 
@@ -941,8 +988,13 @@ export class AdminLayoutComponent implements OnInit {
 
     this.forceScrollToBottom();
 
-    // 3. Start streaming với memory + function calling
-    this.aiAssistantFacade.chatStreamWithMemory(this.aiSessionId, message)
+    // 3. Stream: truy vấn (memory + tools) hoặc nghiệp vụ (chat-stream)
+    const stream$ =
+      this.aiChatMode === 'query'
+        ? this.aiAssistantFacade.chatStreamWithMemory(this.aiSessionId, message)
+        : this.aiAssistantFacade.chatStream(message);
+
+    stream$
       .pipe(finalize(() => {
         this.isAiLoading = false;
       }))
@@ -972,7 +1024,7 @@ export class AdminLayoutComponent implements OnInit {
     this.typingInterval = setInterval(() => {
       if (this.pendingBuffer.length > 0) {
         // "Fast typing" speed: take a small random number of characters
-        const charsToTake = Math.floor(Math.random() * 3) + 2; 
+        const charsToTake = Math.floor(Math.random() * 3) + 2;
         const chunk = this.pendingBuffer.substring(0, charsToTake);
         this.pendingBuffer = this.pendingBuffer.substring(charsToTake);
 
@@ -999,7 +1051,7 @@ export class AdminLayoutComponent implements OnInit {
         // Only scroll to bottom if the user is already near the bottom (threshold: 100px)
         const threshold = 100;
         const isNearBottom = (wrapper.scrollHeight - wrapper.scrollTop - wrapper.clientHeight) < threshold;
-        
+
         if (isNearBottom) {
           wrapper.scrollTop = wrapper.scrollHeight;
         }

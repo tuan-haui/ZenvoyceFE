@@ -67,6 +67,18 @@ const SAMPLE_DATA: SampleInvoiceData = {
   total_amount: '35.200.000'
 };
 
+/** Nội dung tối thiểu để qua validation (HTML >= 10 ký tự), gần như trống khi xem trước. */
+const DEFAULT_BLANK_HTML = '<div></motion.div>';
+const DEFAULT_BLANK_CSS = '';
+
+function buildDefaultNewTemplateMeta(): { tenmau: string; kyhieu: string } {
+  const suffix = String(Date.now()).slice(0, 4);
+  return {
+    tenmau: `Mẫu hóa đơn mới ${suffix}`,
+    kyhieu: `MAU-${suffix}`
+  };
+}
+
 @Component({
   selector: 'app-templates-setup-page',
   imports: [
@@ -581,12 +593,13 @@ export class TemplatesSetupPageComponent implements OnInit {
 
   addNewBlankTemplate(): void {
     this.addingBlank = true;
+    const meta = buildDefaultNewTemplateMeta();
     const payload = new CreateBaseTemplateCommand({
-      tenmau: 'Mẫu hóa đơn mới',
+      tenmau: meta.tenmau,
       loaihoadon: 'GTGT',
-      kyhieu: 'MAU-MOI',
-      htmlContent: '<div style="padding: 20px;">\n  <h1>HÓA ĐƠN GTGT</h1>\n  <p>Đây là mẫu hóa đơn mới. Hãy chỉnh sửa lại HTML/CSS bên phải để tạo mẫu của bạn.</p>\n</div>',
-      cssContent: '* { box-sizing: border-box; }\nbody { font-family: Arial, sans-serif; }',
+      kyhieu: meta.kyhieu,
+      htmlContent: DEFAULT_BLANK_HTML,
+      cssContent: DEFAULT_BLANK_CSS,
       version: '1'
     });
     this.facade.createBaseTemplate(payload).subscribe({

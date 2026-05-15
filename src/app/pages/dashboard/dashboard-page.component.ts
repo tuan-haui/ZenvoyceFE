@@ -14,6 +14,7 @@ import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
+import { AiAssistantFacadeService } from '../../core/services/ai-assistant-facade.service';
 import { ApiErrorService } from '../../core/services/api-error.service';
 import { CompanyDto, InvoiceFacadeService, InvoiceListItemDto, SalesReportRowDto } from '../../core/services/invoice-facade.service';
 import { UserRoleFacadeService } from '../../core/services/user-role-facade.service';
@@ -87,16 +88,19 @@ type StatusChartType = 'pie' | 'bar';
       <nz-col [nzXs]="24" [nzLg]="12">
         <nz-card nzTitle="Doanh thu theo khách hàng" [nzLoading]="chartsLoading">
           <div echarts [options]="salesChartOption" class="chart-host"></div>
+          <p class="chart-insight" [class.chart-insight--loading]="insightsLoading">{{ salesChartInsight }}</p>
         </nz-card>
       </nz-col>
       <nz-col [nzXs]="24" [nzLg]="12">
         <nz-card nzTitle="Xu hướng theo tháng" [nzLoading]="chartsLoading">
           <div echarts [options]="monthlyChartOption" class="chart-host"></div>
+          <p class="chart-insight" [class.chart-insight--loading]="insightsLoading">{{ monthlyChartInsight }}</p>
         </nz-card>
       </nz-col>
       <nz-col [nzSpan]="24">
         <nz-card nzTitle="Phân bổ trạng thái hóa đơn" [nzLoading]="chartsLoading">
           <div echarts [options]="statusChartOption" class="chart-host"></div>
+          <p class="chart-insight" [class.chart-insight--loading]="insightsLoading">{{ statusChartInsight }}</p>
         </nz-card>
       </nz-col>
     </nz-row>
@@ -133,6 +137,18 @@ type StatusChartType = 'pie' | 'bar';
       .chart-host {
         height: 340px;
       }
+      .chart-insight {
+        margin: 12px 0 0;
+        padding-top: 12px;
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+        font-size: 13px;
+        line-height: 1.55;
+        color: rgba(0, 0, 0, 0.65);
+      }
+      .chart-insight--loading {
+        color: rgba(0, 0, 0, 0.45);
+        font-style: italic;
+      }
       .quick-card {
         margin-top: 16px;
       }
@@ -168,6 +184,13 @@ type StatusChartType = 'pie' | 'bar';
       :host-context(html.dark-mode) .chart-host {
         filter: saturate(0.9);
       }
+      :host-context(html.dark-mode) .chart-insight {
+        border-top-color: rgba(255, 255, 255, 0.12);
+        color: rgba(255, 255, 255, 0.65);
+      }
+      :host-context(html.dark-mode) .chart-insight--loading {
+        color: rgba(255, 255, 255, 0.45);
+      }
     `
   ]
 })
@@ -175,9 +198,11 @@ export class DashboardPageComponent implements OnInit {
   private readonly usersApi = inject(UserRoleFacadeService);
   private readonly invoicesApi = inject(InvoiceFacadeService);
   private readonly apiError = inject(ApiErrorService);
+  private readonly aiApi = inject(AiAssistantFacadeService);
 
   loading = true;
   chartsLoading = true;
+  insightsLoading = false;
   userCount = 0;
   companyCount = 0;
   invoiceCount = 0;
@@ -195,6 +220,12 @@ export class DashboardPageComponent implements OnInit {
   salesChartOption: Record<string, unknown> = {};
   monthlyChartOption: Record<string, unknown> = {};
   statusChartOption: Record<string, unknown> = {};
+
+  salesChartInsight = '';
+  monthlyChartInsight = '';
+  statusChartInsight = '';
+
+  private insightRequestId = 0;
 
   ngOnInit(): void {
     forkJoin({
@@ -270,6 +301,7 @@ export class DashboardPageComponent implements OnInit {
     this.buildMonthlyChartOption();
     this.buildStatusChartOption();
     this.chartsLoading = false;
+    this.loadChartInsights();
   }
 
   buildSalesChartOption(): void {
@@ -374,5 +406,108 @@ export class DashboardPageComponent implements OnInit {
       count: stats.count,
       amount: Math.round(stats.amount)
     }));
+  }
+
+  private loadChartInsights(): void {
+    const requestId = ++this.insightRequestId;
+    this.insightsLoading = true;
+    this.salesChartInsight = 'Đang phân tích biểu đồ…';
+    this.monthlyChartInsight = 'Đang phân tích biểu đồ…';
+    this.statusChartInsight = 'Đang phân tích biểu đồ…';
+
+    const period = this.formatDateRangeLabel();
+    const companyName = this.companies.find((c) => c.id === this.selectedCompanyId)?.tendonvi ?? 'Tất cả';
+
+    forkJoin({
+      sales: this.aiApi
+        .chat(this.buildInsightPrompt('Doanh thu theo khách hàng', period, companyName, this.buildSalesChartSummary()))
+        .pipe(catchError(() => of(undefined))),
+      monthly: this.aiApi
+        .chat(this.buildInsightPrompt('Xu hướng theo tháng', period, companyName, this.buildMonthlyChartSummary()))
+        .pipe(catchError(() => of(undefined))),
+      status: this.aiApi
+        .chat(this.buildInsightPrompt('Phân bổ trạng thái hóa đơn', period, companyName, this.buildStatusChartSummary()))
+        .pipe(catchError(() => of(undefined)))
+    }).subscribe({
+      next: ({ sales, monthly, status }) => {
+        if (requestId !== this.insightRequestId) {
+          return;
+        }
+        this.salesChartInsight = this.toInsightText(sales?.text, 'Chưa đủ dữ liệu để đánh giá doanh thu theo khách hàng.');
+        this.monthlyChartInsight = this.toInsightText(monthly?.text, 'Chưa đủ dữ liệu để đánh giá xu hướng theo tháng.');
+        this.statusChartInsight = this.toInsightText(status?.text, 'Chưa đủ dữ liệu để đánh giá phân bổ trạng thái.');
+        this.insightsLoading = false;
+      },
+      error: () => {
+        if (requestId !== this.insightRequestId) {
+          return;
+        }
+        this.salesChartInsight = 'Không thể tạo đánh giá AI cho biểu đồ doanh thu.';
+        this.monthlyChartInsight = 'Không thể tạo đánh giá AI cho biểu đồ xu hướng.';
+        this.statusChartInsight = 'Không thể tạo đánh giá AI cho biểu đồ trạng thái.';
+        this.insightsLoading = false;
+      }
+    });
+  }
+
+  private buildInsightPrompt(chartTitle: string, period: string, companyName: string, dataSummary: string): string {
+    return [
+      'Bạn là chuyên gia phân tích dữ liệu hóa đơn.',
+      `Dựa trên dữ liệu biểu đồ "${chartTitle}" (công ty: ${companyName}, kỳ: ${period}),`,
+      'hãy viết đúng 1–2 câu tiếng Việt đánh giá ngắn gọn, súc tích.',
+      'Không dùng bullet, không chào hỏi, không lặp lại toàn bộ bảng số liệu.',
+      'Chỉ trả lời phần đánh giá.',
+      '',
+      'Dữ liệu:',
+      dataSummary
+    ].join('\n');
+  }
+
+  private buildSalesChartSummary(): string {
+    if (this.salesRows.length === 0) {
+      return 'Không có dòng doanh thu theo khách hàng trong kỳ đã chọn.';
+    }
+
+    const top = [...this.salesRows].sort((a, b) => b.tongThanhToan - a.tongThanhToan).slice(0, 8);
+    const total = this.salesRows.reduce((sum, row) => sum + row.tongThanhToan, 0);
+    const lines = top.map((row) => `- ${row.tenKhachHang || 'Không tên'}: ${row.tongThanhToan.toLocaleString('vi-VN')} VND`);
+    return [`Tổng doanh thu: ${total.toLocaleString('vi-VN')} VND`, `Số khách hàng: ${this.salesRows.length}`, 'Top khách hàng:', ...lines].join('\n');
+  }
+
+  private buildMonthlyChartSummary(): string {
+    const buckets = this.buildMonthBuckets(this.dateRange[0], this.dateRange[1], this.invoicesInRange);
+    if (buckets.every((b) => b.count === 0 && b.amount === 0)) {
+      return 'Không có hóa đơn nào trong các tháng của kỳ đã chọn.';
+    }
+
+    const lines = buckets.map((b) => `- ${b.month}: ${b.count} hóa đơn, ${b.amount.toLocaleString('vi-VN')} VND`);
+    const totalInvoices = buckets.reduce((sum, b) => sum + b.count, 0);
+    const totalAmount = buckets.reduce((sum, b) => sum + b.amount, 0);
+    return [`Tổng hóa đơn: ${totalInvoices}`, `Tổng thanh toán: ${totalAmount.toLocaleString('vi-VN')} VND`, 'Theo tháng:', ...lines].join('\n');
+  }
+
+  private buildStatusChartSummary(): string {
+    const statusMap = new Map<string, number>();
+    for (const item of this.invoicesInRange) {
+      const key = item.trangthai || 'Unknown';
+      statusMap.set(key, (statusMap.get(key) ?? 0) + 1);
+    }
+
+    if (statusMap.size === 0) {
+      return 'Không có hóa đơn trong kỳ đã chọn.';
+    }
+
+    const lines = Array.from(statusMap.entries()).map(([name, count]) => `- ${name}: ${count} hóa đơn`);
+    return [`Tổng hóa đơn: ${this.invoicesInRange.length}`, 'Phân bổ trạng thái:', ...lines].join('\n');
+  }
+
+  private formatDateRangeLabel(): string {
+    const [from, to] = this.dateRange;
+    return `${from.toLocaleDateString('vi-VN')} – ${to.toLocaleDateString('vi-VN')}`;
+  }
+
+  private toInsightText(text: string | undefined, fallback: string): string {
+    const normalized = (text ?? '').trim().replace(/\s+/g, ' ');
+    return normalized || fallback;
   }
 }
