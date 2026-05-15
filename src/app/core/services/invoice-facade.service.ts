@@ -273,6 +273,19 @@ export class InvoiceFacadeService {
       );
   }
 
+  exportSalesReportExcel(filters?: {
+    donviId?: string;
+    khachhangId?: string;
+    tuNgay?: Date;
+    denNgay?: Date;
+  }): Observable<Blob> {
+    return this.client.excel(filters?.donviId, filters?.khachhangId, filters?.tuNgay, filters?.denNgay);
+  }
+
+  exportInvoicesExcel(filters?: InvoiceFilters): Observable<Blob> {
+    return this.client.excel2(filters?.khachhangId, filters?.trangthai, filters?.tuNgay, filters?.denNgay);
+  }
+
   getCompanies(): Observable<CompanyDto[]> {
     return this.client.companiesGET().pipe(map((res) => (res.data ?? []).map((x) => this.mapCompany(x))));
   }

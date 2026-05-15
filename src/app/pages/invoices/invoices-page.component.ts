@@ -115,6 +115,11 @@ interface LineItemVm {
         <nz-icon nzType="reload" nzTheme="outline"></nz-icon>
         Làm mới
       </button>
+
+      <button nz-button nzType="default" (click)="exportExcel()" [nzLoading]="exporting">
+        <nz-icon nzType="download" nzTheme="outline"></nz-icon>
+        Xuất Excel
+      </button>
     </div>
 
     <!-- Table Card -->
@@ -641,6 +646,7 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
   // List state
   invoices: InvoiceListItemDto[] = [];
   loading = false;
+  exporting = false;
   actionLoading: string | null = null;
 
   // Filters
@@ -798,6 +804,27 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
     this.filters = {};
     this.dateRange = null;
     this.loadInvoices();
+  }
+
+  exportExcel(): void {
+    this.exporting = true;
+    this.facade.exportInvoicesExcel(this.filters).subscribe({
+      next: (blob) => {
+        const fileName = `danh-sach-hoa-don-${new Date().toISOString().slice(0, 10)}.xlsx`;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+        this.exporting = false;
+        this.message.success('Xuất danh sách hóa đơn thành công.');
+      },
+      error: (e) => {
+        this.exporting = false;
+        this.apiError.show(e);
+      }
+    });
   }
 
   // ---- Status helpers ----

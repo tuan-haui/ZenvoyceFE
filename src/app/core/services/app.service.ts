@@ -1288,6 +1288,72 @@ export class Client {
     }
 
     /**
+     * @param donviId (optional) 
+     * @param khachhangId (optional) 
+     * @param tuNgay (optional) 
+     * @param denNgay (optional) 
+     * @return OK
+     */
+    excel(donviId: string | undefined, khachhangId: string | undefined, tuNgay: Date | undefined, denNgay: Date | undefined): Observable<Blob> {
+        let url_ = this.baseUrl + "/api/Invoices/reports/sales/export/excel?";
+        if (donviId === null)
+            throw new globalThis.Error("The parameter 'donviId' cannot be null.");
+        else if (donviId !== undefined)
+            url_ += "donviId=" + encodeURIComponent("" + donviId) + "&";
+        if (khachhangId === null)
+            throw new globalThis.Error("The parameter 'khachhangId' cannot be null.");
+        else if (khachhangId !== undefined)
+            url_ += "khachhangId=" + encodeURIComponent("" + khachhangId) + "&";
+        if (tuNgay === null)
+            throw new globalThis.Error("The parameter 'tuNgay' cannot be null.");
+        else if (tuNgay !== undefined)
+            url_ += "tuNgay=" + encodeURIComponent(tuNgay ? "" + tuNgay.toISOString() : "") + "&";
+        if (denNgay === null)
+            throw new globalThis.Error("The parameter 'denNgay' cannot be null.");
+        else if (denNgay !== undefined)
+            url_ += "denNgay=" + encodeURIComponent(denNgay ? "" + denNgay.toISOString() : "") + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            withCredentials: true,
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processExcel(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processExcel(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<Blob>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<Blob>;
+        }));
+    }
+
+    protected processExcel(response: HttpResponseBase): Observable<Blob> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return _observableOf(responseBlob as Blob);
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(new Blob());
+    }
+
+    /**
      * @return OK
      */
     forward(id: string): Observable<ApiResponseOfStringMessageDto> {
@@ -1570,6 +1636,72 @@ export class Client {
             }));
         }
         return _observableOf(null as any);
+    }
+
+    /**
+     * @param khachhangId (optional) 
+     * @param trangthai (optional) 
+     * @param tuNgay (optional) 
+     * @param denNgay (optional) 
+     * @return OK
+     */
+    excel2(khachhangId: string | undefined, trangthai: string | undefined, tuNgay: Date | undefined, denNgay: Date | undefined): Observable<Blob> {
+        let url_ = this.baseUrl + "/api/Invoices/export/excel?";
+        if (khachhangId === null)
+            throw new globalThis.Error("The parameter 'khachhangId' cannot be null.");
+        else if (khachhangId !== undefined)
+            url_ += "khachhangId=" + encodeURIComponent("" + khachhangId) + "&";
+        if (trangthai === null)
+            throw new globalThis.Error("The parameter 'trangthai' cannot be null.");
+        else if (trangthai !== undefined)
+            url_ += "trangthai=" + encodeURIComponent("" + trangthai) + "&";
+        if (tuNgay === null)
+            throw new globalThis.Error("The parameter 'tuNgay' cannot be null.");
+        else if (tuNgay !== undefined)
+            url_ += "tuNgay=" + encodeURIComponent(tuNgay ? "" + tuNgay.toISOString() : "") + "&";
+        if (denNgay === null)
+            throw new globalThis.Error("The parameter 'denNgay' cannot be null.");
+        else if (denNgay !== undefined)
+            url_ += "denNgay=" + encodeURIComponent(denNgay ? "" + denNgay.toISOString() : "") + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            withCredentials: true,
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processExcel2(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processExcel2(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<Blob>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<Blob>;
+        }));
+    }
+
+    protected processExcel2(response: HttpResponseBase): Observable<Blob> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return _observableOf(responseBlob as Blob);
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(new Blob());
     }
 
     /**
