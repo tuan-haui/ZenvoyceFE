@@ -54,6 +54,15 @@ interface LineItemVm {
   thanhtien: number;
 }
 
+interface UserInfo {
+  id: string;
+  madonvi: string;
+  hoten: string;
+  tenquyen: string;
+  trangthai: number;
+  email: string;
+}
+
 @Component({
   selector: 'app-invoices-page',
   imports: [
@@ -165,7 +174,7 @@ interface LineItemVm {
             <td nzAlign="center">
               <div class="row-actions">
                 <!-- Draft → Gửi chờ ký -->
-                <button *ngIf="inv.trangthai === 'Draft'"
+                <button *ngIf="inv.trangthai === 'Draft' && userInfo.tenquyen === 'Kế toán'"
                   nz-button nzType="default" nzSize="small"
                   nz-tooltip nzTooltipTitle="Gửi chờ ký"
                   nz-popconfirm
@@ -177,7 +186,7 @@ interface LineItemVm {
                 </button>
 
                 <!-- Draft / PendingSign → Ký số -->
-                <button *ngIf="inv.trangthai === 'Draft' || inv.trangthai === 'PendingSign'"
+                <button *ngIf="(inv.trangthai === 'Draft' || inv.trangthai === 'PendingSign') && userInfo.tenquyen !== 'Kế toán'"
                   nz-button nzType="primary" nzSize="small"
                   nz-tooltip nzTooltipTitle="Ký số hóa đơn"
                   nz-popconfirm
@@ -695,6 +704,9 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
   previewTitle = 'Xem trước hóa đơn (PDF)';
   previewFilename = 'invoice.pdf';
 
+  // User info
+  userInfo: UserInfo = {} as UserInfo;
+
   readonly statusOptions = Object.entries(STATUS_CONFIG).map(([v, c]) => ({ value: v, label: c.label }));
   readonly formatCurrency = (val: number) => `${val?.toLocaleString('vi-VN') ?? 0}`;
 
@@ -708,6 +720,7 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadCompanies();
     this.loadInvoices();
+    this.userInfo = localStorage.getItem('zenvoyce.user_info') ? JSON.parse(localStorage.getItem('zenvoyce.user_info')!) as UserInfo : {} as UserInfo;
   }
 
   // ---- Totals ----
