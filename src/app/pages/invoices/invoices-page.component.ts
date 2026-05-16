@@ -170,6 +170,7 @@ interface UserInfo {
             <td nzAlign="right" class="amount-cell total-cell"><strong>{{ inv.tongthanhtoan | number:'1.0-0' }} đ</strong></td>
             <td nzAlign="center">
               <nz-tag [nzColor]="getStatusColor(inv.trangthai)">{{ getStatusLabel(inv.trangthai) }}</nz-tag>
+              <nz-tag *ngIf="isAdjustmentInvoice(inv)" nzColor="gold" style="margin-left: 6px">HĐ Điều chỉnh</nz-tag>
             </td>
             <td nzAlign="center">
               <div class="row-actions">
@@ -246,12 +247,27 @@ interface UserInfo {
                   <nz-icon nzType="file-pdf" nzTheme="outline"></nz-icon>
                 </button>
 
+                <!-- Xem chi tiết -->
+                <button
+                  nz-button nzType="text" nzSize="small"
+                  nz-tooltip nzTooltipTitle="Xem chi tiết"
+                  (click)="openDetails(inv)">
+                  <nz-icon nzType="info-circle" nzTheme="outline"></nz-icon>
+                </button>
+
                 <!-- Lịch sử -->
                 <button
                   nz-button nzType="text" nzSize="small"
                   nz-tooltip nzTooltipTitle="Xem lịch sử"
                   (click)="openHistoryModal(inv)">
                   <nz-icon nzType="history" nzTheme="outline"></nz-icon>
+                </button>
+
+                <button *ngIf="isAdjustmentInvoice(inv)"
+                  nz-button nzType="text" nzSize="small"
+                  nz-tooltip nzTooltipTitle="Xem hóa đơn gốc"
+                  (click)="openOriginalInvoice(inv)">
+                  <nz-icon nzType="file-search" nzTheme="outline"></nz-icon>
                 </button>
               </div>
             </td>
@@ -281,6 +297,10 @@ interface UserInfo {
       <ng-container *nzDrawerContent>
         <nz-spin [nzSpinning]="loadingLookup">
           <form nz-form [formGroup]="createForm" nzLayout="vertical">
+            <div *ngIf="adjustSourceId" class="adjust-banner">
+              Đang lập hóa đơn điều chỉnh từ hóa đơn gốc <strong>{{ adjustSourceId }}</strong>. Các trường nền đã được khóa theo hóa đơn nguồn.
+            </div>
+
             <div class="form-row">
               <nz-form-item class="form-col">
                 <nz-form-label nzRequired>Đơn vị</nz-form-label>
@@ -289,6 +309,7 @@ interface UserInfo {
                     formControlName="donviId"
                     nzPlaceHolder="Chọn đơn vị"
                     (ngModelChange)="onCompanyChange($event)"
+                    [nzDisabled]="!!adjustSourceId"
                   >
                     <nz-option *ngFor="let c of companies" [nzValue]="c.id" [nzLabel]="c.tendonvi || c.id"></nz-option>
                   </nz-select>
@@ -311,6 +332,7 @@ interface UserInfo {
                     formControlName="khachhangId"
                     nzPlaceHolder="Chọn khách hàng"
                     nzShowSearch
+                    [nzDisabled]="!!adjustSourceId"
                   >
                     <nz-option *ngFor="let kh of customers" [nzValue]="kh.id" [nzLabel]="kh.tenkhachhang || kh.id"></nz-option>
                   </nz-select>
@@ -320,7 +342,7 @@ interface UserInfo {
               <nz-form-item class="form-col">
                 <nz-form-label nzRequired>Mẫu hóa đơn</nz-form-label>
                 <nz-form-control nzErrorTip="Vui lòng chọn mẫu hóa đơn">
-                  <nz-select formControlName="mauctyId" nzPlaceHolder="Chọn mẫu">
+                  <nz-select formControlName="mauctyId" nzPlaceHolder="Chọn mẫu" [nzDisabled]="!!adjustSourceId">
                     <nz-option *ngFor="let t of templates" [nzValue]="t.id" [nzLabel]="(t.kyhieuMau || '') + ' - ' + (t.loaiHoadon || '')"></nz-option>
                   </nz-select>
                 </nz-form-control>
@@ -425,7 +447,7 @@ interface UserInfo {
             Xem trước
           </button>
           <button nz-button nzType="primary" (click)="submitCreate()" [nzLoading]="saving">
-            Tạo hóa đơn
+            {{ adjustSourceId ? 'Lưu hóa đơn điều chỉnh' : 'Tạo hóa đơn' }}
           </button>
         </div>
       </ng-template>
@@ -516,6 +538,35 @@ interface UserInfo {
         </nz-spin>
       </ng-container>
     </nz-modal>
+
+      <!-- ===== MODAL: Chi tiết hóa đơn ===== -->
+      <nz-modal
+        [(nzVisible)]="detailsModalVisible"
+        nzTitle="Chi tiết hóa đơn"
+        (nzOnCancel)="closeDetails()"
+        [nzFooter]="null"
+        nzWidth="720px"
+      >
+        <ng-container *nzModalContent>
+          <div *ngIf="detailsInvoice; else noDetails">
+            <nz-descriptions nzTitle="Thông tin chung" [nzColumn]="2">
+              <nz-descriptions-item nzTitle="Số hóa đơn">{{ detailsInvoice.sohoadon || '—' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Ký hiệu">{{ detailsInvoice.kyhieu || '—' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Ngày lập">{{ detailsInvoice.ngaylap | date:'dd/MM/yyyy' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Khách hàng">{{ detailsInvoice.tenKhachhang || getCustomerName(detailsInvoice.khachhangId) }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Tổng tiền hàng">{{ detailsInvoice.tongtien | number:'1.0-0' }} đ</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Tiền thuế">{{ detailsInvoice.tienthue | number:'1.0-0' }} đ</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Tổng thanh toán">{{ detailsInvoice.tongthanhtoan | number:'1.0-0' }} đ</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Trạng thái"><nz-tag [nzColor]="getStatusColor(detailsInvoice.trangthai)">{{ getStatusLabel(detailsInvoice.trangthai) }}</nz-tag></nz-descriptions-item>
+            </nz-descriptions>
+            <nz-divider nzText="Ghi chú"></nz-divider>
+            <div style="min-height:80px">Không có thông tin bổ sung.</div>
+          </div>
+          <ng-template #noDetails>
+            <div class="empty-state" style="padding:24px"><p>Không có dữ liệu</p></div>
+          </ng-template>
+        </ng-container>
+      </nz-modal>
   `,
   styles: [`
     .page-header {
@@ -616,6 +667,15 @@ interface UserInfo {
     .grand-color { color: #52c41a; font-size: 18px; }
 
     .drawer-footer { display: flex; justify-content: flex-end; gap: 10px; }
+    .adjust-banner {
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #fff7e6;
+      border: 1px solid #ffd591;
+      color: #ad6800;
+      font-size: 13px;
+    }
 
     .history-action { margin: 0; font-size: 14px; color: #262626; }
     .history-meta { margin: 4px 0; }
@@ -704,6 +764,10 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
   previewTitle = 'Xem trước hóa đơn (PDF)';
   previewFilename = 'invoice.pdf';
 
+  // Details modal
+  detailsModalVisible = false;
+  detailsInvoice: InvoiceListItemDto | null = null;
+
   // User info
   userInfo: UserInfo = {} as UserInfo;
 
@@ -767,13 +831,15 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
     });
   }
 
-  onCompanyChange(donviId: string): void {
+  onCompanyChange(donviId: string, resetSelection = true): void {
     if (!donviId) return;
     this.loadingLookup = true;
     this.customers = [];
     this.products = [];
     this.templates = [];
-    this.createForm.patchValue({ khachhangId: '', mauctyId: '' });
+    if (resetSelection) {
+      this.createForm.patchValue({ khachhangId: '', mauctyId: '' });
+    }
 
     this.facade.getCustomers(donviId).subscribe({ next: (d) => { this.customers = d; this.buildCustomerMap(); } });
     this.facade.getProducts(donviId).subscribe({ next: (d) => { this.products = d; } });
@@ -858,10 +924,15 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
     return map[status ?? ''] ?? 'gray';
   }
 
+  isAdjustmentInvoice(inv: InvoiceListItemDto): boolean {
+    return !!(inv as any).thamChieuHoadonId;
+  }
+
   // ---- Create drawer ----
 
   openCreateDrawer(): void {
     this.adjustSourceId = null;
+    this.enableBaseFields();
     this.createForm.reset({
       donviId: '', khachhangId: '', mauctyId: '',
       ngaylap: new Date()
@@ -878,6 +949,7 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
   closeCreateDrawer(): void {
     this.createDrawerVisible = false;
     this.adjustSourceId = null;
+    this.enableBaseFields();
   }
 
   startAdjustment(inv: InvoiceListItemDto): void {
@@ -891,8 +963,21 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
     while (this.hanghoasArray.length > 1) this.hanghoasArray.removeAt(this.hanghoasArray.length - 1);
     this.hanghoasArray.at(0).reset({ hanghoaId: '', soluong: 1, dongia: 0, thueSuat: 10 });
     this.loadCompanies();
-    this.onCompanyChange(inv.donviId);
+    this.onCompanyChange(inv.donviId, false);
+    this.lockBaseFields();
     this.createDrawerVisible = true;
+  }
+
+  private lockBaseFields(): void {
+    this.createForm.get('donviId')?.disable({ emitEvent: false });
+    this.createForm.get('khachhangId')?.disable({ emitEvent: false });
+    this.createForm.get('mauctyId')?.disable({ emitEvent: false });
+  }
+
+  private enableBaseFields(): void {
+    this.createForm.get('donviId')?.enable({ emitEvent: false });
+    this.createForm.get('khachhangId')?.enable({ emitEvent: false });
+    this.createForm.get('mauctyId')?.enable({ emitEvent: false });
   }
 
   buildLineGroup() {
@@ -1033,6 +1118,18 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
     this.openPreviewModalById(inv.id, title);
   }
 
+  openOriginalInvoice(inv: InvoiceListItemDto): void {
+    if (!inv.thamChieuHoadonId) {
+      this.message.warning('Hóa đơn này chưa có hóa đơn gốc.');
+      return;
+    }
+
+    const title = inv.sohoadon
+      ? `Xem hóa đơn gốc của ${inv.sohoadon}`
+      : 'Xem hóa đơn gốc';
+    this.openPreviewModalById(inv.thamChieuHoadonId, title);
+  }
+
   private openPreviewModalById(invoiceId: string, title: string): void {
     this.previewTitle = title;
     this.previewModalVisible = true;
@@ -1085,6 +1182,16 @@ export class InvoicesPageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.releasePreviewBlob();
+  }
+
+  openDetails(inv: InvoiceListItemDto): void {
+    this.detailsInvoice = inv;
+    this.detailsModalVisible = true;
+  }
+
+  closeDetails(): void {
+    this.detailsModalVisible = false;
+    this.detailsInvoice = null;
   }
 
   // ---- Actions ----

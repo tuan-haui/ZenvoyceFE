@@ -1104,7 +1104,7 @@ export class Client {
      * @param body (optional) 
      * @return OK
      */
-    adjust(id: string, body: CreateInvoiceCommand | undefined): Observable<ApiResponseOfCreateInvoiceResultDto> {
+    adjust(id: string, body: CreateAdjustmentInvoiceCommand | undefined): Observable<ApiResponseOfCreateInvoiceResultDto> {
         let url_ = this.baseUrl + "/api/Invoices/{id}/adjust";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
@@ -1294,7 +1294,7 @@ export class Client {
      * @param denNgay (optional) 
      * @return OK
      */
-    excel(donviId: string | undefined, khachhangId: string | undefined, tuNgay: Date | undefined, denNgay: Date | undefined): Observable<Blob> {
+    excel(donviId: string | undefined, khachhangId: string | undefined, tuNgay: Date | undefined, denNgay: Date | undefined): Observable<FileResponse> {
         let url_ = this.baseUrl + "/api/Invoices/reports/sales/export/excel?";
         if (donviId === null)
             throw new globalThis.Error("The parameter 'donviId' cannot be null.");
@@ -1319,6 +1319,7 @@ export class Client {
             responseType: "blob",
             withCredentials: true,
             headers: new HttpHeaders({
+                "Accept": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             })
         };
 
@@ -1329,28 +1330,37 @@ export class Client {
                 try {
                     return this.processExcel(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<Blob>;
+                    return _observableThrow(e) as any as Observable<FileResponse>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<Blob>;
+                return _observableThrow(response_) as any as Observable<FileResponse>;
         }));
     }
 
-    protected processExcel(response: HttpResponseBase): Observable<Blob> {
+    protected processExcel(response: HttpResponseBase): Observable<FileResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
             (response as any).error instanceof Blob ? (response as any).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return _observableOf(responseBlob as Blob);
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
+            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
+            if (fileName) {
+                fileName = decodeURIComponent(fileName);
+            } else {
+                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            }
+            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf(new Blob());
+        return _observableOf(null as any);
     }
 
     /**
@@ -1645,7 +1655,7 @@ export class Client {
      * @param denNgay (optional) 
      * @return OK
      */
-    excel2(khachhangId: string | undefined, trangthai: string | undefined, tuNgay: Date | undefined, denNgay: Date | undefined): Observable<Blob> {
+    excel2(khachhangId: string | undefined, trangthai: string | undefined, tuNgay: Date | undefined, denNgay: Date | undefined): Observable<void> {
         let url_ = this.baseUrl + "/api/Invoices/export/excel?";
         if (khachhangId === null)
             throw new globalThis.Error("The parameter 'khachhangId' cannot be null.");
@@ -1680,14 +1690,14 @@ export class Client {
                 try {
                     return this.processExcel2(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<Blob>;
+                    return _observableThrow(e) as any as Observable<void>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<Blob>;
+                return _observableThrow(response_) as any as Observable<void>;
         }));
     }
 
-    protected processExcel2(response: HttpResponseBase): Observable<Blob> {
+    protected processExcel2(response: HttpResponseBase): Observable<void> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -1695,13 +1705,15 @@ export class Client {
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
         if (status === 200) {
-            return _observableOf(responseBlob as Blob);
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf(new Blob());
+        return _observableOf(null as any);
     }
 
     /**
@@ -6391,6 +6403,70 @@ export interface ICompanyTemplateDto {
     lichsuTrangthai?: TemplateStatusHistoryDto[] | undefined;
 }
 
+export class CreateAdjustmentInvoiceCommand implements ICreateAdjustmentInvoiceCommand {
+    donviId?: string;
+    khachhangId?: string;
+    mauctyId?: string;
+    ngaylap?: Date;
+    hanghoas?: InvoiceLineRequestDto[] | undefined;
+    thamChieuHoadonId?: string | undefined;
+
+    constructor(data?: ICreateAdjustmentInvoiceCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.donviId = _data["donviId"];
+            this.khachhangId = _data["khachhangId"];
+            this.mauctyId = _data["mauctyId"];
+            this.ngaylap = _data["ngaylap"] ? new Date(_data["ngaylap"].toString()) : undefined as any;
+            if (Array.isArray(_data["hanghoas"])) {
+                this.hanghoas = [] as any;
+                for (let item of _data["hanghoas"])
+                    this.hanghoas!.push(InvoiceLineRequestDto.fromJS(item));
+            }
+            this.thamChieuHoadonId = _data["thamChieuHoadonId"];
+        }
+    }
+
+    static fromJS(data: any): CreateAdjustmentInvoiceCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateAdjustmentInvoiceCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["donviId"] = this.donviId;
+        data["khachhangId"] = this.khachhangId;
+        data["mauctyId"] = this.mauctyId;
+        data["ngaylap"] = this.ngaylap ? this.ngaylap.toISOString() : undefined as any;
+        if (Array.isArray(this.hanghoas)) {
+            data["hanghoas"] = [];
+            for (let item of this.hanghoas)
+                data["hanghoas"].push(item ? item.toJSON() : undefined as any);
+        }
+        data["thamChieuHoadonId"] = this.thamChieuHoadonId;
+        return data;
+    }
+}
+
+export interface ICreateAdjustmentInvoiceCommand {
+    donviId?: string;
+    khachhangId?: string;
+    mauctyId?: string;
+    ngaylap?: Date;
+    hanghoas?: InvoiceLineRequestDto[] | undefined;
+    thamChieuHoadonId?: string | undefined;
+}
+
 export class CreateBaseTemplateCommand implements ICreateBaseTemplateCommand {
     tenmau?: string | undefined;
     loaihoadon?: string | undefined;
@@ -6569,7 +6645,6 @@ export class CreateInvoiceCommand implements ICreateInvoiceCommand {
     mauctyId?: string;
     ngaylap?: Date;
     hanghoas?: InvoiceLineRequestDto[] | undefined;
-    thamChieuHoadonId?: string | undefined;
 
     constructor(data?: ICreateInvoiceCommand) {
         if (data) {
@@ -6591,7 +6666,6 @@ export class CreateInvoiceCommand implements ICreateInvoiceCommand {
                 for (let item of _data["hanghoas"])
                     this.hanghoas!.push(InvoiceLineRequestDto.fromJS(item));
             }
-            this.thamChieuHoadonId = _data["thamChieuHoadonId"];
         }
     }
 
@@ -6613,7 +6687,6 @@ export class CreateInvoiceCommand implements ICreateInvoiceCommand {
             for (let item of this.hanghoas)
                 data["hanghoas"].push(item ? item.toJSON() : undefined as any);
         }
-        data["thamChieuHoadonId"] = this.thamChieuHoadonId;
         return data;
     }
 }
@@ -6624,7 +6697,6 @@ export interface ICreateInvoiceCommand {
     mauctyId?: string;
     ngaylap?: Date;
     hanghoas?: InvoiceLineRequestDto[] | undefined;
-    thamChieuHoadonId?: string | undefined;
 }
 
 export class CreateInvoiceResultDto implements ICreateInvoiceResultDto {
@@ -7116,6 +7188,7 @@ export class InvoiceListItemDto implements IInvoiceListItemDto {
     donviId?: string;
     khachhangId?: string;
     mauctyId?: string;
+    thamChieuHoadonId?: string | undefined;
     kyhieu?: string | undefined;
     sohoadon?: string | undefined;
     ngaylap?: Date;
@@ -7144,6 +7217,7 @@ export class InvoiceListItemDto implements IInvoiceListItemDto {
             this.donviId = _data["donviId"];
             this.khachhangId = _data["khachhangId"];
             this.mauctyId = _data["mauctyId"];
+            this.thamChieuHoadonId = _data["thamChieuHoadonId"];
             this.kyhieu = _data["kyhieu"];
             this.sohoadon = _data["sohoadon"];
             this.ngaylap = _data["ngaylap"] ? new Date(_data["ngaylap"].toString()) : undefined as any;
@@ -7172,6 +7246,7 @@ export class InvoiceListItemDto implements IInvoiceListItemDto {
         data["donviId"] = this.donviId;
         data["khachhangId"] = this.khachhangId;
         data["mauctyId"] = this.mauctyId;
+        data["thamChieuHoadonId"] = this.thamChieuHoadonId;
         data["kyhieu"] = this.kyhieu;
         data["sohoadon"] = this.sohoadon;
         data["ngaylap"] = this.ngaylap ? this.ngaylap.toISOString() : undefined as any;
@@ -7193,6 +7268,7 @@ export interface IInvoiceListItemDto {
     donviId?: string;
     khachhangId?: string;
     mauctyId?: string;
+    thamChieuHoadonId?: string | undefined;
     kyhieu?: string | undefined;
     sohoadon?: string | undefined;
     ngaylap?: Date;
@@ -8454,6 +8530,13 @@ export interface IVerifyInvoiceXmlSignatureResultDto {
 export interface FileParameter {
     data: any;
     fileName: string;
+}
+
+export interface FileResponse {
+    data: Blob;
+    status: number;
+    fileName?: string;
+    headers?: { [name: string]: any };
 }
 
 export class ApiException extends Error {

@@ -6,6 +6,7 @@ import {
   CancelInvoiceRequest,
   Client,
   CompanyDto as ApiCompanyDto,
+  CreateAdjustmentInvoiceCommand,
   CreateInvoiceCommand,
   CreateInvoiceResultDto as ApiCreateInvoiceResultDto,
   CustomerDto as ApiCustomerDto,
@@ -20,6 +21,7 @@ export interface InvoiceListItemDto {
   donviId: string;
   khachhangId: string;
   mauctyId: string;
+  thamChieuHoadonId?: string;
   kyhieu?: string;
   sohoadon?: string;
   ngaylap: string;
@@ -65,7 +67,6 @@ export interface CreateInvoicePayload {
   mauctyId: string;
   ngaylap: string;
   hanghoas: InvoiceLineRequestDto[];
-  thamChieuHoadonId?: string;
 }
 
 export interface CompanyDto {
@@ -248,7 +249,9 @@ export class InvoiceFacadeService {
   }
 
   createAdjustmentInvoice(sourceId: string, payload: CreateInvoicePayload): Observable<CreateInvoiceResultDto> {
-    return this.client.adjust(sourceId, this.toCreateCommand(payload)).pipe(map((res) => this.mapCreateResult(res.data)));
+    return this.client
+      .adjust(sourceId, this.toAdjustmentCommand(payload))
+      .pipe(map((res) => this.mapCreateResult(res.data)));
   }
 
   getSalesReport(filters?: {
@@ -279,11 +282,29 @@ export class InvoiceFacadeService {
     tuNgay?: Date;
     denNgay?: Date;
   }): Observable<Blob> {
-    return this.client.excel(filters?.donviId, filters?.khachhangId, filters?.tuNgay, filters?.denNgay);
+    const url = `${this.apiBaseUrl}/api/Invoices/reports/sales/export/excel${this.toQueryString({
+      donviId: filters?.donviId,
+      khachhangId: filters?.khachhangId,
+      tuNgay: filters?.tuNgay,
+      denNgay: filters?.denNgay
+    })}`;
+    return this.http.get(url, {
+      responseType: 'blob',
+      withCredentials: true
+    });
   }
 
   exportInvoicesExcel(filters?: InvoiceFilters): Observable<Blob> {
-    return this.client.excel2(filters?.khachhangId, filters?.trangthai, filters?.tuNgay, filters?.denNgay);
+    const url = `${this.apiBaseUrl}/api/Invoices/export/excel${this.toQueryString({
+      khachhangId: filters?.khachhangId,
+      trangthai: filters?.trangthai,
+      tuNgay: filters?.tuNgay,
+      denNgay: filters?.denNgay
+    })}`;
+    return this.http.get(url, {
+      responseType: 'blob',
+      withCredentials: true
+    });
   }
 
   getCompanies(): Observable<CompanyDto[]> {
@@ -320,9 +341,30 @@ export class InvoiceFacadeService {
       khachhangId: payload.khachhangId,
       mauctyId: payload.mauctyId,
       ngaylap: payload.ngaylap,
-      hanghoas: payload.hanghoas,
-      thamChieuHoadonId: payload.thamChieuHoadonId
+      hanghoas: payload.hanghoas
     });
+  }
+
+  private toAdjustmentCommand(payload: CreateInvoicePayload): CreateAdjustmentInvoiceCommand {
+    return CreateAdjustmentInvoiceCommand.fromJS({
+      donviId: payload.donviId,
+      khachhangId: payload.khachhangId,
+      mauctyId: payload.mauctyId,
+      ngaylap: payload.ngaylap,
+      hanghoas: payload.hanghoas
+    });
+  }
+
+  private toQueryString(params: Record<string, string | Date | undefined>): string {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === '') {
+        return;
+      }
+      query.append(key, value instanceof Date ? value.toISOString() : value);
+    });
+    const result = query.toString();
+    return result ? `?${result}` : '';
   }
 
   private mapCreateResult(d: ApiCreateInvoiceResultDto | undefined): CreateInvoiceResultDto {
@@ -341,6 +383,7 @@ export class InvoiceFacadeService {
       donviId: x.donviId ?? '',
       khachhangId: x.khachhangId ?? '',
       mauctyId: x.mauctyId ?? '',
+      thamChieuHoadonId: x.thamChieuHoadonId,
       kyhieu: x.kyhieu,
       sohoadon: x.sohoadon,
       ngaylap: x.ngaylap ? x.ngaylap.toISOString() : '',
