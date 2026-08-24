@@ -4,7 +4,7 @@ import { guestGuard } from './core/guards/guest.guard';
 import { permissionGuard } from './core/guards/permission.guard';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: '/auth/login' },
+  { path: '', pathMatch: 'full', redirectTo: '/admin/dashboard' },
   {
     path: 'auth',
     canActivate: [guestGuard],
@@ -19,7 +19,6 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
-    canActivate: [authGuard, permissionGuard],
     data: { breadcrumb: 'Quản trị' },
     loadComponent: () => import('./layouts/admin-layout.component').then((m) => m.AdminLayoutComponent),
     children: [
